@@ -17,4 +17,5 @@ public class HSAndroid extends Activity {
         tv.setText("Hello android!");
         setContentView(tv);
     }
+    
 }

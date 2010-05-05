@@ -34,7 +34,6 @@ public class HSService extends Service{
 	
 	public static int getCounter(){
 		return counter;
-
 	}
 
 	@Override

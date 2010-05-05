@@ -9,14 +9,9 @@
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content" android:text="Service Incrementer Test Application"/>
     <Button
-    android:id="@+id/startButton"
+    android:id="@+id/button"
    	android:layout_width="fill_parent"
    	android:layout_height="wrap_content"
    	android:text="@string/start_label" />
-   	<Button
-   	android:id="@+id/stopButton"
-   	android:layout_width="fill_parent"
-   	android:layout_height="wrap_content"
-   	android:text="@string/stop_label" />
 </LinearLayout>
 

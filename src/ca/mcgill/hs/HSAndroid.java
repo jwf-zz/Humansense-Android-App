@@ -10,40 +10,38 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 
 
-public class HSAndroid extends Activity implements OnClickListener{
+public class HSAndroid extends Activity{
+	
+	private Button button;
+	private Intent i;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
+        //Intent
+        i = new Intent(this, HSService.class);
+        
         //Buttons
-        View startButton = findViewById(R.id.startButton);
-        startButton.setOnClickListener(this);
-        View stopButton = findViewById(R.id.stopButton);
-        stopButton.setOnClickListener(this);
+        button = (Button) findViewById(R.id.button);
+        button.setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (!HSService.isRunning){ //NOT RUNNING
+					startService(i);
+					button.setText(R.string.stop_label);
+				} else { //RUNNING
+					stopService(i);
+					button.setText(R.string.start_label);
+				}
+			}
+		});
 
     }
-
-	@Override
-	public void onClick(View v) {
-		Intent i;
-		
-		switch (v.getId()){
-		
-		case R.id.startButton: //START BUTTON CASE
-			i = new Intent(this, HSService.class);
-			startService(i);
-			break;
-			
-		case R.id.stopButton: //STOP BUTTON CASE
-			i = new Intent(this, HSService.class);
-			stopService(i);
-			break;
-			
-		}
-	}
     
 }

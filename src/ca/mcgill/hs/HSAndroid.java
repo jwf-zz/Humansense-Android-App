@@ -39,7 +39,7 @@ public class HSAndroid extends Activity{
         i = new Intent(this, HSService.class);
         
         //Preferences
-        settings = getSharedPreferences(HSANDROID_PREFS_NAME, Activity.MODE_PRIVATE);
+        settings = getSharedPreferences(HSANDROID_PREFS_NAME, Activity.MODE_WORLD_READABLE);
         editor = settings.edit();
         if (!settings.contains("Frequency")) editor.putInt("Frequency", 1000);
         if (!settings.contains("StartAtPhoneBoot"))editor.putBoolean("StartAtPhoneBoot", false);

@@ -13,5 +13,9 @@
    	android:layout_width="fill_parent"
    	android:layout_height="wrap_content"
    	android:text="@string/start_label" />
+   	<TextView  
+   	android:id="@+id/counterText"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"/>
 </LinearLayout>
 

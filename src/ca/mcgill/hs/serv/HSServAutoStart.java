@@ -24,7 +24,7 @@ public class HSServAutoStart extends BroadcastReceiver{
 			settings = context.getSharedPreferences(HSANDROID_PREFS_NAME, Activity.MODE_WORLD_READABLE);
 			//read the setting for StartAtPhoneBoot if it exists, and only load service if it's set to true
 			if (settings.contains("StartAtPhoneBoot")){
-				if (settings.getBoolean("StartAtPhoneBoot", true)){
+				if (settings.getBoolean("StartAtPhoneBoot", false)){
 					comp = new ComponentName(context.getPackageName(), HSService.class.getName());
 					svc = context.startService(new Intent().setComponent(comp));
 		        }

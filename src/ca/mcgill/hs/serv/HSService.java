@@ -11,11 +11,10 @@ public class HSService extends Service{
 	
 	//integer counter
 	private static int counter;
-	
+	public static boolean isRunning;
 	private Timer timer = new Timer();
-	private static final long UPDATE_INTERVAL = 5000;
+	private static final long UPDATE_INTERVAL = 1000;
 
-	
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
@@ -25,21 +24,30 @@ public class HSService extends Service{
 	public void onCreate(){
 		super.onCreate();
 		
+		//Initialise the service
 		_startService();
 	}
 	
 	@Override
 	public void onDestroy(){
 		super.onDestroy();
+		
+		_stopService();
 	}
 	
 	private void _startService(){
-		timer.schedule(
+		timer.scheduleAtFixedRate(
 				new TimerTask(){
 					public void run(){
 						counter++;
 					}
 				}, 0, UPDATE_INTERVAL);
+		isRunning = true;
 	}
-
+	
+	private void _stopService() {
+		  if (timer != null) timer.cancel();
+		  isRunning = false;
+	}
+	
 }

@@ -15,7 +15,7 @@ public class HSService extends Service{
 	//integer counter
 	private static int counter;
 	private static boolean isRunning;
-	private static Timer timer = new Timer();
+	private Timer timer = new Timer();
 	private static long UPDATE_INTERVAL = 1000;
 	
 	/**

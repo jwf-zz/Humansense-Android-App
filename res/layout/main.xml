@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:background="@color/background"
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-<TextView  
+	<TextView  
     android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="Hello World, HSAndroid"
-    />
+    android:layout_height="wrap_content" android:text="Service Incrementer Test Application"/>
+    <Button
+    android:id="@+id/startButton"
+   	android:layout_width="fill_parent"
+   	android:layout_height="wrap_content"
+   	android:text="@string/start_label" />
+   	<Button
+   	android:id="@+id/stopButton"
+   	android:layout_width="fill_parent"
+   	android:layout_height="wrap_content"
+   	android:text="@string/stop_label" />
 </LinearLayout>
 

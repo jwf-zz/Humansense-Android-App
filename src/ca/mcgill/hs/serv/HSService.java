@@ -15,8 +15,6 @@ public class HSService extends Service{
 	private static boolean isRunning;
 	private static Timer timer = new Timer();
 	private static long UPDATE_INTERVAL = 1000;
-	private static boolean runAtPowerOn = false;
-	private static boolean runAtAppStart = false;
 	
 	/**
 	 * Is the service running
@@ -30,20 +28,6 @@ public class HSService extends Service{
 	 */
 	public static void setUpdateInterval(long INTERVAL){
 		UPDATE_INTERVAL = INTERVAL;
-	}
-	
-	/**
-	 * Setting for launching service at phone power on
-	 */
-	public static void runAtPowerOn(boolean setting){
-		runAtPowerOn = setting;
-	}
-	
-	/**
-	 * Setting for launching service at application start
-	 */
-	public static void runAtAppStart(boolean setting){
-		runAtAppStart = setting;
 	}
 
 	@Override

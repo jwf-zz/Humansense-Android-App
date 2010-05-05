@@ -24,6 +24,10 @@ public class HSService extends Service{
 	public static boolean isRunning(){
 		return isRunning;
 	}
+	
+	public static int getCounter(){
+		return counter;
+	}
 
 	/**
 	 * Setting for the frequency of updates

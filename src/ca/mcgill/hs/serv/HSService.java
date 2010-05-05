@@ -3,6 +3,8 @@ package ca.mcgill.hs.serv;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import ca.mcgill.hs.R;
+
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -22,12 +24,17 @@ public class HSService extends Service{
 	public static boolean isRunning(){
 		return isRunning;
 	}
-	
+
 	/**
 	 * Setting for the frequency of updates
 	 */
 	public static void setUpdateInterval(long INTERVAL){
 		UPDATE_INTERVAL = INTERVAL;
+	}
+	
+	public static int getCounter(){
+		return counter;
+
 	}
 
 	@Override
@@ -38,21 +45,20 @@ public class HSService extends Service{
 	@Override
 	public void onCreate(){
 		super.onCreate();
-		
-		//Initialise the service
-		_startService();
 		Log.i(getClass().getSimpleName(), "Timer started!!!");
 	}
 	
 	@Override
 	public void onDestroy(){
 		super.onDestroy();
-		
-		_stopService();
+		if (timer != null) timer.cancel();
+		isRunning = false;
 		Log.i(getClass().getSimpleName(), "Timer stopped!!!");
 	}
 	
-	private void _startService(){
+	@Override
+	public void onStart(Intent intent, int startId){
+		super.onStart(intent, startId);
 		timer.scheduleAtFixedRate(
 				new TimerTask(){
 					public void run(){
@@ -62,10 +68,4 @@ public class HSService extends Service{
 				}, 0, UPDATE_INTERVAL);
 		isRunning = true;
 	}
-	
-	private void _stopService() {
-		  if (timer != null) timer.cancel();
-		  isRunning = false;
-	}
-	
 }

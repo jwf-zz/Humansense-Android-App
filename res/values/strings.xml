@@ -3,4 +3,8 @@
     <string name="app_name">HSAndroid</string>
     <string name="start_label">START</string>
     <string name="stop_label">STOP</string>
+    <string name="start_phone_boot_label">Start at phone boot</string>
+    <string name="no_start_phone_boot_label">Do not start at phone boot</string>
+    <string name="start_app_start_label">Start at application start</string>
+    <string name="no_start_app_start_label">Do not start at application start</string>
 </resources>

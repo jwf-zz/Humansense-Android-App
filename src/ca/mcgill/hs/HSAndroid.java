@@ -32,7 +32,7 @@ public class HSAndroid extends Activity{
         button.setOnClickListener( new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (!HSService.isRunning){ //NOT RUNNING
+				if (!HSService.isRunning()){ //NOT RUNNING
 					startService(i);
 					button.setText(R.string.stop_label);
 				} else { //RUNNING

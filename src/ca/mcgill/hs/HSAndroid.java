@@ -46,11 +46,6 @@ public class HSAndroid extends Activity{
         if (!settings.contains("StartAtAppStart"))editor.putBoolean("StartAtAppStart", false);
         editor.commit();
         
-        //Application Auto Start
-        if (settings.getBoolean("StartAtAppStart", false)){
-        	startService(i);
-        }
-        
         //Buttons
         button = (Button) findViewById(R.id.button);
         button.setText((HSService.isRunning() ? R.string.stop_label : R.string.start_label));
@@ -97,6 +92,12 @@ public class HSAndroid extends Activity{
 				autoPhoneBoot.setText(settings.getBoolean("StartAtPhoneBoot", false) ? R.string.no_start_phone_boot_label : R.string.start_phone_boot_label);
 			}
 		});
+        
+        //Application AutoStart
+        if (settings.getBoolean("StartAtAppStart", false) && !HSService.isRunning()){
+        	startService(i);
+        	button.setText(R.string.stop_label);
+        }
         
     }
     

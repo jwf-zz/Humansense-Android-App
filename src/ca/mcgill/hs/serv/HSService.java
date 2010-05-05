@@ -13,11 +13,37 @@ public class HSService extends Service{
 	//integer counter
 	private static int counter;
 	private static boolean isRunning;
-	private Timer timer = new Timer();
-	private static final long UPDATE_INTERVAL = 1000;
+	private static Timer timer = new Timer();
+	private static long UPDATE_INTERVAL = 1000;
+	private static boolean runAtPowerOn = false;
+	private static boolean runAtAppStart = false;
 	
+	/**
+	 * Is the service running
+	 */
 	public static boolean isRunning(){
 		return isRunning;
+	}
+	
+	/**
+	 * Setting for the frequency of updates
+	 */
+	public static void setUpdateInterval(long INTERVAL){
+		UPDATE_INTERVAL = INTERVAL;
+	}
+	
+	/**
+	 * Setting for launching service at phone power on
+	 */
+	public static void runAtPowerOn(boolean setting){
+		runAtPowerOn = setting;
+	}
+	
+	/**
+	 * Setting for launching service at application start
+	 */
+	public static void runAtAppStart(boolean setting){
+		runAtAppStart = setting;
 	}
 
 	@Override

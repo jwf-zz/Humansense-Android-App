@@ -43,7 +43,6 @@ public class HSService extends Service{
 				new TimerTask(){
 					public void run(){
 						counter++;
-						Log.i(getClass().getSimpleName(), "Counter: "+counter);
 					}
 				}, 0, UPDATE_INTERVAL);
 		isRunning = true;

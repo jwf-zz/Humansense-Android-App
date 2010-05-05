@@ -6,6 +6,7 @@ import java.util.TimerTask;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.util.Log;
 
 public class HSService extends Service{
 	
@@ -26,6 +27,7 @@ public class HSService extends Service{
 		
 		//Initialise the service
 		_startService();
+		Log.i(getClass().getSimpleName(), "Timer started!!!");
 	}
 	
 	@Override
@@ -33,6 +35,7 @@ public class HSService extends Service{
 		super.onDestroy();
 		
 		_stopService();
+		Log.i(getClass().getSimpleName(), "Timer stopped!!!");
 	}
 	
 	private void _startService(){

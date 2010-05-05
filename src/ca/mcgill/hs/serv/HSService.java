@@ -12,9 +12,13 @@ public class HSService extends Service{
 	
 	//integer counter
 	private static int counter;
-	public static boolean isRunning;
+	private static boolean isRunning;
 	private Timer timer = new Timer();
 	private static final long UPDATE_INTERVAL = 1000;
+	
+	public static boolean isRunning(){
+		return isRunning;
+	}
 
 	@Override
 	public IBinder onBind(Intent intent) {

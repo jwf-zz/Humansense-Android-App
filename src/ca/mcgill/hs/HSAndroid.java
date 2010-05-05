@@ -3,15 +3,12 @@
  */
 package ca.mcgill.hs;
 
-import java.util.Date;
-import java.util.Timer;
+import ca.mcgill.hs.serv.HSService;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
 import android.view.View.OnClickListener;
 
 
@@ -32,12 +29,18 @@ public class HSAndroid extends Activity implements OnClickListener{
 
 	@Override
 	public void onClick(View v) {
+		Intent i;
+		
 		switch (v.getId()){
 		
 		case R.id.startButton: //START BUTTON CASE
+			i = new Intent(this, HSService.class);
+			startService(i);
 			break;
 			
 		case R.id.stopButton: //STOP BUTTON CASE
+			i = new Intent(this, HSService.class);
+			stopService(i);
 			break;
 			
 		}

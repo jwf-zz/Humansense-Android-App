@@ -55,7 +55,7 @@ public class HSService extends Service{
 		isRunning = false;
 		Log.i(getClass().getSimpleName(), "Timer stopped!!!");
 		
-		//show a quick toast to verify start of service
+		//show a quick toast to verify stop of service
 		Context context = getApplicationContext();
 		CharSequence text = "Counter stopped!";
 		int duration = Toast.LENGTH_SHORT;

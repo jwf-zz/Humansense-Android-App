@@ -55,7 +55,7 @@ public class HSService extends Service{
 		Log.i(getClass().getSimpleName(), "Timer stopped!!!");
 		isRunning = false;
 				
-		//show a quick toast to verify start of service
+		//show a quick toast to indicate stop of service
 		Toast toast = Toast.makeText(getApplicationContext(), "Counter stopped!", Toast.LENGTH_SHORT);
 		toast.setGravity(Gravity.CENTER, 0, 0);
 		toast.show();
@@ -73,7 +73,7 @@ public class HSService extends Service{
 				}, 0, UPDATE_INTERVAL);
 		isRunning = true;
 		
-		//show a quick toast to verify start of service
+		//show a quick toast to indicate start of service
 		Toast toast = Toast.makeText(getApplicationContext(), "Counter started!", Toast.LENGTH_SHORT);
 		toast.setGravity(Gravity.CENTER, 0, 0);
 		toast.show();

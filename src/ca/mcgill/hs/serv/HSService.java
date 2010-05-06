@@ -62,6 +62,7 @@ public class HSService extends Service{
 	
 	@Override
 	public void onStart(Intent intent, int startId){
+		if (isRunning)return;
 		super.onStart(intent, startId);
 		timer.scheduleAtFixedRate(
 				new TimerTask(){

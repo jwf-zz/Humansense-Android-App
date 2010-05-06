@@ -23,5 +23,14 @@ public class HSAndroidPreferences extends PreferenceActivity {
 				}
 
 			});
+			
+			Preference autoStartAtPhoneBoot = (Preference) findPreference("autoStartAtPhoneBoot");
+			autoStartAtPhoneBoot.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+				public boolean onPreferenceClick(Preference preference) {
+					return true;
+				}
+
+			});
 	}
 }

@@ -9,6 +9,12 @@
 	android:key="autoStartAtAppStart"
 	android:summary="Automatically start when application starts."
 	/>
+	<CheckBoxPreference
+	android:title="AutoStart at Phone Boot"
+	android:defaultValue="false"
+	android:key="autoStartAtPhoneBoot"
+	android:summary="Automatically start when phone starts."
+	/>
 	</PreferenceCategory>
 	
 	<PreferenceCategory>

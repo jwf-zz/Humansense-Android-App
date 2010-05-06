@@ -3,12 +3,13 @@ package ca.mcgill.hs.serv;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import ca.mcgill.hs.R;
-
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.Gravity;
+import android.widget.Toast;
 
 public class HSService extends Service{
 	
@@ -51,8 +52,13 @@ public class HSService extends Service{
 	public void onDestroy(){
 		super.onDestroy();
 		if (timer != null) timer.cancel();
-		isRunning = false;
 		Log.i(getClass().getSimpleName(), "Timer stopped!!!");
+		isRunning = false;
+				
+		//show a quick toast to verify start of service
+		Toast toast = Toast.makeText(getApplicationContext(), "Counter stopped!", Toast.LENGTH_SHORT);
+		toast.setGravity(Gravity.CENTER, 0, 0);
+		toast.show();
 	}
 	
 	@Override
@@ -66,5 +72,10 @@ public class HSService extends Service{
 					}
 				}, 0, UPDATE_INTERVAL);
 		isRunning = true;
+		
+		//show a quick toast to verify start of service
+		Toast toast = Toast.makeText(getApplicationContext(), "Counter started!", Toast.LENGTH_SHORT);
+		toast.setGravity(Gravity.CENTER, 0, 0);
+		toast.show();
 	}
 }

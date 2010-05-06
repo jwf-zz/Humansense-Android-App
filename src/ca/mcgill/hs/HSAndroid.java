@@ -25,8 +25,6 @@ public class HSAndroid extends Activity{
 	private Intent i;
 	
 	private boolean autoStartAppStart = false;
-	private boolean autoStartPhoneBoot = false;
-	private long frequency = 1000;
 	
 	public static final String HSANDROID_PREFS_NAME = "HSAndroidPrefs";
 	private static final int MENU_SETTINGS = 37043704;
@@ -44,7 +42,6 @@ public class HSAndroid extends Activity{
         
         //Setup preferences
         getPrefs();
-        HSService.setUpdateInterval(frequency);
         
         //Buttons
         button = (Button) findViewById(R.id.button);
@@ -83,12 +80,9 @@ public class HSAndroid extends Activity{
     }
     
     private void getPrefs(){
-    	//get preferences
     	SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(getBaseContext());
     	autoStartAppStart = prefs.getBoolean("autoStartAtAppStart", false);
-    	autoStartPhoneBoot = prefs.getBoolean("autoStartPhoneBoot", false);
-    	
     }
     
 }

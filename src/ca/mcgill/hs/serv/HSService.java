@@ -52,15 +52,11 @@ public class HSService extends Service{
 	public void onDestroy(){
 		super.onDestroy();
 		if (timer != null) timer.cancel();
-		isRunning = false;
 		Log.i(getClass().getSimpleName(), "Timer stopped!!!");
-		
-		//show a quick toast to verify stop of service
-		Context context = getApplicationContext();
-		CharSequence text = "Counter stopped!";
-		int duration = Toast.LENGTH_SHORT;
-
-		Toast toast = Toast.makeText(context, text, duration);
+		isRunning = false;
+				
+		//show a quick toast to verify start of service
+		Toast toast = Toast.makeText(getApplicationContext(), "Counter stopped!", Toast.LENGTH_SHORT);
 		toast.setGravity(Gravity.CENTER, 0, 0);
 		toast.show();
 	}
@@ -78,11 +74,7 @@ public class HSService extends Service{
 		isRunning = true;
 		
 		//show a quick toast to verify start of service
-		Context context = getApplicationContext();
-		CharSequence text = "Counter started!";
-		int duration = Toast.LENGTH_SHORT;
-
-		Toast toast = Toast.makeText(context, text, duration);
+		Toast toast = Toast.makeText(getApplicationContext(), "Counter started!", Toast.LENGTH_SHORT);
 		toast.setGravity(Gravity.CENTER, 0, 0);
 		toast.show();
 	}

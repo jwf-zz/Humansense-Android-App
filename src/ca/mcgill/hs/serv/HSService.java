@@ -73,6 +73,9 @@ public class HSService extends Service{
 				}, 0, UPDATE_INTERVAL);
 		isRunning = true;
 		
+		//Update button
+		ca.mcgill.hs.HSAndroid.updateButton();
+		
 		//show a quick toast to indicate start of service
 		Toast toast = Toast.makeText(getApplicationContext(), "Counter started!", Toast.LENGTH_SHORT);
 		toast.setGravity(Gravity.CENTER, 0, 0);

@@ -19,7 +19,7 @@ import android.widget.TextView;
 
 public class HSAndroid extends Activity{
 	
-	private Button button;
+	private static Button button;
 	private TextView tv;
 	private Intent i;
 	
@@ -87,6 +87,10 @@ public class HSAndroid extends Activity{
     	SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(getBaseContext());
     	autoStartAppStart = prefs.getBoolean("autoStartAtAppStart", false);
+    }
+    
+    public static void updateButton(){
+    	button.setText((HSService.isRunning() ? R.string.stop_label : R.string.start_label));
     }
     
 }

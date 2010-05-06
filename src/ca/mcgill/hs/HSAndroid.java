@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -43,6 +42,11 @@ public class HSAndroid extends Activity{
         //Setup preferences
         getPrefs();
         
+        //Auto App Start
+        if (autoStartAppStart){
+        	startService(i);
+        }
+        
         //Buttons
         button = (Button) findViewById(R.id.button);
         button.setText((HSService.isRunning() ? R.string.stop_label : R.string.start_label));
@@ -64,7 +68,7 @@ public class HSAndroid extends Activity{
     
     /* Creates the menu items */
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(0, MENU_SETTINGS, 0, "Settings");
+        menu.add(0, MENU_SETTINGS, 0, "Settings").setIcon(R.drawable.options);
         return true;
     }
 

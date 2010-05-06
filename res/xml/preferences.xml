@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android">
+	
+	<PreferenceCategory android:title="Startup Options">
+	<CheckBoxPreference
+	android:title="AutoStart at App Start"
+	android:defaultValue="false"
+	android:key="autoStartAtAppStart"
+	android:summary="Automatically start when application starts."
+	/>
+	</PreferenceCategory>
+	
+	<PreferenceCategory>
+	
+	
+	</PreferenceCategory>
+</PreferenceScreen>

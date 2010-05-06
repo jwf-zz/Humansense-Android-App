@@ -87,6 +87,8 @@ public class HSAndroid extends Activity{
     	SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(getBaseContext());
     	autoStartAppStart = prefs.getBoolean("autoStartAtAppStart", false);
+    	autoStartPhoneBoot = prefs.getBoolean("autoStartPhoneBoot", false);
+    	
     }
     
 }

@@ -16,9 +16,4 @@
 	android:summary="Automatically start when phone starts."
 	/>
 	</PreferenceCategory>
-	
-	<PreferenceCategory>
-	
-	
-	</PreferenceCategory>
 </PreferenceScreen>

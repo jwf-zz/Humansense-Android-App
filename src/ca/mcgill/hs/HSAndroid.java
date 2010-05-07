@@ -90,7 +90,7 @@ public class HSAndroid extends Activity{
     }
     
     public static void updateButton(){
-    	button.setText((HSService.isRunning() ? R.string.stop_label : R.string.start_label));
+    	if (button != null) button.setText((HSService.isRunning() ? R.string.stop_label : R.string.start_label));
     }
     
 }

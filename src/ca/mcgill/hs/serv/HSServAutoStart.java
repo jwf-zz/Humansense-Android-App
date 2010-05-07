@@ -1,11 +1,11 @@
 package ca.mcgill.hs.serv;
 
-import java.io.File;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 public class HSServAutoStart extends BroadcastReceiver{
@@ -17,16 +17,20 @@ public class HSServAutoStart extends BroadcastReceiver{
 	
 	@Override
 	public void onReceive(Context context, Intent intent){
-		//check if the received intent is BOOT_COMPLETED
-		if("android.intent.action.BOOT_COMPLETED".equals(intent.getAction()) && new File("/sdcard/autoStartAtPhoneBoot.prfs").exists()) {
-			comp = new ComponentName(context.getPackageName(), HSService.class.getName());
-			svc = context.startService(new Intent().setComponent(comp));
-						
-			if (svc == null){
-				Log.e("HSServAutoStart", "Could not start HSService " + comp.toString());
+		//check the user settings to see if we should start the service at boot
+		SharedPreferences prefs = context.getSharedPreferences("ca.mcgill.hs_preferences",0);
+		
+		if (prefs.getBoolean("autoStartAtPhoneBoot",false)) {
+			//check if the received intent is BOOT_COMPLETED
+			if("android.intent.action.BOOT_COMPLETED".equals(intent.getAction())) {
+				comp = new ComponentName(context.getPackageName(), HSService.class.getName());
+				svc = context.startService(new Intent().setComponent(comp));
+							
+				if (svc == null){
+					Log.e("HSServAutoStart", "Could not start HSService " + comp.toString());
+				}
 			}
 		}
-		
 	}
 
 }

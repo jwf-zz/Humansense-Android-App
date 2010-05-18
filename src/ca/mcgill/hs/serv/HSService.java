@@ -66,11 +66,8 @@ public class HSService extends Service{
 		
 		//Instantiate output plugins.
 		//FileOutput
-		//FileOutput fo = new FileOutput(wifiLoggerPIS);
-		//outputPluginList.add(fo);
-		//ScreenOutput
-		ScreenOutput so = new ScreenOutput(wifiLoggerPIS);
-		outputPluginList.add(so);
+		FileOutput fo = new FileOutput(wifiLoggerPIS);
+		outputPluginList.add(fo);
 		
 		//Start input plugins.
 		for (InputPlugin plugin: inputPluginList) plugin.startPlugin();

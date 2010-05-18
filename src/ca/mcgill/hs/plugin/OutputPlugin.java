@@ -9,13 +9,13 @@ package ca.mcgill.hs.plugin;
 public interface OutputPlugin {
 	
 	/**
-	 * Starts a thread the plugin will run.
+	 * Receives one byte of data.
 	 */
-	public void startPlugin();
+	public void receiveByte(byte data);
 	
 	/**
-	 * Stops the thread the plugin ran.
+	 * Closes the output plugin and saves data.
 	 */
-	public void stopPlugin();
+	public void closePlugin();
 
 }

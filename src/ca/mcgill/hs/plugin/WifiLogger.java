@@ -1,7 +1,6 @@
 package ca.mcgill.hs.plugin;
 
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -84,8 +83,8 @@ public class WifiLogger implements InputPlugin{
 		try {
 			for (ScanResult result : results) {
 				dos.writeLong(System.currentTimeMillis());
-				dos.writeUTF(result.SSID);
-				dos.writeUTF(result.BSSID);
+				dos.writeUTF("SSID is " + result.SSID);
+				dos.writeUTF("BSSID  is " + result.BSSID);
 				dos.writeInt(result.level);
 			}
 		} catch (IOException e) {
@@ -115,7 +114,6 @@ public class WifiLogger implements InputPlugin{
 			processResults(results);
 		}
 		
-		private static final String TAG = "WifiLocationLogger";
 		private final WifiManager wifi;
 	}
 

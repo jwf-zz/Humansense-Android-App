@@ -4,7 +4,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 import ca.mcgill.hs.plugin.*;
@@ -42,7 +41,7 @@ public class HSService extends Service{
 		super.onDestroy();
 		
 		for (InputPlugin plugin : inputPluginList) plugin.stopPlugin();
-		for (OutputPlugin plugin : outputPluginList) plugin.stopPlugin();
+		for (OutputPlugin plugin : outputPluginList) plugin.closePlugin();
 		
 		isRunning = false;
 	}
@@ -66,14 +65,29 @@ public class HSService extends Service{
 		
 		//Instantiate output plugins.
 		//FileOutput
-		FileOutput fo = new FileOutput(wifiLoggerPIS);
+		FileOutput fo = new FileOutput();
 		outputPluginList.add(fo);
+		//ScreenOutput
+		ScreenOutput so = new ScreenOutput();
+		outputPluginList.add(so);
 		
 		//Start input plugins.
 		for (InputPlugin plugin: inputPluginList) plugin.startPlugin();
 		
-		//Start output plugins.
-		for (OutputPlugin plugin: outputPluginList) plugin.startPlugin();
+		//Start thread for data sharing
+		Thread t = new Thread(){
+			public void run(){
+				while(isRunning){
+					try {
+						byte b = (byte) wifiLoggerPIS.read();
+						for (OutputPlugin plugin: outputPluginList) plugin.receiveByte(b);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		t.start();
 		
 		isRunning = true;
 		

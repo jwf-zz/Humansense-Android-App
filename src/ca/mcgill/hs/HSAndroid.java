@@ -28,8 +28,10 @@ public class HSAndroid extends Activity{
 	public static final String HSANDROID_PREFS_NAME = "HSAndroidPrefs";
 	private static final int MENU_SETTINGS = 37043704;
 	
-    /** Called when the activity is first created. */
-    @Override
+    /**
+     * This method is called when the activity is first created. It is the entry
+     * point for the application.
+     */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
@@ -49,9 +51,7 @@ public class HSAndroid extends Activity{
         
         //Buttons
         button = (Button) findViewById(R.id.button);
-        button.setText((HSService.isRunning() ? R.string.stop_label : R.string.start_label));
         button.setOnClickListener( new View.OnClickListener() {
-			@Override
 			public void onClick(View v) {
 				if (!HSService.isRunning()){ //NOT RUNNING
 					startService(i);

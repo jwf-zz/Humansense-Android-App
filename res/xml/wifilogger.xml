@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PluginMetadata>
+	<pluginName>WifiLogger</pluginName>
+	<schema>
+		<attr type="long">timestamp</attr>
+		<attr type="String">SSID</attr>
+		<attr type="String">BSSID</attr>
+		<attr type="int">level</attr>
+	</schema>
+</PluginMetadata>

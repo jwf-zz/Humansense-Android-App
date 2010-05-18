@@ -1,5 +1,11 @@
 package ca.mcgill.hs.plugin;
 
+/**
+ * A simple interface detailing the behaviour of data collecting plugins.
+ * 
+ * @author Cicerone Cojocaru, Jonathan Pitre
+ *
+ */
 public interface InputPlugin {
 	
 	/**

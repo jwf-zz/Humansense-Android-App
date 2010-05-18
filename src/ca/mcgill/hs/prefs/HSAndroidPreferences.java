@@ -1,3 +1,6 @@
+/**
+ * TODO: Insert licenses here.
+ */
 package ca.mcgill.hs.prefs;
 
 import ca.mcgill.hs.R;
@@ -6,11 +9,21 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.Preference.OnPreferenceClickListener;
 
+/**
+ * HSAndroidPreferences is a class extending PreferenceActivity which defines the settings
+ * menu for the HSAndroid Activity. Whenever the user accesses the settings from the options
+ * menu, this PreferenceActivity is launched.
+ * 
+ * @author Jonathan Pitre
+ *
+ */
 public class HSAndroidPreferences extends PreferenceActivity {
 	
 	/**
-	 * This is caleld when the PreferenceActivity is requested and created. This allows
+	 * This is called when the PreferenceActivity is requested and created. This allows
 	 * the user to visually see the preferences menu on the screen.
+	 * 
+	 * @override
 	 */
 	protected void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);

@@ -14,7 +14,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 
 /**
  * This Activity is the entry point to the HSAndroid application. This Activity is launched
@@ -27,7 +26,6 @@ import android.widget.TextView;
 public class HSAndroid extends Activity{
 	
 	private static Button button;
-	private TextView tv;
 	private Intent i;
 	
 	private boolean autoStartAppStart = false;
@@ -38,12 +36,12 @@ public class HSAndroid extends Activity{
     /**
      * This method is called when the activity is first created. It is the entry
      * point for the application.
+     * 
+     * @override
      */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        
-        tv = (TextView) findViewById(R.id.counterText);
         
         //Intent
         i = new Intent(this, HSService.class);

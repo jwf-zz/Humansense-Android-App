@@ -66,7 +66,6 @@ public class HSAndroid extends Activity{
 				} else { //RUNNING
 					stopService(i);
 					button.setText(R.string.start_label);
-					tv.setText("Counter = " + HSService.getCounter());
 				}
 			}
 		});

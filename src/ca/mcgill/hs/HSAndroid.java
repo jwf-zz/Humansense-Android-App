@@ -1,5 +1,5 @@
 /**
- * 
+ * TODO: Insert licenses here.
  */
 package ca.mcgill.hs;
 
@@ -16,7 +16,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-
+/**
+ * This Activity is the entry point to the HSAndroid application. This Activity is launched
+ * manually on the phone by the user, and is from where the background services can be manually
+ * started and stopped, and where the preferences and settigns can be changed.
+ * 
+ * @author Jonathan Pitre
+ * 
+ */
 public class HSAndroid extends Activity{
 	
 	private static Button button;
@@ -59,20 +66,24 @@ public class HSAndroid extends Activity{
 				} else { //RUNNING
 					stopService(i);
 					button.setText(R.string.start_label);
-					tv.setText("Counter = " + HSService.getCounter());
 				}
 			}
 		});
         
     }
     
-    /* Creates the menu items */
+    /**
+     * This method is called whenever the user wants to access the settings menu.
+     */
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.add(0, MENU_SETTINGS, 0, "Settings").setIcon(R.drawable.options);
         return true;
     }
 
-    /* Handles item selections */
+    /**
+     * This method is used to parse the selection of options items. These items include:
+     * - Preferences (settings)
+     */
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
         case MENU_SETTINGS:
@@ -83,12 +94,20 @@ public class HSAndroid extends Activity{
         return false;
     }
     
+    /**
+     * Sets up the preferences, i.e. get Activity preferences.
+     */
     private void getPrefs(){
     	SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(getBaseContext());
     	autoStartAppStart = prefs.getBoolean("autoStartAtAppStart", false);
     }
     
+    /**
+     * Updates the main starting button. This is required due to the nature of Activities
+     * in the Android API. In order to correctly get the state of the service to update
+     * the button text, this method cannot be called from within the Activity.
+     */
     public static void updateButton(){
     	if (button != null) button.setText((HSService.isRunning() ? R.string.stop_label : R.string.start_label));
     }

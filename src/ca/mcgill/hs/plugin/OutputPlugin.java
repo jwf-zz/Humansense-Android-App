@@ -9,9 +9,9 @@ package ca.mcgill.hs.plugin;
 public interface OutputPlugin {
 	
 	/**
-	 * Receives one byte of data.
+	 * Starts the output plugin and saves data.
 	 */
-	public void receiveByte(byte data);
+	public void startPlugin();
 	
 	/**
 	 * Closes the output plugin and saves data.

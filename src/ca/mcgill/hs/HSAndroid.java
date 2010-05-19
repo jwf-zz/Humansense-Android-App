@@ -56,6 +56,7 @@ public class HSAndroid extends Activity{
         
         //Buttons
         button = (Button) findViewById(R.id.button);
+        button.setText(HSService.isRunning() ? R.string.stop_label : R.string.start_label);
         button.setOnClickListener( new View.OnClickListener() {
 			public void onClick(View v) {
 				if (!HSService.isRunning()){ //NOT RUNNING

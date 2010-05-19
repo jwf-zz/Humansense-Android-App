@@ -4,6 +4,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.Pipe;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import java.nio.channels.Pipe.SourceChannel;
+import java.util.Date;
 import java.util.LinkedList;
 
 import ca.mcgill.hs.plugin.*;
@@ -12,12 +20,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
+import android.util.Log;
 
 public class HSService extends Service{
 	
 	private static boolean isRunning;
 	final private LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
+	private ReadableByteChannel rbcTest;
 	final private LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
+	private WritableByteChannel wbcTest;
+	private Thread coordinator;
 	
 	/**
 	 * Is the service running
@@ -53,45 +65,58 @@ public class HSService extends Service{
 		
 		//Instantiate input plugins.
 		//WifiLogger
-		final PipedOutputStream wifiLoggerPOS = new PipedOutputStream();
-		final PipedInputStream wifiLoggerPIS = new PipedInputStream();
-		try {
-			wifiLoggerPOS.connect(wifiLoggerPIS);
-		} catch (IOException e) {
-			e.printStackTrace();
+		try{
+			Pipe wifiLoggerPipe = Pipe.open();
+			WifiLogger wl = new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),getBaseContext(),wifiLoggerPipe.sink());
+			inputPluginList.add(wl);
+			rbcTest = wifiLoggerPipe.source();
+		} catch (IOException ioe) {
+			ioe.printStackTrace(System.err);
 		}
-		WifiLogger wl = new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),getBaseContext(),new DataOutputStream(wifiLoggerPOS));
-		inputPluginList.add(wl);
 		
 		//Instantiate output plugins.
-		//FileOutput
-		FileOutput fo = new FileOutput();
-		outputPluginList.add(fo);
 		//ScreenOutput
-		ScreenOutput so = new ScreenOutput();
-		outputPluginList.add(so);
+		try {
+			Pipe screenOutputPipe = Pipe.open();
+			ScreenOutput so = new ScreenOutput(screenOutputPipe.source());
+			outputPluginList.add(so);
+			wbcTest = screenOutputPipe.sink();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
+		//Create Coordinator
+		coordinator = new Thread(){
+			public void run(){
+				ByteBuffer timestamp = ByteBuffer.allocate(8);
+				try {
+					while (rbcTest.read(timestamp) >= 0){
+						timestamp.flip();
+						while (wbcTest.write(timestamp) > 0){}
+						timestamp.clear();
+					}
+				} catch (IOException e) {
+					Log.e("HSService Thread", "THREAD CRASHED - IOEXCEPTION.");
+					Log.e("HSService", e.getMessage());
+				}
+			}
+		};
 		
 		//Start input plugins.
 		for (InputPlugin plugin: inputPluginList) plugin.startPlugin();
 		
-		//Start thread for data sharing
-		Thread t = new Thread(){
-			public void run(){
-				while(isRunning){
-					try {
-						byte b = (byte) wifiLoggerPIS.read();
-						for (OutputPlugin plugin: outputPluginList) plugin.receiveByte(b);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		};
-		t.start();
+		//Start output plugins.
+		for (OutputPlugin plugin : outputPluginList) plugin.startPlugin();
 		
 		isRunning = true;
 		
+		startCoordinator();
+		
 		//Update button
 		ca.mcgill.hs.HSAndroid.updateButton();
+	}
+	
+	private void startCoordinator(){
+		coordinator.start();
 	}
 }

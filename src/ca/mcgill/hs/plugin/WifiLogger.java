@@ -1,7 +1,13 @@
 package ca.mcgill.hs.plugin;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.CharBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.channels.WritableByteChannel;
+import java.nio.channels.Pipe.SinkChannel;
 import java.util.List;
 
 import android.content.BroadcastReceiver;
@@ -26,15 +32,15 @@ public class WifiLogger implements InputPlugin{
 	private static int sleepIntervalMillisecs = 5000;
 	private WifiLoggerReceiver wlr;
 	private Context context;
-	final private DataOutputStream dos;
+	private WritableByteChannel wbc;
 	
 	/**
 	 * Constructor.
 	 */
-	public WifiLogger(WifiManager wm, Context context, DataOutputStream dos){
+	public WifiLogger(WifiManager wm, Context context, WritableByteChannel wbc){
 		this.wm = wm;
 		this.context = context;
-		this.dos = dos;
+		this.wbc = wbc;
 	}
 	
 	/**
@@ -80,15 +86,26 @@ public class WifiLogger implements InputPlugin{
 	 * @throws IOException 
 	 */
 	private void processResults(List<ScanResult> results){
-		try {
-			for (ScanResult result : results) {
-				dos.writeLong(System.currentTimeMillis());
-				dos.writeUTF("SSID is " + result.SSID);
-				dos.writeUTF("BSSID  is " + result.BSSID);
-				dos.writeInt(result.level);
+		ByteBuffer timestamp = ByteBuffer.allocate(8);
+		ByteBuffer ssid, bssid, level;
+		ByteBuffer[] packet = new ByteBuffer[4];
+		for (ScanResult result : results) {
+			timestamp.clear();
+			timestamp.putLong(System.currentTimeMillis());
+			timestamp.flip();
+			//packet[0] = timestamp;
+			//ssid = ByteBuffer.allocate(result.SSID.length()).put(result.SSID.getBytes());
+			//packet[1] = ssid;
+			//bssid = ByteBuffer.allocate(result.BSSID.length()).put(result.BSSID.getBytes());
+			//packet[2] = bssid;
+			//level = ByteBuffer.allocate(4).putInt(result.level);
+			//packet[3] = level;
+			try {
+				//sc.write(packet);
+				while (wbc.write(timestamp) > 0){}
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 	

@@ -1,28 +1,61 @@
 package ca.mcgill.hs.plugin;
 
-public class ScreenOutput implements OutputPlugin{
-	
-	private String printer = "";
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.util.Date;
 
+import android.util.Log;
+
+public class ScreenOutput implements OutputPlugin{
+
+	private Thread coordinator;
+	private final ReadableByteChannel rbc;
+	
+	public ScreenOutput(ReadableByteChannel rbc){
+		this.rbc = rbc;
+		coordinator = createCoordinator();
+	}
+	
 	/**
-	 * @override
+	 * Creates the thread for this plugin.
+	 * @return the Thread for this plugin.
 	 */
-	public void closePlugin() {
-		return;
+	private Thread createCoordinator(){
+		return new Thread(){
+			public void run(){
+				Log.i("Coordinator Thread", "Thread started.");
+				ByteBuffer timestamp = ByteBuffer.allocate(8);
+				try {
+					while (rbc.read(timestamp) >= 0){
+						timestamp.flip();
+						Log.v("Receptionist", new Date(timestamp.getLong()).toString());
+						timestamp.clear();
+					}
+				} catch (IOException e) {
+					Log.e("Coordinator Thread", "THREAD CRASHED - IOEXCEPTION.");
+					Log.e("HSService", e.getMessage());
+				}
+			}
+		};
 	}
 
 	/**
 	 * @override
 	 */
-	public void receiveByte(byte data) {
-		char c = (char) data;
-		if (Character.isLetter(c) || c == '.' || (char) data == ' ' || (char) data == '-'){
-			printer = printer.concat(Character.toString(c));
-		} else if (printer.length() > 1){
-			System.out.println(printer);
-			printer = "";
-		} else {
-			printer = "";
+	public void startPlugin() {
+		coordinator.start();
+	}
+	
+	/**
+	 * @throws IOException 
+	 * @override
+	 */
+	public void closePlugin(){
+		try {
+			rbc.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 

@@ -26,9 +26,7 @@ public class HSService extends Service{
 	
 	private static boolean isRunning;
 	final private LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
-	private ReadableByteChannel rbcTest;
 	final private LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
-	private WritableByteChannel wbcTest;
 	private Thread coordinator;
 	
 	/**
@@ -65,43 +63,21 @@ public class HSService extends Service{
 		
 		//Instantiate input plugins.
 		//WifiLogger
+		Pipe wifiLoggerPipe = null;
 		try{
-			Pipe wifiLoggerPipe = Pipe.open();
+			wifiLoggerPipe = Pipe.open();
 			WifiLogger wl = new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),getBaseContext(),wifiLoggerPipe.sink());
 			inputPluginList.add(wl);
-			rbcTest = wifiLoggerPipe.source();
 		} catch (IOException ioe) {
 			ioe.printStackTrace(System.err);
 		}
 		
 		//Instantiate output plugins.
 		//ScreenOutput
-		try {
-			Pipe screenOutputPipe = Pipe.open();
-			ScreenOutput so = new ScreenOutput(screenOutputPipe.source());
-			outputPluginList.add(so);
-			wbcTest = screenOutputPipe.sink();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		
-		//Create Coordinator
-		coordinator = new Thread(){
-			public void run(){
-				ByteBuffer timestamp = ByteBuffer.allocate(8);
-				try {
-					while (rbcTest.read(timestamp) >= 0){
-						timestamp.flip();
-						while (wbcTest.write(timestamp) > 0){}
-						timestamp.clear();
-					}
-				} catch (IOException e) {
-					Log.e("HSService Thread", "THREAD CRASHED - IOEXCEPTION.");
-					Log.e("HSService", e.getMessage());
-				}
-			}
-		};
-		
+		ScreenOutput so = new ScreenOutput();
+		if (wifiLoggerPipe != null) so.connect(wifiLoggerPipe.source());
+		outputPluginList.add(so);
+				
 		//Start input plugins.
 		for (InputPlugin plugin: inputPluginList) plugin.startPlugin();
 		
@@ -110,7 +86,7 @@ public class HSService extends Service{
 		
 		isRunning = true;
 		
-		startCoordinator();
+		//startCoordinator();
 		
 		//Update button
 		ca.mcgill.hs.HSAndroid.updateButton();

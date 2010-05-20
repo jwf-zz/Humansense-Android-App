@@ -10,10 +10,9 @@ import android.util.Log;
 public class ScreenOutput implements OutputPlugin{
 
 	private Thread coordinator;
-	private final ReadableByteChannel rbc;
+	private ReadableByteChannel rbc;
 	
-	public ScreenOutput(ReadableByteChannel rbc){
-		this.rbc = rbc;
+	public ScreenOutput(){
 		coordinator = createCoordinator();
 	}
 	
@@ -24,17 +23,45 @@ public class ScreenOutput implements OutputPlugin{
 	private Thread createCoordinator(){
 		return new Thread(){
 			public void run(){
-				Log.i("Coordinator Thread", "Thread started.");
-				ByteBuffer timestamp = ByteBuffer.allocate(8);
-				try {
-					while (rbc.read(timestamp) >= 0){
-						timestamp.flip();
-						Log.v("Receptionist", new Date(timestamp.getLong()).toString());
-						timestamp.clear();
+				if (rbc == null) return;
+				else {
+					Log.i("Coordinator Thread", "Thread started.");
+					ByteBuffer bufferIn = ByteBuffer.allocate(8 + 4 + 50 + 4 + 50 + 8);
+					try {
+						while (rbc.read(bufferIn) >= 0){
+						
+							Log.i("Receptionist", "Sir, we have a new connection");
+						
+							Log.v("Receptionist", new Date(bufferIn.getLong(0)).toString());
+						
+							bufferIn.position(8);
+							Log.v("Receptionist", "Connection level is " + bufferIn.getInt());
+						
+							bufferIn.position(12);
+							int ssidLength = bufferIn.getInt();
+						
+							bufferIn.position(16);
+							String s = "";
+							while (ssidLength > 0){
+								s = s.concat(String.valueOf(bufferIn.getChar()));
+								ssidLength--;
+							}
+							Log.v("Receptionist", "SSID: " + s);
+						
+							int bssidLength = bufferIn.getInt();
+							String b = "";
+							while (bssidLength > 0){
+								b = b.concat(String.valueOf(bufferIn.getChar()));
+								bssidLength--;
+							}
+							Log.v("Receptionist", "BSSID: " + b);
+						
+						
+						}
+					} catch (IOException e) {
+						Log.e("Coordinator Thread", "THREAD CRASHED - IOEXCEPTION.");
+						Log.e("HSService", e.getMessage());
 					}
-				} catch (IOException e) {
-					Log.e("Coordinator Thread", "THREAD CRASHED - IOEXCEPTION.");
-					Log.e("HSService", e.getMessage());
 				}
 			}
 		};
@@ -48,7 +75,6 @@ public class ScreenOutput implements OutputPlugin{
 	}
 	
 	/**
-	 * @throws IOException 
 	 * @override
 	 */
 	public void closePlugin(){
@@ -57,6 +83,13 @@ public class ScreenOutput implements OutputPlugin{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * @override
+	 */
+	public void connect(ReadableByteChannel rbc) {
+		this.rbc = rbc;
 	}
 
 }

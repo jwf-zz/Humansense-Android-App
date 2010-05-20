@@ -86,27 +86,31 @@ public class WifiLogger implements InputPlugin{
 	 * @throws IOException 
 	 */
 	private void processResults(List<ScanResult> results){
-		ByteBuffer timestamp = ByteBuffer.allocate(8);
-		ByteBuffer ssid, bssid, level;
-		ByteBuffer[] packet = new ByteBuffer[4];
+		ByteBuffer packet = ByteBuffer.allocate(0);
+		
 		for (ScanResult result : results) {
-			timestamp.clear();
-			timestamp.putLong(System.currentTimeMillis());
-			timestamp.flip();
-			//packet[0] = timestamp;
-			//ssid = ByteBuffer.allocate(result.SSID.length()).put(result.SSID.getBytes());
-			//packet[1] = ssid;
-			//bssid = ByteBuffer.allocate(result.BSSID.length()).put(result.BSSID.getBytes());
-			//packet[2] = bssid;
-			//level = ByteBuffer.allocate(4).putInt(result.level);
-			//packet[3] = level;
+			//prepare buffer
+			packet.clear();
+			packet.position(0);
+			
+			//read info
+			packet = ByteBuffer.allocate(8 + 4 + (2*result.SSID.length()) + 4 + (2*result.BSSID.length()) + 4);
+			packet.putLong(System.currentTimeMillis());
+			packet.putInt(result.level);
+			packet.putInt(result.SSID.length());
+			for (int i = 0; i < result.SSID.length(); i++) packet.putChar(result.SSID.charAt(i));
+			packet.putInt(result.BSSID.length());
+			for (int i = 0; i < result.BSSID.length(); i++) packet.putChar(result.BSSID.charAt(i));
+			
+			//flip & send
+			packet.flip();
 			try {
-				//sc.write(packet);
-				while (wbc.write(timestamp) > 0){}
+				while (wbc.write(packet) > 0){}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
+		
 	}
 	
 	// ***********************************************************************************

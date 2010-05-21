@@ -1,6 +1,7 @@
 package ca.mcgill.hs.plugin;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.LinkedList;

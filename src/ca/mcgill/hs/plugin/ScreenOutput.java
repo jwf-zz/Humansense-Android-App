@@ -41,16 +41,18 @@ public class ScreenOutput implements OutputPlugin{
 				while (running){
 					if (rbc == null) return;
 					else {
+						ByteBuffer type_code = ByteBuffer.allocate(1);
 						ByteBuffer sizeIn = ByteBuffer.allocate(4);
 						try {
-							rbc.read(sizeIn);
+							rbc.read(type_code);
+							type_code.flip();
+							type_code.get();
 							
+							rbc.read(sizeIn);
 							sizeIn.flip();
 							
 							int bufferSize = sizeIn.getInt();
-							
 							ByteBuffer bufferIn = ByteBuffer.allocate(bufferSize);
-							
 							rbc.read(bufferIn);
 								
 							Log.i("Receptionist", "Sir, we have a new connection");

@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
+import android.util.Log;
 
 public class HSService extends Service{
 	
@@ -57,21 +58,10 @@ public class HSService extends Service{
 		super.onStart(intent, startId);
 		
 		//Instantiate input plugins.
-		//WifiLogger
-		Pipe wifiLoggerPipe = null;
-		try{
-			wifiLoggerPipe = Pipe.open();
-			WifiLogger wl = new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),getBaseContext(),wifiLoggerPipe.sink());
-			inputPluginList.add(wl);
-		} catch (IOException ioe) {
-			ioe.printStackTrace(System.err);
-		}
+		addInputPlugins();
 		
-		//Instantiate output plugins.
-		//ScreenOutput
-		ScreenOutput so = new ScreenOutput();
-		if (wifiLoggerPipe != null) so.connect(wifiLoggerPipe.source());
-		outputPluginList.add(so);
+		//Instantiate output plugins
+		addOutputPlugins();
 				
 		//Start input plugins.
 		for (InputPlugin plugin: inputPluginList) plugin.startPlugin();
@@ -79,9 +69,50 @@ public class HSService extends Service{
 		//Start output plugins.
 		for (OutputPlugin plugin : outputPluginList) plugin.startPlugin();
 		
+		//Connect inout and output plugins.
+		try {
+			createConnections();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		isRunning = true;
 		
 		//Update button
 		ca.mcgill.hs.HSAndroid.updateButton();
+	}
+	
+	/**
+	 * Populates the list of input plugins.
+	 */
+	private void addInputPlugins(){
+		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),getBaseContext()));
+	}
+	
+	/**
+	 * Populates the list of output plugins.
+	 */
+	private void addOutputPlugins(){
+		outputPluginList.add(new ScreenOutput());
+	}
+	
+	/**
+	 * Creates the connections betweeen the input and output plugins.
+	 */
+	private void createConnections() throws IOException{
+		Class[] requestedClassList;
+		for (InputPlugin input : inputPluginList){
+			requestedClassList = input.getOutputClassList();
+			for (int i = 0; i < requestedClassList.length; i++){
+				for (OutputPlugin output : outputPluginList){
+					if (output.getClass() == requestedClassList[i]){
+						Log.i("HSService", "Connecting " + input.getClass().getSimpleName() + " and " + output.getClass().getSimpleName());
+						Pipe p = Pipe.open();
+						input.connect(p.sink());
+						output.connect(p.source());
+					}
+				}
+			}
+		}
 	}
 }

@@ -19,7 +19,7 @@ public class HSService extends Service{
 	
 	/**
 	 * Returns a boolean indicating if the service is running or not.
-	 * Returns true if the service is running and false otherwise.
+	 * @return true if the service is running and false otherwise.
 	 */
 	public static boolean isRunning(){
 		return isRunning;

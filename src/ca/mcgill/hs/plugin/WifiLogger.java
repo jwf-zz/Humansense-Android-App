@@ -32,8 +32,6 @@ public class WifiLogger implements InputPlugin{
 	
 	private final Class[] OUTPUT_CLASS_LIST = { ScreenOutput.class };
 	
-	private final byte TYPE_CODE = 0; //Wifi data
-	
 	/**
 	 * This is the basic constructor for the WifiLogger plugin. It has to be instantiated
 	 * before it is started, and needs to be passed a reference to a WifiManager, a Context
@@ -106,7 +104,6 @@ public class WifiLogger implements InputPlugin{
 			
 			//read info
 			packet = ByteBuffer.allocate(1 + 4 + 8 + 4 + 4 + (2*result.SSID.length()) + 4 + (2*result.BSSID.length()));
-			packet.put(TYPE_CODE);
 			packet.putInt(8 + 4 + 4 + (2*result.SSID.length()) + 4 + (2*result.BSSID.length()));
 			packet.putLong(System.currentTimeMillis());
 			packet.putInt(result.level);
@@ -137,15 +134,6 @@ public class WifiLogger implements InputPlugin{
 	public boolean connect(WritableByteChannel wbc) {
 		channelList.add(wbc);
 		return false;
-	}
-
-	/**
-	 * Returns the input plugin's data type code. The data type code specifies the type of
-	 * data this input plugin will be reading and writing to its WritableByteChannels.
-	 * @override
-	 */
-	public byte getTypeCode() {
-		return TYPE_CODE;
 	}
 	
 	/**

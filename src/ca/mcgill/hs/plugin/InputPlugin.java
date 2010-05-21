@@ -28,15 +28,6 @@ public interface InputPlugin {
 	public boolean connect(WritableByteChannel wbc);
 	
 	/**
-	 * Returns the input plugin's data type code. The data type code specifies the type of
-	 * data this input plugin will be reading and writing to its WritableByteChannels. Types
-	 * of data include:
-	 * 0 - Wifi
-	 * @return the input plugin's data type code.
-	 */
-	public byte getTypeCode();
-	
-	/**
 	 * Returns the list of output plugins this input plugin will want to write data to.
 	 * @return the list of output plugins this input plugin will want to write data to.
 	 */

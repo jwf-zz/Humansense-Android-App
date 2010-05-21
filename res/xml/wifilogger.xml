@@ -3,8 +3,10 @@
 	<pluginName>WifiLogger</pluginName>
 	<schema>
 		<attr type="long">timestamp</attr>
-		<attr type="String">SSID</attr>
-		<attr type="String">BSSID</attr>
 		<attr type="int">level</attr>
+		<attr type="int">SSIDlength</attr>
+		<attr type="String">SSID</attr>
+		<attr type="int">BSSIDlength</attr>
+		<attr type="String">BSSID</attr>
 	</schema>
 </PluginMetadata>

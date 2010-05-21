@@ -41,12 +41,8 @@ public class ScreenOutput implements OutputPlugin{
 				while (running){
 					if (rbc == null) return;
 					else {
-						ByteBuffer type_code = ByteBuffer.allocate(1);
 						ByteBuffer sizeIn = ByteBuffer.allocate(4);
 						try {
-							rbc.read(type_code);
-							type_code.flip();
-							type_code.get();
 							
 							rbc.read(sizeIn);
 							sizeIn.flip();

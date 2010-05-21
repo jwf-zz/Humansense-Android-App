@@ -106,7 +106,6 @@ public class HSService extends Service{
 			for (int i = 0; i < requestedClassList.length; i++){
 				for (OutputPlugin output : outputPluginList){
 					if (output.getClass() == requestedClassList[i]){
-						Log.i("HSService", "Connecting " + input.getClass().getSimpleName() + " and " + output.getClass().getSimpleName());
 						Pipe p = Pipe.open();
 						input.connect(p.sink());
 						output.connect(p.source());

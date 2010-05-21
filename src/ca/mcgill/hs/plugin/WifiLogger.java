@@ -91,10 +91,10 @@ public class WifiLogger implements InputPlugin{
 		for (ScanResult result : results) {
 			//prepare buffer
 			packet.clear();
-			packet.position(0);
 			
 			//read info
-			packet = ByteBuffer.allocate(8 + 4 + (2*result.SSID.length()) + 4 + (2*result.BSSID.length()) + 4);
+			packet = ByteBuffer.allocate(4 + 8 + 4 + 4 + (2*result.SSID.length()) + 4 + (2*result.BSSID.length()));
+			packet.putInt(8 + 4 + 4 + (2*result.SSID.length()) + 4 + (2*result.BSSID.length()));
 			packet.putLong(System.currentTimeMillis());
 			packet.putInt(result.level);
 			packet.putInt(result.SSID.length());
@@ -105,7 +105,7 @@ public class WifiLogger implements InputPlugin{
 			//flip & send
 			packet.flip();
 			try {
-				while (wbc.write(packet) > 0){}
+				wbc.write(packet);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

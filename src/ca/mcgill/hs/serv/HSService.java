@@ -1,17 +1,7 @@
 package ca.mcgill.hs.serv;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
-import java.nio.channels.Channels;
 import java.nio.channels.Pipe;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import java.nio.channels.Pipe.SourceChannel;
-import java.util.Date;
 import java.util.LinkedList;
 
 import ca.mcgill.hs.plugin.*;
@@ -20,14 +10,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
-import android.util.Log;
 
 public class HSService extends Service{
 	
 	private static boolean isRunning;
 	final private LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
 	final private LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
-	private Thread coordinator;
 	
 	/**
 	 * Is the service running
@@ -86,13 +74,7 @@ public class HSService extends Service{
 		
 		isRunning = true;
 		
-		//startCoordinator();
-		
 		//Update button
 		ca.mcgill.hs.HSAndroid.updateButton();
-	}
-	
-	private void startCoordinator(){
-		coordinator.start();
 	}
 }

@@ -10,6 +10,7 @@ import android.util.Log;
 public class ScreenOutput implements OutputPlugin{
 
 	private Thread coordinator;
+	private boolean running = false;
 	private ReadableByteChannel rbc;
 	
 	public ScreenOutput(){
@@ -23,23 +24,32 @@ public class ScreenOutput implements OutputPlugin{
 	private Thread createCoordinator(){
 		return new Thread(){
 			public void run(){
-				if (rbc == null) return;
-				else {
-					Log.i("Coordinator Thread", "Thread started.");
-					ByteBuffer bufferIn = ByteBuffer.allocate(8 + 4 + 50 + 4 + 50 + 8);
-					try {
-						while (rbc.read(bufferIn) >= 0){
-						
+				Log.i("Coordinator Thread", "Thread started.");
+				while (running){
+					if (rbc == null) return;
+					else {
+						ByteBuffer sizeIn = ByteBuffer.allocate(4);
+						try {
+							rbc.read(sizeIn);
+							
+							sizeIn.flip();
+							
+							int bufferSize = sizeIn.getInt();
+							
+							ByteBuffer bufferIn = ByteBuffer.allocate(bufferSize);
+							
+							rbc.read(bufferIn);
+								
 							Log.i("Receptionist", "Sir, we have a new connection");
-						
+								
 							Log.v("Receptionist", new Date(bufferIn.getLong(0)).toString());
-						
+								
 							bufferIn.position(8);
 							Log.v("Receptionist", "Connection level is " + bufferIn.getInt());
-						
+														
 							bufferIn.position(12);
 							int ssidLength = bufferIn.getInt();
-						
+														
 							bufferIn.position(16);
 							String s = "";
 							while (ssidLength > 0){
@@ -55,12 +65,11 @@ public class ScreenOutput implements OutputPlugin{
 								bssidLength--;
 							}
 							Log.v("Receptionist", "BSSID: " + b);
-						
-						
+							
+						} catch (IOException e) {
+							Log.e("Coordinator Thread", "THREAD CRASHED - IOEXCEPTION.");
+							Log.e("HSService", e.getMessage());
 						}
-					} catch (IOException e) {
-						Log.e("Coordinator Thread", "THREAD CRASHED - IOEXCEPTION.");
-						Log.e("HSService", e.getMessage());
 					}
 				}
 			}
@@ -72,17 +81,14 @@ public class ScreenOutput implements OutputPlugin{
 	 */
 	public void startPlugin() {
 		coordinator.start();
+		running = true;
 	}
 	
 	/**
 	 * @override
 	 */
 	public void closePlugin(){
-		try {
-			rbc.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		running = false;
 	}
 
 	/**

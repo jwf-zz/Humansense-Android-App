@@ -30,6 +30,8 @@ public class WifiLogger implements InputPlugin{
 	private Context context;
 	private final LinkedList<WritableByteChannel> channelList = new LinkedList<WritableByteChannel>();
 	
+	private final Class[] OUTPUT_CLASS_LIST = { ScreenOutput.class };
+	
 	private final byte TYPE_CODE = 0; //Wifi data
 	
 	/**
@@ -144,6 +146,15 @@ public class WifiLogger implements InputPlugin{
 	 */
 	public byte getTypeCode() {
 		return TYPE_CODE;
+	}
+	
+	/**
+	 * Returns the list of output plugins this input plugin will want to write data to.
+	 * @return the list of output plugins this input plugin will want to write data to.
+	 * @override
+	 */
+	public Class[] getOutputClassList() {
+		return OUTPUT_CLASS_LIST;
 	}
 	
 	// ***********************************************************************************

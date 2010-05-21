@@ -35,5 +35,11 @@ public interface InputPlugin {
 	 * @return the input plugin's data type code.
 	 */
 	public byte getTypeCode();
+	
+	/**
+	 * Returns the list of output plugins this input plugin will want to write data to.
+	 * @return the list of output plugins this input plugin will want to write data to.
+	 */
+	public Class[] getOutputClassList();
 
 }

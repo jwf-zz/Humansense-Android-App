@@ -2,12 +2,7 @@ package ca.mcgill.hs.plugin;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.CharBuffer;
-import java.nio.IntBuffer;
-import java.nio.LongBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.nio.channels.Pipe.SinkChannel;
 import java.util.List;
 
 import android.content.BroadcastReceiver;
@@ -35,7 +30,13 @@ public class WifiLogger implements InputPlugin{
 	private WritableByteChannel wbc;
 	
 	/**
-	 * Constructor.
+	 * This is the basic constructor for the WifiLogger plugin. It has to be instantiated
+	 * before it is started, and needs to be passed a reference to a WifiManager, a Context
+	 * and a WritableByteChannel (java.nio).
+	 * 
+	 * @param wm - the WifiManager for this WifiLogger.
+	 * @param context - the context in which this plugin is created.
+	 * @param wbc - the WritableByteChannel through which data will be written.
 	 */
 	public WifiLogger(WifiManager wm, Context context, WritableByteChannel wbc){
 		this.wm = wm;
@@ -44,6 +45,9 @@ public class WifiLogger implements InputPlugin{
 	}
 	
 	/**
+	 * This method starts the WifiLogger plugin and launches all appropriate threads. It
+	 * also registers a new WifiLoggerReceiver to scan for possible network connections.
+	 * 
 	 * @override
 	 */
 	public void startPlugin() {
@@ -62,7 +66,7 @@ public class WifiLogger implements InputPlugin{
 					}
 				}
 				catch(InterruptedException e) {
-					Log.d("WifiLogger", "Logging thread terminated.");
+					Log.d("WifiLogger", "Logging thread terminated due to InterruptedException.");
 				}
 			}
 		};
@@ -71,18 +75,22 @@ public class WifiLogger implements InputPlugin{
 	}
 
 	/**
+	 * This method stops the thread if it is running, and does nothing if it is not.
+	 * 
 	 * @override
 	 */
 	public void stopPlugin() {
-		threadRunning = false;
-		Log.i("WifiLogger", "Thread wuz killed by DJ Werd.");
-		context.unregisterReceiver(wlr);
-		Log.i("WifiLogger", "Unegistered receiver.");
+		if (threadRunning){
+			threadRunning = false;
+			context.unregisterReceiver(wlr);
+			Log.i("WifiLogger", "Unegistered receiver.");
+		}
 	}
 	
 	/**
 	 * Processes the results sent by the Wifi scan and writes them to the
 	 * DataOutputStream.
+	 * 
 	 * @throws IOException 
 	 */
 	private void processResults(List<ScanResult> results){

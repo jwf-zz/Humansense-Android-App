@@ -7,18 +7,31 @@ import java.util.Date;
 
 import android.util.Log;
 
+/**
+ * This output plugin takes data from a ReadableByteChannel and outputs it to the
+ * android's logcat. However, this only works for wifi data coming from the WifiLogger
+ * input plugin.
+ * 
+ * @author Cicerone Cojocaru, Jonathan Pitre
+ *
+ */
 public class ScreenOutput implements OutputPlugin{
 
 	private Thread coordinator;
 	private boolean running = false;
 	private ReadableByteChannel rbc;
 	
+	/**
+	 * This is the basic constructor for the ScreenOutput plugin.
+	 */
 	public ScreenOutput(){
 		coordinator = createCoordinator();
 	}
 	
 	/**
-	 * Creates the thread for this plugin.
+	 * Creates the thread for this plugin. Specifies the behaviour for the information
+	 * gathering.
+	 * 
 	 * @return the Thread for this plugin.
 	 */
 	private Thread createCoordinator(){
@@ -77,6 +90,8 @@ public class ScreenOutput implements OutputPlugin{
 	}
 
 	/**
+	 * Starts the appropriate threads and launches the plugin.
+	 * 
 	 * @override
 	 */
 	public void startPlugin() {
@@ -85,6 +100,8 @@ public class ScreenOutput implements OutputPlugin{
 	}
 	
 	/**
+	 * Stops the appropriate threads.
+	 * 
 	 * @override
 	 */
 	public void closePlugin(){
@@ -92,6 +109,9 @@ public class ScreenOutput implements OutputPlugin{
 	}
 
 	/**
+	 * Connects this output plugin to the specified ReadableByteChannel. This plugin supports only
+	 * one ReadableByteChannel.
+	 * 
 	 * @override
 	 */
 	public void connect(ReadableByteChannel rbc) {

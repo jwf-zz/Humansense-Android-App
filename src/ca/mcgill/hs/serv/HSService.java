@@ -1,7 +1,6 @@
 package ca.mcgill.hs.serv;
 
 import java.io.IOException;
-import java.nio.channels.Pipe;
 import java.util.LinkedList;
 
 import ca.mcgill.hs.plugin.*;
@@ -10,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
-import android.util.Log;
 
 public class HSService extends Service{
 	
@@ -100,18 +98,6 @@ public class HSService extends Service{
 	 * Creates the connections betweeen the input and output plugins.
 	 */
 	private void createConnections() throws IOException{
-		Class[] requestedClassList;
-		for (InputPlugin input : inputPluginList){
-			requestedClassList = input.getOutputClassList();
-			for (int i = 0; i < requestedClassList.length; i++){
-				for (OutputPlugin output : outputPluginList){
-					if (output.getClass() == requestedClassList[i]){
-						Pipe p = Pipe.open();
-						input.connect(p.sink());
-						output.connect(p.source());
-					}
-				}
-			}
-		}
+		
 	}
 }

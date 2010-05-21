@@ -1,7 +1,5 @@
 package ca.mcgill.hs.plugin;
 
-import java.nio.channels.ReadableByteChannel;
-
 /**
  * A simple interface detailing the behaviour of data printing plugins.
  * 
@@ -19,10 +17,5 @@ public interface OutputPlugin {
 	 * Closes the output plugin and saves data.
 	 */
 	public void closePlugin();
-	
-	/**
-	 * Connects the plugin to the specified ReadableByteChannel.
-	 */
-	public void connect(ReadableByteChannel rbc);
 
 }

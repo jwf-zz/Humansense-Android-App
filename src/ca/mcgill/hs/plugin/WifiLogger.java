@@ -1,10 +1,6 @@
 package ca.mcgill.hs.plugin;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
-import java.util.LinkedList;
 import java.util.List;
 
 import android.content.BroadcastReceiver;
@@ -29,7 +25,6 @@ public class WifiLogger implements InputPlugin{
 	private static int sleepIntervalMillisecs = 5000;
 	private WifiLoggerReceiver wlr;
 	private Context context;
-	private final LinkedList<WritableByteChannel> channelList = new LinkedList<WritableByteChannel>();
 	
 	private final Class[] OUTPUT_CLASS_LIST = { ScreenOutput.class };
 	
@@ -97,44 +92,11 @@ public class WifiLogger implements InputPlugin{
 	 * @throws IOException 
 	 */
 	private void processResults(List<ScanResult> results){
-		ByteBuffer packet = ByteBuffer.allocate(0);
 		
 		for (ScanResult result : results) {
-			//prepare buffer
-			packet.clear();
 			
-			//read info
-			packet = ByteBuffer.allocate(1 + 4 + 8 + 4 + 4 + (2*result.SSID.length()) + 4 + (2*result.BSSID.length()));
-			packet.putInt(8 + 4 + 4 + (2*result.SSID.length()) + 4 + (2*result.BSSID.length()));
-			packet.putLong(System.currentTimeMillis());
-			packet.putInt(result.level);
-			packet.putInt(result.SSID.length());
-			for (int i = 0; i < result.SSID.length(); i++) packet.putChar(result.SSID.charAt(i));
-			packet.putInt(result.BSSID.length());
-			for (int i = 0; i < result.BSSID.length(); i++) packet.putChar(result.BSSID.charAt(i));
-			
-			//flip & send
-			packet.flip();
-			for (WritableByteChannel wbc : channelList){
-				try {
-					wbc.write(packet);
-					packet.position(0);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
 		}
 		
-	}
-
-	/**
-	 * Adds this WritableByteChannel to this plugin's list.
-	 * @param wbc the specified WritableByteChannel.
-	 * @override
-	 */
-	public boolean connect(WritableByteChannel wbc) {
-		channelList.add(wbc);
-		return false;
 	}
 	
 	/**

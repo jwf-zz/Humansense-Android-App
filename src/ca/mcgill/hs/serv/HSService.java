@@ -18,7 +18,8 @@ public class HSService extends Service{
 	final private LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
 	
 	/**
-	 * Is the service running
+	 * Returns a boolean indicating if the service is running or not.
+	 * Returns true if the service is running and false otherwise.
 	 */
 	public static boolean isRunning(){
 		return isRunning;
@@ -29,12 +30,16 @@ public class HSService extends Service{
 		return null;
 	}
 	
-	@Override
+	/**
+	 * Called when the service is started. Creates the service.
+	 */
 	public void onCreate(){
 		super.onCreate();
 	}
 	
-	@Override
+	/**
+	 * Called when the service is stopped. Stops the service.
+	 */
 	public void onDestroy(){
 		super.onDestroy();
 		
@@ -44,7 +49,9 @@ public class HSService extends Service{
 		isRunning = false;
 	}
 	
-	@Override
+	/**
+	 * Called automatically when onCreate() is called. Initialises the service and associated plug-ins and starts the service.
+	 */
 	public void onStart(Intent intent, int startId){
 		if (isRunning)return;
 		super.onStart(intent, startId);

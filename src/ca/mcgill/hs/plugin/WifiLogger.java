@@ -3,6 +3,7 @@ package ca.mcgill.hs.plugin;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
+import java.util.LinkedList;
 import java.util.List;
 
 import android.content.BroadcastReceiver;
@@ -27,7 +28,9 @@ public class WifiLogger implements InputPlugin{
 	private static int sleepIntervalMillisecs = 5000;
 	private WifiLoggerReceiver wlr;
 	private Context context;
-	private WritableByteChannel wbc;
+	private final LinkedList<WritableByteChannel> channelList = new LinkedList<WritableByteChannel>();
+	
+	private final byte TYPE_CODE = 0; //Wifi data
 	
 	/**
 	 * This is the basic constructor for the WifiLogger plugin. It has to be instantiated
@@ -38,10 +41,9 @@ public class WifiLogger implements InputPlugin{
 	 * @param context - the context in which this plugin is created.
 	 * @param wbc - the WritableByteChannel through which data will be written.
 	 */
-	public WifiLogger(WifiManager wm, Context context, WritableByteChannel wbc){
+	public WifiLogger(WifiManager wm, Context context){
 		this.wm = wm;
 		this.context = context;
-		this.wbc = wbc;
 	}
 	
 	/**
@@ -101,7 +103,8 @@ public class WifiLogger implements InputPlugin{
 			packet.clear();
 			
 			//read info
-			packet = ByteBuffer.allocate(4 + 8 + 4 + 4 + (2*result.SSID.length()) + 4 + (2*result.BSSID.length()));
+			packet = ByteBuffer.allocate(1 + 4 + 8 + 4 + 4 + (2*result.SSID.length()) + 4 + (2*result.BSSID.length()));
+			packet.put(TYPE_CODE);
 			packet.putInt(8 + 4 + 4 + (2*result.SSID.length()) + 4 + (2*result.BSSID.length()));
 			packet.putLong(System.currentTimeMillis());
 			packet.putInt(result.level);
@@ -112,13 +115,35 @@ public class WifiLogger implements InputPlugin{
 			
 			//flip & send
 			packet.flip();
-			try {
-				wbc.write(packet);
-			} catch (IOException e) {
-				e.printStackTrace();
+			for (WritableByteChannel wbc : channelList){
+				try {
+					wbc.write(packet);
+					packet.position(0);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		
+	}
+
+	/**
+	 * Adds this WritableByteChannel to this plugin's list.
+	 * @param wbc the specified WritableByteChannel.
+	 * @override
+	 */
+	public boolean connect(WritableByteChannel wbc) {
+		channelList.add(wbc);
+		return false;
+	}
+
+	/**
+	 * Returns the input plugin's data type code. The data type code specifies the type of
+	 * data this input plugin will be reading and writing to its WritableByteChannels.
+	 * @override
+	 */
+	public byte getTypeCode() {
+		return TYPE_CODE;
 	}
 	
 	// ***********************************************************************************

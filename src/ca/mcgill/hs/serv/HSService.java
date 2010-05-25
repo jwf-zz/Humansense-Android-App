@@ -43,7 +43,7 @@ public class HSService extends Service{
 		super.onDestroy();
 		
 		for (InputPlugin plugin : inputPluginList) plugin.stopPlugin();
-		for (OutputPlugin plugin : outputPluginList) plugin.closePlugin();
+		for (OutputPlugin plugin : outputPluginList) plugin.stopPlugin();
 		
 		isRunning = false;
 	}

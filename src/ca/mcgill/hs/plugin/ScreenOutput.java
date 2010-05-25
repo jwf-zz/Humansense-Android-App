@@ -1,5 +1,7 @@
 package ca.mcgill.hs.plugin;
 
+import java.io.DataInputStream;
+
 
 /**
  * This output plugin takes data from a ReadableByteChannel and outputs it to the
@@ -52,8 +54,15 @@ public class ScreenOutput implements OutputPlugin{
 	 * 
 	 * @override
 	 */
-	public void closePlugin(){
+	public void stopPlugin(){
 		running = false;
+	}
+
+	/**
+	 * @override
+	 */
+	public boolean connect(DataInputStream dis) {
+		return false;
 	}
 
 }

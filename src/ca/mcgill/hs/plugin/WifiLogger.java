@@ -1,6 +1,9 @@
 package ca.mcgill.hs.plugin;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.LinkedList;
 import java.util.List;
 
 import android.content.BroadcastReceiver;
@@ -17,7 +20,7 @@ import android.util.Log;
  * @author Cicerone Cojocaru, Jonathan Pitre
  *
  */
-public class WifiLogger implements InputPlugin{
+public class WifiLogger extends InputPlugin{
 
 	private Thread wifiLoggerThread;
 	private boolean threadRunning = false;
@@ -25,8 +28,6 @@ public class WifiLogger implements InputPlugin{
 	private static int sleepIntervalMillisecs = 5000;
 	private WifiLoggerReceiver wlr;
 	private Context context;
-	
-	private final Class[] OUTPUT_CLASS_LIST = { ScreenOutput.class };
 	
 	/**
 	 * This is the basic constructor for the WifiLogger plugin. It has to be instantiated
@@ -92,20 +93,36 @@ public class WifiLogger implements InputPlugin{
 	 * @throws IOException 
 	 */
 	private void processResults(List<ScanResult> results){
+		long timestamp;
+		int level;
+		String SSID, BSSID;
 		
 		for (ScanResult result : results) {
+			timestamp = System.currentTimeMillis();
 			
+			level = result.level;
+			SSID = result.SSID;
+			BSSID = result.BSSID;
+			
+			for (DataOutputStream out : dosList){
+				try {
+					out.writeLong(timestamp);
+					out.writeInt(level);
+					out.writeUTF(SSID);
+					out.writeUTF(BSSID);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 		
 	}
-	
+
 	/**
-	 * Returns the list of output plugins this input plugin will want to write data to.
-	 * @return the list of output plugins this input plugin will want to write data to.
 	 * @override
 	 */
-	public Class[] getOutputClassList() {
-		return OUTPUT_CLASS_LIST;
+	public boolean connect(DataOutputStream dos) {
+		return dosList.add(dos);
 	}
 	
 	// ***********************************************************************************

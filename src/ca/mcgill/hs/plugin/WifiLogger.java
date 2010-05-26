@@ -1,9 +1,8 @@
 package ca.mcgill.hs.plugin;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.LinkedList;
 import java.util.List;
 
 import android.content.BroadcastReceiver;
@@ -28,7 +27,7 @@ public class WifiLogger extends InputPlugin{
 	private static int sleepIntervalMillisecs = 5000;
 	private WifiLoggerReceiver wlr;
 	private Context context;
-	
+		
 	/**
 	 * This is the basic constructor for the WifiLogger plugin. It has to be instantiated
 	 * before it is started, and needs to be passed a reference to a WifiManager, a Context

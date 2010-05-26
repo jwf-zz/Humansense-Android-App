@@ -1,6 +1,17 @@
 package ca.mcgill.hs.plugin;
 
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+import java.util.LinkedList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+
+import android.util.Log;
 
 
 /**
@@ -11,41 +22,38 @@ import java.io.DataInputStream;
  * @author Cicerone Cojocaru, Jonathan Pitre
  *
  */
-public class ScreenOutput implements OutputPlugin{
+public class ScreenOutput extends OutputPlugin{
 
-	private Thread coordinator;
 	private boolean running = false;
-	
-	/**
-	 * This is the basic constructor for the ScreenOutput plugin.
-	 */
-	public ScreenOutput(){
-		coordinator = createCoordinator();
-	}
-	
-	/**
-	 * Creates the thread for this plugin. Specifies the behaviour for the information
-	 * gathering.
-	 * 
-	 * @return the Thread for this plugin.
-	 */
-	private Thread createCoordinator(){
-		return new Thread(){
-			public void run(){
-				while (running){
-					
-				}
-			}
-		};
-	}
 
+	private final LinkedList<Thread> threadList = new LinkedList<Thread>();
+	
 	/**
 	 * Starts the appropriate threads and launches the plugin.
 	 * 
 	 * @override
 	 */
 	public void startPlugin() {
-		coordinator.start();
+		int i = 0;
+		for (final DataInputStream dis : disList){
+			threadList.add(new Thread(){
+				public void run(){
+					Log.i("Screen Output", "Thread Started!");
+					while (running){
+						try {
+							Log.i("Screen Output", ""+new Date(dis.readLong()).toString());
+							Log.i("Screen Output", "Level: "+dis.readInt());
+							Log.i("Screen Output", "SSID: "+dis.readUTF());
+							Log.i("Screen Output", "BSSID: "+dis.readUTF());
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			});
+			threadList.getLast().start();
+			i++;
+		}
 		running = true;
 	}
 	
@@ -56,13 +64,6 @@ public class ScreenOutput implements OutputPlugin{
 	 */
 	public void stopPlugin(){
 		running = false;
-	}
-
-	/**
-	 * @override
-	 */
-	public boolean connect(DataInputStream dis) {
-		return false;
 	}
 
 }

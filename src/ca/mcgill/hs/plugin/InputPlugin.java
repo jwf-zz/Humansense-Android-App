@@ -1,6 +1,7 @@
 package ca.mcgill.hs.plugin;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.util.LinkedList;
 
 /**
@@ -13,8 +14,8 @@ public abstract class InputPlugin implements Plugin{
 	
 	protected final LinkedList<DataOutputStream> dosList = new LinkedList<DataOutputStream>();
 	
-	public boolean connect(DataOutputStream dos) {
-		return dosList.add(dos);
+	public void connect(DataOutputStream dos) {
+		dosList.add(dos);
 	}
 
 }

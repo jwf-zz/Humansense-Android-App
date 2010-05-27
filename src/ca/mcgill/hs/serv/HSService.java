@@ -122,9 +122,8 @@ public class HSService extends Service{
 				Pipe p = Pipe.open();
 				DataOutputStream dos = new DataOutputStream(Channels.newOutputStream(p.sink()));
 				DataInputStream dis = new DataInputStream(Channels.newInputStream(p.source()));
-				//Log.i("Resource test", ""+getResources().getIdentifier("ca.mcgill.hs:xml/wifilogger", null, null));			
 				input.connect(dos);
-				output.connect(dis, setupConnectionInfo(input.getClass().getSimpleName().toLowerCase()));
+				output.connect(dis, setupConnectionInfo(input.getClass().getSimpleName()));
 			}
 		}
 	}
@@ -137,9 +136,10 @@ public class HSService extends Service{
 	 */
 	private LinkedList<Object> setupConnectionInfo(String inputClassName) throws XmlPullParserException, IOException{
 		LinkedList<Object> result = new LinkedList<Object>();
-		int identifier = getResources().getIdentifier("ca.mcgill.hs:xml/" + inputClassName, null, null);
+		int identifier = getResources().getIdentifier("ca.mcgill.hs:xml/" + inputClassName.toLowerCase(), null, null);
 		XmlResourceParser xrp = getResources().getXml(identifier);
 		Method m;
+		result.add(inputClassName);
 		
 		xrp.next();
 		int event = xrp.getEventType();
@@ -152,7 +152,10 @@ public class HSService extends Service{
 					String format = xrp.getAttributeValue(0);
 					xrp.next();
 					String varName = xrp.getText();		
-					generateReadMethod(format);
+					m = generateReadMethod(format);
+					result.add(format);
+					result.add(varName);
+					result.add(m);
 					xrp.next();
 					xrp.next();
 					event = xrp.getEventType();
@@ -170,31 +173,31 @@ public class HSService extends Service{
 		
 		try {
 			if (format.equals("String")){
-				result = DataInputStream.class.getMethod("readUTF", null);
+				result = DataInputStream.class.getMethod("readUTF");
 			}
 			else if (format.equals("int")){
-				result = DataInputStream.class.getMethod("readInt", null);
+				result = DataInputStream.class.getMethod("readInt");
 			}
 			else if (format.equals("float")){
-				result = DataInputStream.class.getMethod("readFloat", null);
+				result = DataInputStream.class.getMethod("readFloat");
 			}
 			else if (format.equals("double")){
-				result = DataInputStream.class.getMethod("readDouble", null);
+				result = DataInputStream.class.getMethod("readDouble");
 			}
 			else if (format.equals("long")){
-				result = DataInputStream.class.getMethod("readLong", null);
+				result = DataInputStream.class.getMethod("readLong");
 			}
 			else if (format.equals("byte")){
-				result = DataInputStream.class.getMethod("readByte", null);
+				result = DataInputStream.class.getMethod("readByte");
 			}
 			else if (format.equals("short")){
-				result = DataInputStream.class.getMethod("readShort", null);
+				result = DataInputStream.class.getMethod("readShort");
 			}
 			else if (format.equals("char")){
-				result = DataInputStream.class.getMethod("readChar", null);
+				result = DataInputStream.class.getMethod("readChar");
 			}
 			else if (format.equals("boolean")){
-				result = DataInputStream.class.getMethod("readBoolean", null);
+				result = DataInputStream.class.getMethod("readBoolean");
 			} else {
 				throw new NoSuchMethodException();
 			}

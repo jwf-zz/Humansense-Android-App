@@ -202,11 +202,8 @@ public class HSService extends Service{
 				throw new NoSuchMethodException();
 			}
 		} catch (SecurityException e) {
-			Log.e("METHOD", "SECURITY EXCEPTION, BIOTCH");
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NoSuchMethodException e) {
-			Log.e("METHOD", "NO SUCH METHOD RAAAGH");
 			e.printStackTrace();
 		}
 		

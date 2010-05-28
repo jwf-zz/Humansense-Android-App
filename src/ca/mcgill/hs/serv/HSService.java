@@ -2,14 +2,10 @@ package ca.mcgill.hs.serv;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.Pipe;
-import java.nio.channels.Pipe.SinkChannel;
-import java.nio.channels.Pipe.SourceChannel;
 import java.util.LinkedList;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -19,11 +15,9 @@ import ca.mcgill.hs.plugin.*;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
-import android.util.Log;
 
 public class HSService extends Service{
 	
@@ -72,6 +66,17 @@ public class HSService extends Service{
 		
 		//Instantiate input plugins.
 		addInputPlugins();
+		
+		//Setup input plugins
+		try {
+			for (InputPlugin input : inputPluginList){
+				input.generateCallStack(getInputInfo(input.getClass().getSimpleName()));
+			}
+		} catch (XmlPullParserException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 		//Instantiate output plugins
 		addOutputPlugins();
@@ -123,7 +128,7 @@ public class HSService extends Service{
 				DataOutputStream dos = new DataOutputStream(Channels.newOutputStream(p.sink()));
 				DataInputStream dis = new DataInputStream(Channels.newInputStream(p.source()));
 				input.connect(dos);
-				output.connect(dis, setupConnectionInfo(input.getClass().getSimpleName()));
+				output.connect(dis, getInputInfo(input.getClass().getSimpleName()));
 			}
 		}
 	}
@@ -134,7 +139,7 @@ public class HSService extends Service{
 	 * @param inputClassName
 	 * @return
 	 */
-	private LinkedList<Object> setupConnectionInfo(String inputClassName) throws XmlPullParserException, IOException{
+	private LinkedList<Object> getInputInfo(String inputClassName) throws XmlPullParserException, IOException{
 		LinkedList<Object> result = new LinkedList<Object>();
 		int identifier = getResources().getIdentifier("ca.mcgill.hs:xml/" + inputClassName.toLowerCase(), null, null);
 		XmlResourceParser xrp = getResources().getXml(identifier);

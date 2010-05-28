@@ -103,40 +103,18 @@ public class WifiLogger extends InputPlugin{
 	 * DataOutputStreams.
 	 */
 	private void processResults(List<ScanResult> results){
-		long timestamp;
-		int level;
-		String SSID, BSSID;
+		Object[] scanResult = new Object[4];
 		
 		for (ScanResult result : results) {
-			timestamp = System.currentTimeMillis();
+			scanResult[0] = System.currentTimeMillis();
 			
-			level = result.level;
-			SSID = result.SSID;
-			BSSID = result.BSSID;	
+			scanResult[1] = result.level;
+			scanResult[2] = result.SSID;
+			scanResult[3] = result.BSSID;	
 			
-			write(timestamp, level, SSID, BSSID);
+			write(scanResult);
 		}
 		
-	}
-	
-	/**
-	 * Writes the results of the Wifi scan to every DataOutputStream
-	 * @param timestamp the time of scan completion
-	 * @param level	the level of a particular result
-	 * @param SSID	the SSID of the result
-	 * @param BSSID	the BSSID of the result
-	 */
-	private void write(long timestamp, int level, String SSID, String BSSID){
-		for (DataOutputStream out : dosList){
-			try {
-				out.writeLong(timestamp);
-				out.writeInt(level);
-				out.writeUTF(SSID);
-				out.writeUTF(BSSID);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 	
 	// ***********************************************************************************

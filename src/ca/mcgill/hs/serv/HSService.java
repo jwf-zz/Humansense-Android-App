@@ -46,7 +46,7 @@ public class HSService extends Service{
 	}
 	
 	/**
-	 * Called when the service is stopped. Stops the service.
+	 * Called when the service is stopped. Also stops all plugins.
 	 */
 	public void onDestroy(){
 		super.onDestroy();
@@ -136,8 +136,8 @@ public class HSService extends Service{
 	/**
 	 * Generates a linked list of method calls appropriate to an input plugin. The list is to be passed to an output plugin
 	 * to inform it of the variable types it should be reading from its input stream.
-	 * @param inputClassName
-	 * @return
+	 * @param inputClassName the Class name of the input plugin whose XML meta file we are parsing.
+	 * @return a LinkedList of Objects containing the InputPlugin Class name, data format types, data variable names, and Method calls.
 	 */
 	private LinkedList<Object> getInputInfo(String inputClassName) throws XmlPullParserException, IOException{
 		LinkedList<Object> result = new LinkedList<Object>();
@@ -173,6 +173,12 @@ public class HSService extends Service{
 		return result;
 	}
 	
+	/**
+	 * Generates a read____() Method appropriate to the type of data being read. This Method will be called
+	 * on the DataInputStream by all OutputPlugins connected to the InputPlugin that is broadcasting the data.
+	 * @param format a String representing the data format. e.g. long, int, byte, etc.
+	 * @return a read____() Method appropriate for reading the data type specified by format.
+	 */
 	private Method generateReadMethod(String format){
 		Method result = null;
 		

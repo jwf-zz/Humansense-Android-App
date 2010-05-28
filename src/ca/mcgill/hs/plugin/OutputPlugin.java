@@ -78,12 +78,12 @@ public abstract class OutputPlugin implements Plugin {
 			Thread t = new Thread(){
 				private final DataInputStream stream = dis;
 				private final int identifier = i;
-				private final LinkedList<Method> methodCalls = methodListList.get(identifier);
+				private final LinkedList<Method> callStack = methodListList.get(identifier);
 				public void run(){
-					Log.i(getClass().getSimpleName(), "Thread Started!");
+					Log.i(OutputPlugin.class.getSimpleName(), "Thread Started!");
 					//Continually listen for data while the thread runs.
 					while (running){
-						onDataReady(read(stream, methodCalls), identifier);
+						onDataReady(read(stream, callStack), identifier);
 					}
 				}
 			};

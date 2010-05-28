@@ -14,31 +14,18 @@ import android.net.wifi.WifiManager;
 import android.util.Log;
 
 /**
- * Logs the Wifi data coming from the Android's sensors. This plugin launches a thread, scans the area
- * for available Wifi connections, and then processes the results recieved from the WifiManager whenever
- * they are available.
+ * Reads Wifi data.
  * 
  * @author Cicerone Cojocaru, Jonathan Pitre
  *
  */
 public class WifiLogger extends InputPlugin{
 
-	//A reference to the running Thread for this input plugin.
 	private Thread wifiLoggerThread;
-	
-	//Boolean of the current state of the plugin. If true, plugin is currently running.
 	private boolean threadRunning = false;
-	
-	//A reference to the android's WifiManager
 	private WifiManager wm;
-	
-	//The interval between wifi scans, in milliseconds
-	private static long sleepIntervalMillisecs = 5000;
-	
-	//A reference to the WifiLoggerReceiver which will recieve the wifi data.
+	private static int sleepIntervalMillisecs = 5000;
 	private WifiLoggerReceiver wlr;
-	
-	//A reference to the Context in which this InputPlugin will be instantiated in.
 	private Context context;
 		
 	/**
@@ -58,6 +45,7 @@ public class WifiLogger extends InputPlugin{
 	/**
 	 * This method starts the WifiLogger plugin and launches all appropriate threads. It
 	 * also registers a new WifiLoggerReceiver to scan for possible network connections.
+	 * This method must be overridden in all input plugins.
 	 * 
 	 * @override
 	 */
@@ -87,6 +75,7 @@ public class WifiLogger extends InputPlugin{
 
 	/**
 	 * This method stops the thread if it is running, and does nothing if it is not.
+	 * This method must be overridden in all input plugins.
 	 * 
 	 * @override
 	 */
@@ -94,27 +83,51 @@ public class WifiLogger extends InputPlugin{
 		if (threadRunning){
 			threadRunning = false;
 			context.unregisterReceiver(wlr);
-			Log.i("WifiLogger", "Unregistered receiver.");
+			Log.i("WifiLogger", "Unegistered receiver.");
 		}
 	}
 	
 	/**
 	 * Processes the results sent by the Wifi scan and writes them to the
-	 * DataOutputStreams.
+	 * DataOutputStream.
+	 * 
+	 * @throws IOException 
 	 */
 	private void processResults(List<ScanResult> results){
-		Object[] scanResult = new Object[4];
+		long timestamp;
+		int level;
+		String SSID, BSSID;
 		
 		for (ScanResult result : results) {
-			scanResult[0] = System.currentTimeMillis();
+			timestamp = System.currentTimeMillis();
 			
-			scanResult[1] = result.level;
-			scanResult[2] = result.SSID;
-			scanResult[3] = result.BSSID;	
+			level = result.level;
+			SSID = result.SSID;
+			BSSID = result.BSSID;	
 			
-			write(scanResult);
+			write(timestamp, level, SSID, BSSID);
 		}
 		
+	}
+	
+	/**
+	 * Writes the results of the Wifi scan to every DataOutputStream
+	 * @param timestamp the time of scan completion
+	 * @param level	the level of a particular result
+	 * @param SSID	the SSID of the result
+	 * @param BSSID	the BSSID of the result
+	 */
+	private void write(long timestamp, int level, String SSID, String BSSID){
+		for (DataOutputStream out : dosList){
+			try {
+				out.writeLong(timestamp);
+				out.writeInt(level);
+				out.writeUTF(SSID);
+				out.writeUTF(BSSID);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	// ***********************************************************************************
@@ -122,8 +135,8 @@ public class WifiLogger extends InputPlugin{
 	// ***********************************************************************************
 	
 	/**
-	 * Jordan Frank's WifiLoggerReceiver (hsandroidv1.ca.mcgill.cs.humansense.hsandroid.service) and
-	 * modified for this plugin with his permission.
+	 * Taken from Jordan Frank (hsandroidv1.ca.mcgill.cs.humansense.hsandroid.service) and
+	 * modified for this plugin.
 	 */
 	private class WifiLoggerReceiver extends BroadcastReceiver {
 		

@@ -1,13 +1,12 @@
 package ca.mcgill.hs.plugin;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 
 /**
- * A simple interface detailing the behaviour of data collecting plugins.
+ * Abstract class to be extended by all InputPlugins. Provides an interface for using InputPlugins.
  * 
  * @author Cicerone Cojocaru, Jonathan Pitre
  *
@@ -17,6 +16,7 @@ public abstract class InputPlugin implements Plugin{
 	//List of DataOutputStreams that the plugin will write to.
 	protected final LinkedList<DataOutputStream> dosList = new LinkedList<DataOutputStream>();
 	
+	//List of methods to be called in order when writing data to the OutputStream.
 	protected final LinkedList<Method> callStack = new LinkedList<Method>();
 	
 	/**
@@ -27,6 +27,11 @@ public abstract class InputPlugin implements Plugin{
 		dosList.add(dos);
 	}
 	
+	/**
+	 * Writes the dataResult object array to every DataOutputStream connected to this InputPlugin using
+	 * the appropriate methods from the callStack.
+	 * @param dataResult the Object array of data to be written.
+	 */
 	protected void write(Object[] dataResult){
 		int i = 0;
 		for (Method m : callStack){
@@ -45,24 +50,37 @@ public abstract class InputPlugin implements Plugin{
 		}
 	}
 	
+	/**
+	 * Searches the inputInfo for data formats and saves them into formatList, then passes formatList to
+	 * setCallStack() to generate a Method call stack.
+	 * Note that inputInfo contains other things besides Strings representing data types. It also contains
+	 * the names of variables and read() Method calls for use in OutputPlugins, so the list is first cut up
+	 * to remove everything except the format Strings.
+	 * @param inputInfo the input info retrieved from the plugin's XML file.
+	 */
 	public void generateCallStack(LinkedList<Object> inputInfo){
-		//The list of format strings
+		//The list of format Strings.
 		LinkedList<String> formatList = new LinkedList<String>();
 		
-		//Remove first unneeded element (class name)
+		//For details on exactly what is being removed and why see HSService.getInputInfo().
+		//Remove first unneeded element (class name).
 		inputInfo.remove();
 		while (!inputInfo.isEmpty()){
-			//get format (what we want)
+			//Get the data format String.
 			formatList.add((String) inputInfo.remove());
-			//remove the name String and the Method
+			//Remove the name String and the Method.
 			inputInfo.remove();
 			inputInfo.remove();
 		}
 		
-		//generate call stack
+		//Generate the call stack.
 		setCallStack(formatList);
 	}
 	
+	/**
+	 * Populates the call stack list based on the formatList.
+	 * @param formatList the Linked List of data formats that will be written to the output data stream.
+	 */
 	private void setCallStack(LinkedList<String> formatList){
 		Class[] arg = new Class[1];
 		for (String format : formatList){

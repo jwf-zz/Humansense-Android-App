@@ -14,18 +14,31 @@ import android.net.wifi.WifiManager;
 import android.util.Log;
 
 /**
- * Logs the Wifi data. Mostly a test plugin for now.
+ * Logs the Wifi data coming from the Android's sensors. This plugin launches a thread, scans the area
+ * for available Wifi connections, and then processes the results recieved from the WifiManager whenever
+ * they are available.
  * 
  * @author Cicerone Cojocaru, Jonathan Pitre
  *
  */
 public class WifiLogger extends InputPlugin{
 
+	//A reference to the running Thread for this input plugin.
 	private Thread wifiLoggerThread;
+	
+	//Boolean of the current state of the plugin. If true, plugin is currently running.
 	private boolean threadRunning = false;
+	
+	//A reference to the android's WifiManager
 	private WifiManager wm;
-	private static int sleepIntervalMillisecs = 5000;
+	
+	//The interval between wifi scans, in milliseconds
+	private static long sleepIntervalMillisecs = 5000;
+	
+	//A reference to the WifiLoggerReceiver which will recieve the wifi data.
 	private WifiLoggerReceiver wlr;
+	
+	//A reference to the Context in which this InputPlugin will be instantiated in.
 	private Context context;
 		
 	/**
@@ -81,15 +94,13 @@ public class WifiLogger extends InputPlugin{
 		if (threadRunning){
 			threadRunning = false;
 			context.unregisterReceiver(wlr);
-			Log.i("WifiLogger", "Unegistered receiver.");
+			Log.i("WifiLogger", "Unregistered receiver.");
 		}
 	}
 	
 	/**
 	 * Processes the results sent by the Wifi scan and writes them to the
-	 * DataOutputStream.
-	 * 
-	 * @throws IOException 
+	 * DataOutputStreams.
 	 */
 	private void processResults(List<ScanResult> results){
 		long timestamp;
@@ -133,8 +144,8 @@ public class WifiLogger extends InputPlugin{
 	// ***********************************************************************************
 	
 	/**
-	 * Taken from Jordan Frank (hsandroidv1.ca.mcgill.cs.humansense.hsandroid.service) and
-	 * modified for this plugin.
+	 * Jordan Frank's WifiLoggerReceiver (hsandroidv1.ca.mcgill.cs.humansense.hsandroid.service) and
+	 * modified for this plugin with his permission.
 	 */
 	private class WifiLoggerReceiver extends BroadcastReceiver {
 		

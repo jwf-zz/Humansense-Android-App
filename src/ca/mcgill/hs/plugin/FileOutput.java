@@ -34,23 +34,16 @@ public class FileOutput extends OutputPlugin{
 					Log.i("Output Dir", "ARV: DIRECTORY EXISTS!");
 				}
 				Date d = new Date(System.currentTimeMillis());
-				File fh = new File(j, getSourceName(sourceId) + "" + sourceId + "" + d.getHours() + "" + d.getMinutes() + "" + d.getSeconds()+".log");
+				File fh = new File(j, getSourceName(sourceId) + "" + sourceId + "" + d.getHours() + "" + d.getMinutes() + "" + d.getSeconds()+"-wifiloc.log");
 				if (!fh.exists()) fh.createNewFile();
 				Log.i("File Output", "File to write: "+fh.getName());
-				/*fileHandles.put(sourceId, new DataOutputStream(
+				fileHandles.put(sourceId, new DataOutputStream(
 						new BufferedOutputStream(new GZIPOutputStream(
 								new FileOutputStream(fh), 1 * 1024 // Buffer Size
-						))));*/
-				fileHandles.put(sourceId, new DataOutputStream(
-						new FileOutputStream(fh)
-						));
+						))));
 			}
 			for (int i = 0; i < data.length; i++){
-				if (data[i] instanceof String){
-					fileHandles.get(sourceId).writeChars(data[i]+"\n");
-				} else {
-					fileHandles.get(sourceId).writeChars(data[i].toString()+"\n");
-				}
+				fileHandles.get(sourceId).writeUTF(data[i].toString());
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

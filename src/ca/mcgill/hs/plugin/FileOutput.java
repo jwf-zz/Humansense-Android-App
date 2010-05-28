@@ -15,9 +15,12 @@ import android.util.Log;
 
 public class FileOutput extends OutputPlugin{
 	
+	//HashMap used for keeping file handles. There is one file associated with each input plugin connected.
 	private final HashMap<Integer, DataOutputStream> fileHandles = new HashMap<Integer, DataOutputStream>();
 
-	@Override
+	/**
+	 * @override
+	 */
 	void onDataReady(Object[] data, int sourceId) {
 		try {
 			if (!fileHandles.containsKey(sourceId)){
@@ -31,16 +34,23 @@ public class FileOutput extends OutputPlugin{
 					Log.i("Output Dir", "ARV: DIRECTORY EXISTS!");
 				}
 				Date d = new Date(System.currentTimeMillis());
-				File fh = new File(j, getSourceName(sourceId) + "" + sourceId + "" + d.getHours() + "" + d.getMinutes() + "" + d.getSeconds()+".bin");
+				File fh = new File(j, getSourceName(sourceId) + "" + sourceId + "" + d.getHours() + "" + d.getMinutes() + "" + d.getSeconds()+".log");
 				if (!fh.exists()) fh.createNewFile();
 				Log.i("File Output", "File to write: "+fh.getName());
-				fileHandles.put(sourceId, new DataOutputStream(
+				/*fileHandles.put(sourceId, new DataOutputStream(
 						new BufferedOutputStream(new GZIPOutputStream(
 								new FileOutputStream(fh), 1 * 1024 // Buffer Size
-						))));
+						))));*/
+				fileHandles.put(sourceId, new DataOutputStream(
+						new FileOutputStream(fh)
+						));
 			}
 			for (int i = 0; i < data.length; i++){
-				fileHandles.get(sourceId).writeUTF(data[i].toString());
+				if (data[i] instanceof String){
+					fileHandles.get(sourceId).writeChars(data[i]+"\n");
+				} else {
+					fileHandles.get(sourceId).writeChars(data[i].toString()+"\n");
+				}
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

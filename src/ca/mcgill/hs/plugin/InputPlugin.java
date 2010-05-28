@@ -4,7 +4,7 @@ import java.io.DataOutputStream;
 import java.util.LinkedList;
 
 /**
- * Abstract class to be extended by all InputPlugins. Provides an interface for using InputPlugins.
+ * A simple interface detailing the behaviour of data collecting plugins.
  * 
  * @author Cicerone Cojocaru, Jonathan Pitre
  *

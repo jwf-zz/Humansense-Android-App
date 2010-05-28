@@ -28,8 +28,6 @@ import android.util.Log;
 public class HSService extends Service{
 	
 	private static boolean isRunning;
-	
-	//Lists of input and output plugins that the service is managing.
 	final private LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
 	final private LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
 	
@@ -134,7 +132,7 @@ public class HSService extends Service{
 	 * Generates a linked list of method calls appropriate to an input plugin. The list is to be passed to an output plugin
 	 * to inform it of the variable types it should be reading from its input stream.
 	 * @param inputClassName
-	 * @return a linked list of method calls that the OutputPlugin will call in order on its InputStream to retrieve data.
+	 * @return
 	 */
 	private LinkedList<Object> setupConnectionInfo(String inputClassName) throws XmlPullParserException, IOException{
 		LinkedList<Object> result = new LinkedList<Object>();

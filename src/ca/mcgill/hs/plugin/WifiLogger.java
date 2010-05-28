@@ -81,7 +81,7 @@ public class WifiLogger extends InputPlugin{
 		if (threadRunning){
 			threadRunning = false;
 			context.unregisterReceiver(wlr);
-			Log.i("WifiLogger", "Unegistered receiver.");
+			Log.i("WifiLogger", "Unregistered receiver.");
 		}
 	}
 	

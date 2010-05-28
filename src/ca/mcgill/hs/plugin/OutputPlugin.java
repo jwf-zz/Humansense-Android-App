@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import android.util.Log;
 
 /**
- * A simple interface detailing the behaviour of data printing plugins.
+ * Abstract class to be extended by all OutputPlugins. Provides an interface for using OutputPlugins.
  * 
  * @author Cicerone Cojocaru, Jonathan Pitre
  *

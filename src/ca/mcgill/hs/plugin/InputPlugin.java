@@ -5,6 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 
+import ca.mcgill.hs.serv.HSService;
+
 /**
  * Abstract class to be extended by all InputPlugins. Provides an interface for using InputPlugins.
  * 
@@ -19,6 +21,13 @@ public abstract class InputPlugin implements Plugin{
 	//List of methods to be called in order when writing data to the OutputStream.
 	protected final LinkedList<Method> callStack = new LinkedList<Method>();
 	
+	private final int[] formatTypes = { HSService.STRING, HSService.INT, HSService.FLOAT, HSService.DOUBLE,
+			HSService.LONG, HSService.SHORT, HSService.BYTE, HSService.CHAR, HSService.BOOLEAN, HSService.ARRAY};
+	private final Class[] formatClasses = { String.class, Integer.TYPE, Float.TYPE, Double.TYPE, Long.TYPE,
+			Short.TYPE, Byte.TYPE, Character.TYPE, Boolean.TYPE, Integer.TYPE};
+	private final String[] formatCalls = { "writeUTF", "writeInt", "writeFloat", "writeDouble", "writeLong",
+			"writeShort", "writeByte", "writeChar", "writeBoolean", "writeInt"};
+
 	/**
 	 * Adds the given DataOutputStream to the list of DataOutputStreams that the plugin will write to.
 	 * @param dos the DataOutputStream to add to the list.

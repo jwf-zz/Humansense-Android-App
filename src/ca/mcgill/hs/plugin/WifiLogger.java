@@ -1,7 +1,5 @@
 package ca.mcgill.hs.plugin;
 
-import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -23,10 +21,10 @@ public class WifiLogger extends InputPlugin{
 
 	private Thread wifiLoggerThread;
 	private boolean threadRunning = false;
-	private WifiManager wm;
+	private final WifiManager wm;
 	private static int sleepIntervalMillisecs = 5000;
 	private WifiLoggerReceiver wlr;
-	private Context context;
+	private final Context context;
 		
 	/**
 	 * This is the basic constructor for the WifiLogger plugin. It has to be instantiated

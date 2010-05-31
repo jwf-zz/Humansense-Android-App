@@ -25,6 +25,17 @@ public class HSService extends Service{
 	final private LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
 	final private LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
 	
+	public static final int STRING = 0x1;
+	public static final int INT = 0x2;
+	public static final int FLOAT = 0x3;
+	public static final int DOUBLE = 0x4;
+	public static final int LONG = 0x5;
+	public static final int SHORT = 0x6;
+	public static final int BYTE = 0x7;
+	public static final int CHAR = 0x8;
+	public static final int BOOLEAN = 0x9;
+	public static final int ARRAY = 0xA;
+	
 	/**
 	 * Returns a boolean indicating if the service is running or not.
 	 * @return true if the service is running and false otherwise.
@@ -94,9 +105,7 @@ public class HSService extends Service{
 		
 		//Start output plugins.
 		for (OutputPlugin plugin : outputPluginList) plugin.startPlugin();
-		
-		//Connect inout and output plugins.
-				
+						
 		isRunning = true;
 		
 		//Update button
@@ -155,7 +164,7 @@ public class HSService extends Service{
 				xrp.next();
 				event = xrp.getEventType();
 				while (!(event == XmlPullParser.END_TAG && xrp.getName().equals("schema"))){
-					String format = xrp.getAttributeValue(0);
+					int format = getFormatCode(xrp.getAttributeValue(0));
 					xrp.next();
 					String varName = xrp.getText();		
 					m = generateReadMethod(format);
@@ -174,43 +183,81 @@ public class HSService extends Service{
 		return result;
 	}
 	
+	
+	public static int getFormatCode(String format){
+		if (format.equals("String")){
+			return STRING;
+		}
+		else if (format.equals("int")){
+			return INT;
+		}
+		else if (format.equals("float")){
+			return FLOAT;
+		}
+		else if (format.equals("double")){
+			return DOUBLE;
+		}
+		else if (format.equals("long")){
+			return LONG;
+		}
+		else if (format.equals("byte")){
+			return BYTE;
+		}
+		else if (format.equals("short")){
+			return SHORT;
+		}
+		else if (format.equals("char")){
+			return CHAR;
+		}
+		else if (format.equals("boolean")){
+			return BOOLEAN;
+		} else {
+			return 0xF;	//0xF for failure to find correct code
+		}
+	}
+	
 	/**
 	 * Generates a read____() Method appropriate to the type of data being read. This Method will be called
 	 * on the DataInputStream by all OutputPlugins connected to the InputPlugin that is broadcasting the data.
 	 * @param format a String representing the data format. e.g. long, int, byte, etc.
 	 * @return a read____() Method appropriate for reading the data type specified by format.
 	 */
-	private Method generateReadMethod(String format){
+	private Method generateReadMethod(int format){
 		Method result = null;
 		
 		try {
-			if (format.equals("String")){
+			switch (format){
+			case STRING:
 				result = DataInputStream.class.getMethod("readUTF");
-			}
-			else if (format.equals("int")){
+				break;
+			case INT:
 				result = DataInputStream.class.getMethod("readInt");
-			}
-			else if (format.equals("float")){
+				break;
+			case FLOAT:
 				result = DataInputStream.class.getMethod("readFloat");
-			}
-			else if (format.equals("double")){
+				break;
+			case DOUBLE:
 				result = DataInputStream.class.getMethod("readDouble");
-			}
-			else if (format.equals("long")){
+				break;
+			case LONG:
 				result = DataInputStream.class.getMethod("readLong");
-			}
-			else if (format.equals("byte")){
-				result = DataInputStream.class.getMethod("readByte");
-			}
-			else if (format.equals("short")){
+				break;
+			case SHORT:
 				result = DataInputStream.class.getMethod("readShort");
-			}
-			else if (format.equals("char")){
+				break;
+			case BYTE:
+				result = DataInputStream.class.getMethod("readByte");
+				break;
+			case CHAR:
 				result = DataInputStream.class.getMethod("readChar");
-			}
-			else if (format.equals("boolean")){
+				break;
+			case BOOLEAN:
 				result = DataInputStream.class.getMethod("readBoolean");
-			} else {
+				break;
+			case ARRAY:
+				result = DataInputStream.class.getMethod("readInt");
+				break;
+			default:
 				throw new NoSuchMethodException();
 			}
 		} catch (SecurityException e) {

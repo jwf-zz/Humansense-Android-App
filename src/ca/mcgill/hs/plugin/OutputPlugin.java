@@ -27,7 +27,7 @@ public abstract class OutputPlugin implements Plugin {
 	
 	//ArrayList of names of the plugins attached to the OutputPlugin.
 	private final ArrayList<String> inputPluginList = new ArrayList<String>();
-	
+		
 	//Boolean of the current state of the plugin. If true, plugin is currently running.
 	private boolean running = false;
 	
@@ -91,7 +91,7 @@ public abstract class OutputPlugin implements Plugin {
 			index++;
 		}
 		running = true;
-		onPluginStart();
+		onPluginStart();	//check this should maybe be sooner, also add onBeforePluginStart()
 	}
 	
 	/**

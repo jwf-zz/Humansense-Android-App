@@ -164,16 +164,20 @@ public class HSService extends Service{
 				xrp.next();
 				event = xrp.getEventType();
 				while (!(event == XmlPullParser.END_TAG && xrp.getName().equals("schema"))){
-					int format = getFormatCode(xrp.getAttributeValue(0));
-					xrp.next();
-					String varName = xrp.getText();		
-					m = generateReadMethod(format);
-					result.add(format);
-					result.add(varName);
-					result.add(m);
-					xrp.next();
-					xrp.next();
-					event = xrp.getEventType();
+					try {
+						int format = getFormatCode(xrp.getAttributeValue(0));
+						xrp.next();
+						String varName = xrp.getText();		
+						m = generateReadMethod(format);
+						result.add(format);
+						result.add(varName);
+						result.add(m);
+						xrp.next();
+						xrp.next();
+						event = xrp.getEventType();
+					} catch (XMLFormatException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 			xrp.next();
@@ -184,7 +188,7 @@ public class HSService extends Service{
 	}
 	
 	
-	public static int getFormatCode(String format){
+	public static int getFormatCode(String format) throws XMLFormatException{
 		if (format.equals("String")){
 			return STRING;
 		}
@@ -212,7 +216,7 @@ public class HSService extends Service{
 		else if (format.equals("boolean")){
 			return BOOLEAN;
 		} else {
-			return 0xF;	//0xF for failure to find correct code
+			throw new XMLFormatException();
 		}
 	}
 	

@@ -69,14 +69,14 @@ public abstract class InputPlugin implements Plugin{
 	 */
 	public void generateCallStack(LinkedList<Object> inputInfo){
 		//The list of format Strings.
-		LinkedList<String> formatList = new LinkedList<String>();
+		LinkedList<Integer> formatList = new LinkedList<Integer>();
 		
 		//For details on exactly what is being removed and why see HSService.getInputInfo().
 		//Remove first unneeded element (class name).
 		inputInfo.remove();
 		while (!inputInfo.isEmpty()){
 			//Get the data format String.
-			formatList.add((String) inputInfo.remove());
+			formatList.add((Integer) inputInfo.remove());
 			//Remove the name String and the Method.
 			inputInfo.remove();
 			inputInfo.remove();
@@ -90,48 +90,21 @@ public abstract class InputPlugin implements Plugin{
 	 * Populates the call stack list based on the formatList.
 	 * @param formatList the Linked List of data formats that will be written to the output data stream.
 	 */
-	private void setCallStack(LinkedList<String> formatList){
+	private void setCallStack(LinkedList<Integer> formatList){
 		Class[] arg = new Class[1];
-		for (String format : formatList){
+		boolean methodFound = false;
+		for (int format : formatList){
+			methodFound = false;
 			try {
-				if (format.equals("String")){
-					arg[0] = String.class;
-					callStack.add(DataOutputStream.class.getMethod("writeUTF", arg));
+				for (int i = 0; i < formatTypes.length; i++){
+					if (format == formatTypes[i]){
+						arg[0] = formatClasses[i];
+						callStack.add(DataOutputStream.class.getMethod(formatCalls[i], arg));
+						methodFound = true;
+						break;
+					}
 				}
-				else if (format.equals("int")){
-					arg[0] = Integer.TYPE;
-					callStack.add(DataOutputStream.class.getMethod("writeInt", arg));
-				}
-				else if (format.equals("float")){
-					arg[0] = Float.TYPE;
-					callStack.add(DataOutputStream.class.getMethod("writeFloat", arg));
-				}
-				else if (format.equals("double")){
-					arg[0] = Double.TYPE;
-					callStack.add(DataOutputStream.class.getMethod("writeDouble", arg));
-				}
-				else if (format.equals("long")){
-					arg[0] = Long.TYPE;
-					callStack.add(DataOutputStream.class.getMethod("writeLong", arg));
-				}
-				else if (format.equals("byte")){
-					arg[0] = Byte.TYPE;
-					callStack.add(DataOutputStream.class.getMethod("writeByte", arg));
-				}
-				else if (format.equals("short")){
-					arg[0] = Short.TYPE;
-					callStack.add(DataOutputStream.class.getMethod("writeShort", arg));
-				}
-				else if (format.equals("char")){
-					arg[0] = Character.TYPE;
-					callStack.add(DataOutputStream.class.getMethod("writeChar", arg));
-				}
-				else if (format.equals("boolean")){
-					arg[0] = Boolean.TYPE;
-					callStack.add(DataOutputStream.class.getMethod("writeBoolean", arg)) ;
-				} else {
-					throw new NoSuchMethodException();
-				}
+				if (!methodFound) throw new NoSuchMethodException();
 			} catch (SecurityException e) {
 				e.printStackTrace();
 			} catch (NoSuchMethodException e) {

@@ -21,7 +21,7 @@ public abstract class OutputPlugin implements Plugin {
 	
 	//ArrayLists of Linked Lists that hold the data formats, data names and method invocations needed to read
 	//these data from the InputStreams that connect to this OutputPlugin.
-	private final ArrayList<LinkedList<String>> formatListList = new ArrayList<LinkedList<String>>();
+	private final ArrayList<LinkedList<Integer>> formatListList = new ArrayList<LinkedList<Integer>>();
 	private final ArrayList<LinkedList<String>> nameListList = new ArrayList<LinkedList<String>>();
 	private final ArrayList<LinkedList<Method>> methodListList = new ArrayList<LinkedList<Method>>();
 	
@@ -44,7 +44,7 @@ public abstract class OutputPlugin implements Plugin {
 		/*Linked Lists containing info about the type of data this OutputPlugin will listen to.
 		Data formats, variable names and the list of Methods that must be invoked in order to read these
 		exact types are stored.*/
-		LinkedList<String> formatList = new LinkedList<String>();
+		LinkedList<Integer> formatList = new LinkedList<Integer>();
 		LinkedList<String> nameList = new LinkedList<String>();
 		LinkedList<Method> methodList = new LinkedList<Method>();
 		
@@ -56,7 +56,7 @@ public abstract class OutputPlugin implements Plugin {
 		
 		//Fill each list with the appropriate data from the connectionInfo list.
 		while (!connectionInfo.isEmpty()){
-			formatList.add((String) connectionInfo.remove());
+			formatList.add((Integer) connectionInfo.remove());
 			nameList.add((String) connectionInfo.remove());
 			methodList.add((Method) connectionInfo.remove());
 		}
@@ -140,7 +140,7 @@ public abstract class OutputPlugin implements Plugin {
 	 * @param sourceId the Id number of the thread whose associated InputPlugin data format list we want.
 	 * @return the data format list of the InputPlugin associated with the thread indexed by this sourceId.
 	 */
-	protected final LinkedList<String> getDataFormat(int sourceId){
+	protected final LinkedList<Integer> getDataFormat(int sourceId){
 		return formatListList.get(sourceId);
 	}
 	

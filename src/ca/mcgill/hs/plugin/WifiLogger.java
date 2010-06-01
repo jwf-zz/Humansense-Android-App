@@ -92,24 +92,23 @@ public class WifiLogger extends InputPlugin{
 	 * @throws IOException 
 	 */
 	private void processResults(List<ScanResult> results){
-		long timestamp;
-		int level;
-		String SSID, BSSID;
-		Object[] data = new Object[4];
+		Object[] data = new Object[2 + (results.size()*3)];
+		
+		data[0] = System.currentTimeMillis();
+		data[1] = results.size();
+
+		int i = 2;
 		
 		for (ScanResult result : results) {
-			timestamp = System.currentTimeMillis();
-			data[0] = timestamp;
-			
-			level = result.level;
-			data[1] = level;
-			SSID = result.SSID;
-			data[2] = SSID;
-			BSSID = result.BSSID;
-			data[3] = BSSID;
-			
-			write(data);
+			data[i] = result.level;
+			i++;
+			data[i] = result.SSID;
+			i++;
+			data[i] = result.BSSID;
+			i++;
 		}
+		
+		write(data);
 		
 	}
 	

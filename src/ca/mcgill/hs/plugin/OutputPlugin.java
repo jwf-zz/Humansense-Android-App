@@ -18,6 +18,7 @@ public abstract class OutputPlugin implements Plugin {
 	
 	//Linked List of data input streams that each thread will read from.
 	private final LinkedList<ObjectInputStream> oisList = new LinkedList<ObjectInputStream>();
+	private final LinkedList<Thread> threads = new LinkedList<Thread>();
 				
 	//Boolean of the current state of the plugin. If true, plugin is currently running.
 	private boolean running = false;
@@ -58,11 +59,12 @@ public abstract class OutputPlugin implements Plugin {
 					}
 				}
 			};
-			t.start();
+			threads.add(t);
 			index++;
 		}
-		onPluginStart();
 		running = true;
+		for (Thread t : threads) t.start();
+		onPluginStart();
 	}
 		
 	/**

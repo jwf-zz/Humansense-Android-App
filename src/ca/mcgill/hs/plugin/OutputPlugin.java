@@ -59,8 +59,8 @@ public abstract class OutputPlugin implements Plugin {
 			t.start();
 			index++;
 		}
+		onPluginStart();
 		running = true;
-		onPluginStart();	//check this should maybe be sooner, also add onBeforePluginStart()
 	}
 		
 	/**

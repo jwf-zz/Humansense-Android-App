@@ -1,7 +1,6 @@
 package ca.mcgill.hs.plugin;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.List;
 
 import android.content.BroadcastReceiver;

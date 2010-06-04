@@ -22,9 +22,11 @@ public abstract class OutputPlugin implements Plugin {
 	//Boolean of the current state of the plugin. If true, plugin is currently running.
 	private boolean running = false;
 	
-	
+	/**
+	 * Adds the given ObjectInputStream to the plugin's list of ObjectInputStreams.
+	 * @param ois the ObjectInputStream to add.
+	 */
 	public final void connect(ObjectInputStream ois){
-		//Add this DataInputStream to the plugin's list of DataInputStreams.
 		oisList.add(ois);
 	}
 	
@@ -33,7 +35,7 @@ public abstract class OutputPlugin implements Plugin {
 	 */
 	public final void startPlugin() {
 		int index = 0;
-		//For each DataInputStream this OutputPlugin will listen to, start a new thread and enumerate it.
+		//For each ObjectInputStream this OutputPlugin will listen to, start a new thread and enumerate it.
 		for (final ObjectInputStream ois : oisList){
 			final int i = index;
 			Thread t = new Thread(){
@@ -81,6 +83,11 @@ public abstract class OutputPlugin implements Plugin {
 	 */
 	protected void onPluginStop(){}
 	
+	/**
+	 * Called when there is data available for this plugin.
+	 * @param dp the DataPacket that this plugin is receiving.
+	 * @param sourceId the ID of the input plugin that sent this DataPacket.
+	 */
 	abstract void onDataReady(DataPacket dp, int sourceId);
 
 }

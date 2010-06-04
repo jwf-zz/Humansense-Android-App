@@ -3,8 +3,10 @@
 	<pluginName>WifiLogger</pluginName>
 	<schema>
 		<attr type="long">timestamp</attr>
-		<attr type="int">level</attr>
-		<attr type="String">SSID</attr>
-		<attr type="String">BSSID</attr>
-	</schema>
+    	<array type="neighbors">
+       	 <attr type="int">level</attr>
+       	 <attr type="String">SSID</attr>
+       	 <attr type="String">BSSID</attr>
+    	</array>
+	</schema> RAAAAAGH YOU WILL DIE SOON, XML FILE!!!
 </PluginMetadata>

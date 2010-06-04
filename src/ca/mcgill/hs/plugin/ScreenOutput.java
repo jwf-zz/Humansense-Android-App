@@ -1,5 +1,6 @@
 package ca.mcgill.hs.plugin;
 
+import ca.mcgill.hs.plugin.WifiLoggerPacket;
 import android.util.Log;
 
 
@@ -12,15 +13,17 @@ import android.util.Log;
  */
 public class ScreenOutput extends OutputPlugin{
 
-	/**
-	 * Whenever a thread from this plugin recieves data, it simply writes out the data to the
-	 * Android's logcat in the order recieved. The log's tag is the name of the source input
-	 * plugin.
-	 */
-	void onDataReady(Object[] data, int sourceId) {
-		for (int i = 0; i < data.length; i++){
-			Log.i(getSourceName(sourceId), data[i].toString());
+	@Override
+	void onDataReady(DataPacket dp, int sourceId) {
+		if (dp.getClass() == WifiLoggerPacket.class){
+			dataParse((WifiLoggerPacket) dp, sourceId);
 		}
-	}	
+	}
+	
+	private void dataParse(WifiLoggerPacket wlp, int sourceId){
+		for (String SSID : wlp.SSIDs){
+			Log.i("Receptionist", "SSID: " + SSID);
+		}
+	}
 
 }

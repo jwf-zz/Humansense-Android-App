@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.zip.GZIPOutputStream;
 
+import ca.mcgill.hs.plugin.WifiLoggerPacket;
 import ca.mcgill.hs.serv.HSService;
 
 import android.os.Environment;
@@ -25,11 +26,7 @@ public class FileOutput extends OutputPlugin{
 	//File extension name.
 	private final String FILE_EXT = "-wifiloc.log";
 
-	/**
-	 * @override
-	 */
-	void onDataReady(Object[] data, int sourceId) {
-		try {
+		/*try {
 			if (!fileHandles.containsKey(sourceId)){
 				final File j = new File(Environment.getExternalStorageDirectory(), "hsandroidapp/data");
 				if (!j.isDirectory()) {
@@ -49,49 +46,12 @@ public class FileOutput extends OutputPlugin{
 								new FileOutputStream(fh), 1 * 1024 // Buffer Size
 						))));
 			}
-			LinkedList<Integer> formats = getDataFormat(sourceId);
-			for (int i = 0; i < data.length; i++){
-				int format = formats.get(i);
-				switch (format){
-				case HSService.STRING:
-					fileHandles.get(sourceId).writeUTF((String) data[i]);
-					break;
-				case HSService.INT:
-					fileHandles.get(sourceId).writeInt(((Number) data[i]).intValue());
-					break;
-				case HSService.FLOAT:
-					fileHandles.get(sourceId).writeFloat(((Number) data[i]).floatValue());
-					break;
-				case HSService.DOUBLE:
-					fileHandles.get(sourceId).writeDouble(((Number) data[i]).doubleValue());
-					break;
-				case HSService.LONG:
-					fileHandles.get(sourceId).writeLong(((Number) data[i]).longValue());
-					break;
-				case HSService.SHORT:
-					fileHandles.get(sourceId).writeShort(((Number) data[i]).shortValue());
-					break;
-				case HSService.BYTE:
-					fileHandles.get(sourceId).writeByte(((Number) data[i]).byteValue());
-					break;
-				case HSService.CHAR:
-					fileHandles.get(sourceId).writeChar((Character) data[i]);
-					break;
-				case HSService.BOOLEAN:
-					fileHandles.get(sourceId).writeBoolean((Boolean) data[i]);
-					break;
-				case HSService.ARRAY:
-					break;
-				default:
-					fileHandles.get(sourceId).writeUTF(data[i].toString());
-				}
-			}
+			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-	}
+		}*/
 	
 	protected void onPluginStop(){
 		for (Integer id : fileHandles.keySet()){
@@ -101,6 +61,12 @@ public class FileOutput extends OutputPlugin{
 				e.printStackTrace();
 			}
 		}
+	}
+
+	@Override
+	void onDataReady(DataPacket dp, int sourceId) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

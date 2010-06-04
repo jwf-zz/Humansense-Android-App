@@ -1,6 +1,7 @@
 package ca.mcgill.hs.plugin;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
 
 import android.content.BroadcastReceiver;
@@ -18,7 +19,7 @@ import android.util.Log;
  *
  */
 public class WifiLogger extends InputPlugin{
-
+	
 	private Thread wifiLoggerThread;
 	private boolean threadRunning = false;
 	private final WifiManager wm;
@@ -92,24 +93,23 @@ public class WifiLogger extends InputPlugin{
 	 * @throws IOException 
 	 */
 	private void processResults(List<ScanResult> results){
-		long timestamp;
-		int level;
-		String SSID, BSSID;
-		Object[] data = new Object[4];
 		
-		for (ScanResult result : results) {
-			timestamp = System.currentTimeMillis();
-			data[0] = timestamp;
-			
-			level = result.level;
-			data[1] = level;
-			SSID = result.SSID;
-			data[2] = SSID;
-			BSSID = result.BSSID;
-			data[3] = BSSID;
-			
-			write(data);
+		long timestamp;
+		int numResults = results.size();
+		int[] levels = new int[numResults];
+		String[] SSIDs = new String[numResults];
+		String[] BSSIDs = new String[numResults];
+		
+		int i = 0;
+		timestamp = System.currentTimeMillis();
+		for (ScanResult sr : results){
+			levels[i] = sr.level;
+			SSIDs[i] = sr.SSID;
+			BSSIDs[i] = sr.BSSID;
+			i++;
 		}
+		
+		write(new WifiLoggerPacket(timestamp, levels, SSIDs, BSSIDs));
 		
 	}
 	
@@ -137,5 +137,4 @@ public class WifiLogger extends InputPlugin{
 		
 		private final WifiManager wifi;
 	}
-
 }

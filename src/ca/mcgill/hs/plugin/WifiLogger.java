@@ -22,7 +22,7 @@ public class WifiLogger extends InputPlugin{
 	private Thread wifiLoggerThread;
 	private boolean threadRunning = false;
 	private final WifiManager wm;
-	private static int sleepIntervalMillisecs = 5000;
+	private static int sleepIntervalMillisecs = 10000;
 	private WifiLoggerReceiver wlr;
 	private final Context context;
 		

@@ -28,4 +28,9 @@ public class WifiLoggerPacket implements DataPacket{
 	public int getNeighbors(){
 		return levels.length;
 	}
+
+	@Override
+	public String getInputPluginName() {
+		return "WifiLogger";
+	}
 }

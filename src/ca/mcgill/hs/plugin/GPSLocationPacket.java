@@ -22,4 +22,9 @@ public class GPSLocationPacket implements DataPacket{
 		this.longitude = longitude;
 	}
 
+	@Override
+	public String getInputPluginName() {
+		return "GPSLocationLogger";
+	}
+
 }

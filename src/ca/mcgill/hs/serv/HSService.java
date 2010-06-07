@@ -1,23 +1,16 @@
 package ca.mcgill.hs.serv;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.Method;
 import java.nio.channels.Channels;
 import java.nio.channels.Pipe;
 import java.util.LinkedList;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
 import ca.mcgill.hs.plugin.*;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.XmlResourceParser;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
@@ -77,8 +70,6 @@ public class HSService extends Service{
 			createConnections();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (XmlPullParserException e) {
-			e.printStackTrace();
 		}
 				
 		//Start input plugins.
@@ -97,7 +88,7 @@ public class HSService extends Service{
 	 * Populates the list of input plugins.
 	 */
 	private void addInputPlugins(){
-		//inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),getBaseContext()));
+		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),getBaseContext()));
 		inputPluginList.add(new GPSLocationLogger((LocationManager) getBaseContext().getSystemService(Context.LOCATION_SERVICE)));
 	}
 	
@@ -106,14 +97,13 @@ public class HSService extends Service{
 	 */
 	private void addOutputPlugins(){
 		outputPluginList.add(new ScreenOutput());
-		//outputPluginList.add(new FileOutput());
+		outputPluginList.add(new FileOutput());
 	}
 	
 	/**
 	 * Creates the connections betweeen the input and output plugins.
-	 * @throws XmlPullParserException 
 	 */
-	private void createConnections() throws IOException, XmlPullParserException{
+	private void createConnections() throws IOException{
 		for (InputPlugin input : inputPluginList){
 			for (OutputPlugin output : outputPluginList){
 				Pipe p = Pipe.open();

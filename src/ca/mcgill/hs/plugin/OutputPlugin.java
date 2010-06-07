@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.LinkedList;
 
-import ca.mcgill.hs.plugin.WifiLoggerPacket;
-
 import android.util.Log;
 
 /**

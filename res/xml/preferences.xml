@@ -16,4 +16,7 @@
 	android:summary="Automatically start when phone starts."
 	/>
 	</PreferenceCategory>
+	<PreferenceCategory android:title="Plugin Options">
+	
+	</PreferenceCategory>
 </PreferenceScreen>

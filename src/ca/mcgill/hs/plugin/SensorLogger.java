@@ -73,7 +73,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		final float z = values[2];
 		final float m = (float) Math.sqrt(x * x + y * y + z * z) - SensorManager.STANDARD_GRAVITY;
 		
-		Log.i("SensorLogger", ""+x+" "+y+" "+z);
+		//Log.i("SensorLogger", ""+x+" "+y+" "+z);
 		write(new SensorLoggerPacket(timestamp, x, y, z, m, temperature, magfield, orientation));
 	}
 

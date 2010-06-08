@@ -1,29 +1,34 @@
 package ca.mcgill.hs.prefs;
 
 import ca.mcgill.hs.R;
-import android.content.Intent;
+import ca.mcgill.hs.plugin.WifiLogger;
+import ca.mcgill.hs.serv.HSService;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.PreferenceCategory;
+import android.preference.PreferenceScreen;
 import android.util.Log;
-import android.widget.Toast;
 
 public class InputPluginPreferences extends PreferenceActivity{
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		addPreferencesFromResource(R.xml.inputpluginpreferences);
 		
-		Preference wifiLoggerPrefs = (Preference) findPreference("wifiLoggerPrefs");
-		wifiLoggerPrefs.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-			public boolean onPreferenceClick(Preference preference) {
-				Intent i = new Intent(getBaseContext(), ca.mcgill.hs.prefs.WifiLoggerPreferences.class);
-	            startActivity(i);
-	            return true;
-			}
-		});
+		setPreferenceScreen(createPreferenceHierarchy());
+	}
+	
+	private PreferenceScreen createPreferenceHierarchy(){
+		PreferenceScreen root = getPreferenceManager().createPreferenceScreen(this);
 		
+		PreferenceCategory wifiLoggerCategory = new PreferenceCategory(this);
+		wifiLoggerCategory.setTitle(R.string.wifilogger_preferences);
+		root.addPreference(wifiLoggerCategory);
+		for (Preference p : WifiLogger.getPreferences(this)){
+			wifiLoggerCategory.addPreference(p);
+		}
+		
+		return root;
 	}
 
 }

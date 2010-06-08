@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.LinkedList;
 
+import android.content.Context;
+import android.preference.Preference;
 import android.util.Log;
 
 /**
@@ -39,5 +41,7 @@ public abstract class InputPlugin implements Plugin{
 			e.printStackTrace();
 		}
 	}
+	
+	public static Preference[] getPreferences(Context c){return null;}
 
 }

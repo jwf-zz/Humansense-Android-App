@@ -3,6 +3,8 @@ package ca.mcgill.hs.plugin;
 import java.io.IOException;
 import java.util.List;
 
+import ca.mcgill.hs.R;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +12,8 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.preference.ListPreference;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -116,6 +120,18 @@ public class WifiLogger extends InputPlugin{
 		
 		write(new WifiLoggerPacket(numResults, timestamp, levels, SSIDs, BSSIDs));
 		
+	}
+	
+	public static Preference[] getPreferences(Context c) {
+		Preference[] prefs = new Preference[1];
+		ListPreference intervals = new ListPreference(c);
+		intervals.setEntries(R.array.wifiLoggerIntervalStrings);
+		intervals.setEntryValues(R.array.wifiLoggerIntervalValues);
+		intervals.setKey("wifiIntervalPreference");
+		intervals.setTitle(R.string.wifilogger_interval_pref);
+		intervals.setSummary(R.string.wifilogger_interval_pref_summary);
+		prefs[0] = intervals;
+		return prefs;
 	}
 	
 	// ***********************************************************************************

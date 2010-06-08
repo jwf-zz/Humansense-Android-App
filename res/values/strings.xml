@@ -11,4 +11,6 @@
     <string name="set_preferences">Preferences</string>
     <string name="set_input_preferences">Input Plugin Preferences</string>
     <string name="wifilogger_preferences">WifiLogger Preferences</string>
+    <string name="wifilogger_interval_pref">Logging Interval</string>
+    <string name="wifilogger_interval_pref_summary">The interval of time between two subsequent scans.</string>
 </resources>

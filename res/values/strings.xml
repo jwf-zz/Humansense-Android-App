@@ -10,7 +10,12 @@
     <string name="no_start_app_start_label">Do not start at application start</string>
     <string name="set_preferences">Preferences</string>
     <string name="set_input_preferences">Input Plugin Preferences</string>
+    <string name="set_output_preferences">Output Plugin Preferences</string>
     <string name="wifilogger_preferences">WifiLogger Preferences</string>
     <string name="wifilogger_interval_pref">Logging Interval</string>
     <string name="wifilogger_interval_pref_summary">The interval of time between two subsequent scans.</string>
+    <string name="gpslogger_interval_pref">Logging Interval</string>
+    <string name="gpslogger_interval_pref_summary">The interval of time between two subsequent scans.</string>
+    <string name="gpslogger_distance_pref">Minimum Distance</string>
+    <string name="gpslogger_distance_pref_summary">The minimum distance that has to be traveled between two subsequent scans.</string>
 </resources>

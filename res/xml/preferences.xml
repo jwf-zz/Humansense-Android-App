@@ -25,13 +25,13 @@
 		<Preference 
 		android:title="Input Plugins"
 		android:key="inputPluginPrefs"
-		android:summary="Shows options for all input plugins installed."
+		android:summary="Shows options for all input plugins installed with defined preferences."
 		/>
 		
 		<Preference 
 		android:title="Output Plugins"
 		android:key="outputPluginPrefs"
-		android:summary="Shows options for all output plugins installed."
+		android:summary="Shows options for all output plugins installed with defined preferences."
 		/>
 	
 	</PreferenceCategory>

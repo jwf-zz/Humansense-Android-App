@@ -124,15 +124,20 @@ public class WifiLogger extends InputPlugin{
 	
 	public static Preference[] getPreferences(Context c) {
 		Preference[] prefs = new Preference[1];
+		
 		ListPreference intervals = new ListPreference(c);
 		intervals.setEntries(R.array.wifiLoggerIntervalStrings);
 		intervals.setEntryValues(R.array.wifiLoggerIntervalValues);
+		intervals.setDefaultValue("30000");
 		intervals.setKey("wifiIntervalPreference");
 		intervals.setTitle(R.string.wifilogger_interval_pref);
 		intervals.setSummary(R.string.wifilogger_interval_pref_summary);
 		prefs[0] = intervals;
+		
 		return prefs;
 	}
+	
+	public static boolean hasPreferences(){ return true; }
 	
 	// ***********************************************************************************
 	// PRIVATE INNER CLASS -- WifiLoggerReceiver

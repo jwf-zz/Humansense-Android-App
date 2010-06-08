@@ -1,10 +1,7 @@
 package ca.mcgill.hs.prefs;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
-import ca.mcgill.hs.R;
-import ca.mcgill.hs.plugin.WifiLogger;
 import ca.mcgill.hs.serv.HSService;
 import android.content.Context;
 import android.os.Bundle;
@@ -12,9 +9,8 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
-import android.util.Log;
 
-public class InputPluginPreferences extends PreferenceActivity{
+public class OutputPluginPreferences extends PreferenceActivity{
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -31,7 +27,7 @@ public class InputPluginPreferences extends PreferenceActivity{
 	private PreferenceScreen createPreferenceHierarchy() throws IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException, NoSuchMethodException{
 		PreferenceScreen root = getPreferenceManager().createPreferenceScreen(this);
 		
-		for (Class c : HSService.inputPluginsAvailable){
+		for (Class c : HSService.outputPluginsAvailable){
 			if ((Boolean) c.getMethod("hasPreferences", null).invoke(null, null)){
 				PreferenceCategory newCategory = new PreferenceCategory(this);
 				newCategory.setTitle(c.getSimpleName() + " Preferences");

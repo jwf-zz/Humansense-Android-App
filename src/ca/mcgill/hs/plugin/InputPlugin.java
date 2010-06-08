@@ -43,5 +43,7 @@ public abstract class InputPlugin implements Plugin{
 	}
 	
 	public static Preference[] getPreferences(Context c){return null;}
+	
+	public static boolean hasPreferences() {return false;}
 
 }

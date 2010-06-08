@@ -38,5 +38,14 @@ public class HSAndroidPreferences extends PreferenceActivity {
 		            return true;
 				}
 			});
+			
+			Preference outputPrefs = (Preference) findPreference("outputPluginPrefs");
+			outputPrefs.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+				public boolean onPreferenceClick(Preference preference) {
+					Intent i = new Intent(getBaseContext(), ca.mcgill.hs.prefs.OutputPluginPreferences.class);
+		            startActivity(i);
+		            return true;
+				}
+			});
 	}
 }

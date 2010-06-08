@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.LinkedList;
 
+import android.content.Context;
+import android.preference.Preference;
+import android.util.Log;
+
 /**
  * Abstract class to be extended by all InputPlugins. Provides an interface for using InputPlugins.
  * 
@@ -33,8 +37,13 @@ public abstract class InputPlugin implements Plugin{
 				oos.writeObject(dp);
 			}
 		} catch (IOException e) {
+			Log.e("InputPlugin", "Caught IOException");
 			e.printStackTrace();
 		}
 	}
+	
+	public static Preference[] getPreferences(Context c){return null;}
+	
+	public static boolean hasPreferences() {return false;}
 
 }

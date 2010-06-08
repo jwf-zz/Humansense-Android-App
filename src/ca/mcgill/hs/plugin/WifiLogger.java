@@ -3,12 +3,18 @@ package ca.mcgill.hs.plugin;
 import java.io.IOException;
 import java.util.List;
 
+import ca.mcgill.hs.R;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -22,7 +28,7 @@ public class WifiLogger extends InputPlugin{
 	private Thread wifiLoggerThread;
 	private boolean threadRunning = false;
 	private final WifiManager wm;
-	private static int sleepIntervalMillisecs = 5000;
+	private static int sleepIntervalMillisecs;
 	private WifiLoggerReceiver wlr;
 	private final Context context;
 		
@@ -38,6 +44,10 @@ public class WifiLogger extends InputPlugin{
 	public WifiLogger(WifiManager wm, Context context){
 		this.wm = wm;
 		this.context = context;
+		
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		sleepIntervalMillisecs = Integer.parseInt(prefs.getString("wifiIntervalPreference", "30000"));
 	}
 	
 	/**
@@ -63,7 +73,7 @@ public class WifiLogger extends InputPlugin{
 					}
 				}
 				catch(InterruptedException e) {
-					Log.d("WifiLogger", "Logging thread terminated due to InterruptedException.");
+					Log.e("WifiLogger", "Logging thread terminated due to InterruptedException.");
 				}
 			}
 		};
@@ -111,6 +121,23 @@ public class WifiLogger extends InputPlugin{
 		write(new WifiLoggerPacket(numResults, timestamp, levels, SSIDs, BSSIDs));
 		
 	}
+	
+	public static Preference[] getPreferences(Context c) {
+		Preference[] prefs = new Preference[1];
+		
+		ListPreference intervals = new ListPreference(c);
+		intervals.setEntries(R.array.wifiLoggerIntervalStrings);
+		intervals.setEntryValues(R.array.wifiLoggerIntervalValues);
+		intervals.setDefaultValue("30000");
+		intervals.setKey("wifiIntervalPreference");
+		intervals.setTitle(R.string.wifilogger_interval_pref);
+		intervals.setSummary(R.string.wifilogger_interval_pref_summary);
+		prefs[0] = intervals;
+		
+		return prefs;
+	}
+	
+	public static boolean hasPreferences(){ return true; }
 	
 	// ***********************************************************************************
 	// PRIVATE INNER CLASS -- WifiLoggerReceiver

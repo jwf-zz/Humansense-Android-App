@@ -1,10 +1,17 @@
 package ca.mcgill.hs.plugin;
 
+import java.util.prefs.Preferences;
+
+import ca.mcgill.hs.R;
+
+import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Looper;
+import android.preference.ListPreference;
+import android.preference.Preference;
 import android.util.Log;
 
 public class GPSLocationLogger extends InputPlugin{
@@ -43,6 +50,32 @@ public class GPSLocationLogger extends InputPlugin{
 				loc.getTime(), loc.getAccuracy(), loc.getBearing(), loc.getSpeed(),
 				loc.getAltitude(), loc.getLatitude(), loc.getLongitude()));
 	}
+	
+	public static Preference[] getPreferences(Context c){
+		Preference[] prefs = new Preference[2];
+		
+		ListPreference intervals = new ListPreference(c);
+		intervals.setEntries(R.array.gpsLoggerIntervalStrings);
+		intervals.setEntryValues(R.array.gpsLoggerIntervalValues);
+		intervals.setKey("gpsLoggerIntervalPreference");
+		intervals.setTitle(R.string.gpslogger_interval_pref);
+		intervals.setSummary(R.string.gpslogger_interval_pref_summary);
+		intervals.setDefaultValue("30000");
+		prefs[0] = intervals;
+		
+		ListPreference distance = new ListPreference(c);
+		distance.setEntries(R.array.gpsLoggerDistanceStrings);
+		distance.setEntryValues(R.array.gpsLoggerDistanceValues);
+		distance.setKey("gpsLoggerDistancePreference");
+		distance.setTitle(R.string.gpslogger_distance_pref);
+		distance.setSummary(R.string.gpslogger_distance_pref_summary);
+		distance.setDefaultValue("0");
+		prefs[1] = distance;
+		
+		return prefs;
+	}
+	
+	public static boolean hasPreferences(){return true;}
 	
 	
 	// ***********************************************************************************

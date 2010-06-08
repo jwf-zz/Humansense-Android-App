@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.LinkedList;
 
+import android.content.Context;
+import android.preference.Preference;
 import android.util.Log;
 
 /**
@@ -50,8 +52,10 @@ public abstract class OutputPlugin implements Plugin {
 								onDataReady(dp, identifier);
 							}
 						} catch (IOException e) {
+							Log.e("OutputPlugin", "Caught IOException");
 							e.printStackTrace();
 						} catch (ClassNotFoundException e) {
+							Log.e("OutputPlugin", "Caught ClassNotFoundException");
 							e.printStackTrace();
 						}
 					}
@@ -89,5 +93,8 @@ public abstract class OutputPlugin implements Plugin {
 	 * @param sourceId the ID of the input plugin that sent this DataPacket.
 	 */
 	abstract void onDataReady(DataPacket dp, int sourceId);
+	
+	public static Preference[] getPreferences(Context c){return null;}
+	public static boolean hasPreferences(){return false;}
 
 }

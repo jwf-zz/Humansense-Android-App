@@ -15,12 +15,25 @@ import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
+import android.util.Log;
 
 public class HSService extends Service{
 	
 	private static boolean isRunning;
+	private final Context PASSABLE_CONTEXT = getApplicationContext();
 	final private LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
 	final private LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
+	
+	//A simple static array of the input plugin class names.
+	public static final Class[] inputPluginsAvailable = {
+		WifiLogger.class,
+		GPSLocationLogger.class
+		};
+	//A simple static array of the output plugin class names.
+	public static final Class[] outputPluginsAvailable = {
+		ScreenOutput.class,
+		FileOutput.class
+		};
 		
 	/**
 	 * Returns a boolean indicating if the service is running or not.
@@ -70,6 +83,7 @@ public class HSService extends Service{
 		try {
 			createConnections();
 		} catch (IOException e) {
+			Log.e("HSService", "Caught IOException");
 			e.printStackTrace();
 		}
 				
@@ -89,9 +103,9 @@ public class HSService extends Service{
 	 * Populates the list of input plugins.
 	 */
 	private void addInputPlugins(){
-		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),getBaseContext()));
-		inputPluginList.add(new GPSLocationLogger((LocationManager) getBaseContext().getSystemService(Context.LOCATION_SERVICE)));
 		inputPluginList.add(new SensorLogger((SensorManager)getSystemService(Context.SENSOR_SERVICE)));
+		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
+		inputPluginList.add(new GPSLocationLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE)));
 	}
 	
 	/**

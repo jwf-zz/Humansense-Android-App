@@ -7,8 +7,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -22,7 +24,7 @@ public class WifiLogger extends InputPlugin{
 	private Thread wifiLoggerThread;
 	private boolean threadRunning = false;
 	private final WifiManager wm;
-	private static int sleepIntervalMillisecs = 5000;
+	private static int sleepIntervalMillisecs;
 	private WifiLoggerReceiver wlr;
 	private final Context context;
 		
@@ -38,6 +40,10 @@ public class WifiLogger extends InputPlugin{
 	public WifiLogger(WifiManager wm, Context context){
 		this.wm = wm;
 		this.context = context;
+		
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		sleepIntervalMillisecs = Integer.parseInt(prefs.getString("wifiIntervalPreference", "30000"));
 	}
 	
 	/**

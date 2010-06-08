@@ -9,4 +9,6 @@
     <string name="start_app_start_label">Start at application start</string>
     <string name="no_start_app_start_label">Do not start at application start</string>
     <string name="set_preferences">Preferences</string>
+    <string name="set_input_preferences">Input Plugin Preferences</string>
+    <string name="wifilogger_preferences">WifiLogger Preferences</string>
 </resources>

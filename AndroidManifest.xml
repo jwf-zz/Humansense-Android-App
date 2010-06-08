@@ -17,6 +17,14 @@
 			android:name=".prefs.HSAndroidPreferences"
 			android:label="@string/set_preferences">
 		</activity>
+		<activity
+			android:name=".prefs.InputPluginPreferences"
+			android:label="@string/set_input_preferences">
+		</activity>
+		<activity
+			android:name=".prefs.WifiLoggerPreferences"
+			android:label="@string/wifilogger_preferences">
+		</activity>
         <service android:name="ca.mcgill.hs.serv.HSService"/>
         <receiver android:name="ca.mcgill.hs.serv.HSServAutoStart" 
 			 android:enabled="true" 

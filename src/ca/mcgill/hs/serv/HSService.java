@@ -21,6 +21,17 @@ public class HSService extends Service{
 	private static boolean isRunning;
 	final private LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
 	final private LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
+	
+	//A simple static array of the input plugin class names.
+	public static final Class[] inputPluginsAvailable = {
+		WifiLogger.class,
+		GPSLocationLogger.class
+		};
+	//A simple static array of the output plugin class names.
+	public static final Class[] outputPluginsAvailable = {
+		ScreenOutput.class,
+		FileOutput.class
+		};
 		
 	/**
 	 * Returns a boolean indicating if the service is running or not.

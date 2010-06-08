@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+<string-array name="wifiLoggerIntervalStrings">
+	<item>5 Seconds</item>
+	<item>10 Seconds</item>
+	<item>30 Seconds</item>
+	<item>1 Minute</item>
+	<item>5 Minutes</item>
+</string-array>
+
+<string-array name="wifiLoggerIntervalValues">
+	<item>5000</item>
+	<item>10000</item>
+	<item>30000</item>
+	<item>60000</item>
+	<item>300000</item>
+</string-array>
+
 </resources>

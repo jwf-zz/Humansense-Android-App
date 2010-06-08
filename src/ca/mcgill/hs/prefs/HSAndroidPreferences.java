@@ -4,6 +4,7 @@
 package ca.mcgill.hs.prefs;
 
 import ca.mcgill.hs.R;
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -29,18 +30,12 @@ public class HSAndroidPreferences extends PreferenceActivity {
 			super.onCreate(savedInstanceState);
 			addPreferencesFromResource(R.xml.preferences);
 			
-			//Get the custom preferences
-			Preference autoStartAtAppStart = (Preference) findPreference("autoStartAtAppStart");
-			autoStartAtAppStart.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			Preference inputPrefs = (Preference) findPreference("inputPluginPrefs");
+			inputPrefs.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 				public boolean onPreferenceClick(Preference preference) {
-					return true;
-				}
-			});
-			
-			Preference autoStartAtPhoneBoot = (Preference) findPreference("autoStartAtPhoneBoot");
-			autoStartAtPhoneBoot.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-				public boolean onPreferenceClick(Preference preference) {
-					return true;
+					Intent i = new Intent(getBaseContext(), ca.mcgill.hs.prefs.InputPluginPreferences.class);
+		            startActivity(i);
+		            return true;
 				}
 			});
 	}

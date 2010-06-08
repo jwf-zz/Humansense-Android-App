@@ -19,6 +19,7 @@ import android.util.Log;
 public class HSService extends Service{
 	
 	private static boolean isRunning;
+	private final Context PASSABLE_CONTEXT = getApplicationContext();
 	final private LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
 	final private LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
 	
@@ -101,8 +102,8 @@ public class HSService extends Service{
 	 * Populates the list of input plugins.
 	 */
 	private void addInputPlugins(){
-		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),getBaseContext()));
-		inputPluginList.add(new GPSLocationLogger((LocationManager) getBaseContext().getSystemService(Context.LOCATION_SERVICE)));
+		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
+		inputPluginList.add(new GPSLocationLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE)));
 	}
 	
 	/**

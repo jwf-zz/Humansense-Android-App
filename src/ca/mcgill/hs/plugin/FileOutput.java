@@ -77,8 +77,9 @@ public class FileOutput extends OutputPlugin{
 	private void dataParse(WifiLoggerPacket wlp, DataOutputStream dos){
 		Log.i("FILE OUTPUT", "WRITING TO FILE");
 		try {
+			dos.writeInt(wlp.neighbors);
 			dos.writeLong(wlp.timestamp);
-			for (int i = wlp.getNeighbors() - 1; i >= 0; i--){
+			for (int i = wlp.neighbors - 1; i >= 0; i--){
 				dos.writeInt(wlp.levels[i]);
 				dos.writeUTF(wlp.SSIDs[i]);
 				dos.writeUTF(wlp.BSSIDs[i]);

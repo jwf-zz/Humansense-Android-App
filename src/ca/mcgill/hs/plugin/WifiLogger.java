@@ -93,8 +93,8 @@ public class WifiLogger extends InputPlugin{
 	 */
 	private void processResults(List<ScanResult> results){
 		
-		long timestamp;
 		int numResults = results.size();
+		long timestamp;
 		int[] levels = new int[numResults];
 		String[] SSIDs = new String[numResults];
 		String[] BSSIDs = new String[numResults];
@@ -108,7 +108,7 @@ public class WifiLogger extends InputPlugin{
 			i++;
 		}
 		
-		write(new WifiLoggerPacket(timestamp, levels, SSIDs, BSSIDs));
+		write(new WifiLoggerPacket(numResults, timestamp, levels, SSIDs, BSSIDs));
 		
 	}
 	

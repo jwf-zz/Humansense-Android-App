@@ -73,8 +73,10 @@ public class FileOutput extends OutputPlugin{
 	 * @param dos the DataOutputStream to write to.
 	 */
 	private void dataParse(WifiLoggerPacket wlp, DataOutputStream dos){
+		Log.i("TEST", "Write to file here!!");
 		try {
 			dos.writeLong(wlp.timestamp);
+			Log.i("TEST2", "time:"+wlp.timestamp);
 			for (int i = wlp.getNeighbors() - 1; i >= 0; i--){
 				dos.writeInt(wlp.levels[i]);
 				dos.writeUTF(wlp.SSIDs[i]);
@@ -86,7 +88,7 @@ public class FileOutput extends OutputPlugin{
 	}
 	
 	/**
-	 * 
+	 * Parses and writes given GPSLoggerPacket to given DataOutputStream.
 	 * @param gpslp
 	 * @param dos
 	 */

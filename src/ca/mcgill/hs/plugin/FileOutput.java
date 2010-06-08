@@ -30,6 +30,7 @@ public class FileOutput extends OutputPlugin{
 
 	@Override
 	void onDataReady(DataPacket dp, int sourceId) {
+		Log.i("FILE OUTPUT", "RECIEVED DATA");
 		try {
 			if (!fileHandles.containsKey(sourceId)){
 				final File j = new File(Environment.getExternalStorageDirectory(), "hsandroidapp/data");
@@ -48,13 +49,14 @@ public class FileOutput extends OutputPlugin{
 				Log.i("File Output", "File to write: "+fh.getName());
 				fileHandles.put(sourceId, new DataOutputStream(
 						new BufferedOutputStream(new GZIPOutputStream(
-								new FileOutputStream(fh), 1 * 1024 // Buffer Size
+								new FileOutputStream(fh), 2 * 1024 // Buffer Size
 						))));
 			}
 			
 			//Choose correct dataParse method based on the format of the data received.
 			DataOutputStream dos = fileHandles.get(sourceId);
 			if (dp.getClass() == WifiLoggerPacket.class){
+				Log.i("FILE OUTPUT", "DETECTED");
 				dataParse((WifiLoggerPacket) dp, dos);
 			} else if (dp.getClass() == GPSLocationPacket.class) {
 				dataParse((GPSLocationPacket) dp, dos);
@@ -73,6 +75,7 @@ public class FileOutput extends OutputPlugin{
 	 * @param dos the DataOutputStream to write to.
 	 */
 	private void dataParse(WifiLoggerPacket wlp, DataOutputStream dos){
+		Log.i("FILE OUTPUT", "WRITING TO FILE");
 		try {
 			dos.writeLong(wlp.timestamp);
 			for (int i = wlp.getNeighbors() - 1; i >= 0; i--){

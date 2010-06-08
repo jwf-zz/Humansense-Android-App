@@ -50,8 +50,10 @@ public abstract class OutputPlugin implements Plugin {
 								onDataReady(dp, identifier);
 							}
 						} catch (IOException e) {
+							Log.e("OutputPlugin", "Caught IOException");
 							e.printStackTrace();
 						} catch (ClassNotFoundException e) {
+							Log.e("OutputPlugin", "Caught ClassNotFoundException");
 							e.printStackTrace();
 						}
 					}

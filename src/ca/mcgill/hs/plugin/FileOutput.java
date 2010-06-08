@@ -23,6 +23,7 @@ public class FileOutput extends OutputPlugin{
 			try {
 				fileHandles.get(id).close();
 			} catch (IOException e) {
+				Log.e("FileOutput", "Caught IOException");
 				e.printStackTrace();
 			}
 		}
@@ -30,17 +31,16 @@ public class FileOutput extends OutputPlugin{
 
 	@Override
 	void onDataReady(DataPacket dp, int sourceId) {
-		Log.i("FILE OUTPUT", "RECIEVED DATA");
 		try {
 			if (!fileHandles.containsKey(sourceId)){
 				final File j = new File(Environment.getExternalStorageDirectory(), "hsandroidapp/data");
 				if (!j.isDirectory()) {
 					if (!j.mkdirs()) {
-						Log.e("Output Dir", "ARV: Could not create output directory!");
+						Log.e("Output Dir", "Could not create output directory!");
 						return;
 					}
 				} else {
-					Log.i("Output Dir", "ARV: DIRECTORY EXISTS!");
+					Log.i("Output Dir", "DIRECTORY EXISTS!");
 				}
 				//Generate file name based on the plugin it came from and the current time.
 				Date d = new Date(System.currentTimeMillis());
@@ -56,15 +56,16 @@ public class FileOutput extends OutputPlugin{
 			//Choose correct dataParse method based on the format of the data received.
 			DataOutputStream dos = fileHandles.get(sourceId);
 			if (dp.getClass() == WifiLoggerPacket.class){
-				Log.i("FILE OUTPUT", "DETECTED");
 				dataParse((WifiLoggerPacket) dp, dos);
 			} else if (dp.getClass() == GPSLocationPacket.class) {
 				dataParse((GPSLocationPacket) dp, dos);
 			}
 			
 		} catch (FileNotFoundException e) {
+			Log.e("FileOutput", "Caught FileNotFoundException");
 			e.printStackTrace();
 		} catch (IOException e) {
+			Log.e("FileOutput", "Caught IOException");
 			e.printStackTrace();
 		}
 	}
@@ -75,7 +76,6 @@ public class FileOutput extends OutputPlugin{
 	 * @param dos the DataOutputStream to write to.
 	 */
 	private void dataParse(WifiLoggerPacket wlp, DataOutputStream dos){
-		Log.i("FILE OUTPUT", "WRITING TO FILE");
 		try {
 			dos.writeInt(wlp.neighbors);
 			dos.writeLong(wlp.timestamp);
@@ -85,6 +85,7 @@ public class FileOutput extends OutputPlugin{
 				dos.writeUTF(wlp.BSSIDs[i]);
 			}
 		} catch (IOException e) {
+			Log.e("FileOutput", "Caught IOException (WifiLoggerPacket parsing)");
 			e.printStackTrace();
 		}
 	}
@@ -104,6 +105,7 @@ public class FileOutput extends OutputPlugin{
 			dos.writeDouble(gpslp.latitude);
 			dos.writeDouble(gpslp.longitude);
 		} catch (IOException e) {
+			Log.e("FileOutput", "Caught IOException (GPSLocationPacket parsing)");
 			e.printStackTrace();
 		}
 	}

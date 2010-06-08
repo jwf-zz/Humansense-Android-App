@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.LinkedList;
 
+import android.util.Log;
+
 /**
  * Abstract class to be extended by all InputPlugins. Provides an interface for using InputPlugins.
  * 
@@ -33,6 +35,7 @@ public abstract class InputPlugin implements Plugin{
 				oos.writeObject(dp);
 			}
 		} catch (IOException e) {
+			Log.e("InputPlugin", "Caught IOException");
 			e.printStackTrace();
 		}
 	}

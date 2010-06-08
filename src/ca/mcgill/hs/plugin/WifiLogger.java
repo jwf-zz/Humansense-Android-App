@@ -63,7 +63,7 @@ public class WifiLogger extends InputPlugin{
 					}
 				}
 				catch(InterruptedException e) {
-					Log.d("WifiLogger", "Logging thread terminated due to InterruptedException.");
+					Log.e("WifiLogger", "Logging thread terminated due to InterruptedException.");
 				}
 			}
 		};

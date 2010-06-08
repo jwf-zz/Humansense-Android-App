@@ -23,13 +23,14 @@ public class ScreenOutput extends OutputPlugin{
 	}
 	
 	private void dataParse(WifiLoggerPacket wlp, int sourceId){
-		//Log.i("ScreenOutput", "Time: "+wlp.timestamp);
+		Log.i("ScreenOutput", "Time: " + wlp.timestamp);
+		Log.i("ScreenOutput", "Neighbors: " + wlp.neighbors);
 		int j = wlp.levels.length;
 		for (int i = 0; i<j ; i++){
 			Log.i("WifiLogger SO", "SSID: " + wlp.SSIDs[i]);
-			//Log.i("ScreenOutput", "Level: " + wlp.levels[i]);
-			//Log.i("ScreenOutput", "BSSID: " + wlp.BSSIDs[i]);
-			//Log.i("ScreenOutput", " ");
+			Log.i("ScreenOutput", "Level: " + wlp.levels[i]);
+			Log.i("ScreenOutput", "BSSID: " + wlp.BSSIDs[i]);
+			Log.i("ScreenOutput", " ");
 		}
 	}
 	

@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
+import android.util.Log;
 
 public class HSService extends Service{
 	
@@ -69,6 +70,7 @@ public class HSService extends Service{
 		try {
 			createConnections();
 		} catch (IOException e) {
+			Log.e("HSService", "Caught IOException");
 			e.printStackTrace();
 		}
 				

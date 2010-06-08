@@ -20,7 +20,7 @@ import android.util.Log;
 public class HSService extends Service{
 	
 	private static boolean isRunning;
-	private final Context PASSABLE_CONTEXT = getApplicationContext();
+	private Context PASSABLE_CONTEXT;
 	final private LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
 	final private LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
 	
@@ -73,6 +73,7 @@ public class HSService extends Service{
 	public void onStart(Intent intent, int startId){
 		if (isRunning)return;
 		super.onStart(intent, startId);
+		PASSABLE_CONTEXT = getApplicationContext();
 		
 		//Instantiate input plugins.
 		addInputPlugins();

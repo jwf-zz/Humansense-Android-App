@@ -26,7 +26,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		Log.i("SensorLogger", "Registered Sensor Listener");
 		sensorManager.registerListener(this, 
 				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-				SensorManager.SENSOR_DELAY_GAME);
+				SensorManager.SENSOR_DELAY_UI);
 		sensorManager.registerListener(this, 
 				sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
 				SensorManager.SENSOR_DELAY_UI);
@@ -73,7 +73,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		final float z = values[2];
 		final float m = (float) Math.sqrt(x * x + y * y + z * z) - SensorManager.STANDARD_GRAVITY;
 		
-		Log.i("SensorLogger", ""+temperature);
+		Log.i("SensorLogger", ""+x+" "+y+" "+z);
 		write(new SensorLoggerPacket(timestamp, x, y, z, m, temperature, magfield, orientation));
 	}
 

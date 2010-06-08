@@ -11,6 +11,7 @@ import ca.mcgill.hs.plugin.*;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
@@ -90,6 +91,7 @@ public class HSService extends Service{
 	private void addInputPlugins(){
 		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),getBaseContext()));
 		inputPluginList.add(new GPSLocationLogger((LocationManager) getBaseContext().getSystemService(Context.LOCATION_SERVICE)));
+		inputPluginList.add(new SensorLogger((SensorManager)getSystemService(Context.SENSOR_SERVICE)));
 	}
 	
 	/**

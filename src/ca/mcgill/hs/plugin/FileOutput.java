@@ -30,7 +30,6 @@ public class FileOutput extends OutputPlugin{
 
 	@Override
 	void onDataReady(DataPacket dp, int sourceId) {
-		Log.i("FILE OUTPUT", "RECIEVED DATA");
 		try {
 			if (!fileHandles.containsKey(sourceId)){
 				final File j = new File(Environment.getExternalStorageDirectory(), "hsandroidapp/data");

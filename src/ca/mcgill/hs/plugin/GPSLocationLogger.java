@@ -10,8 +10,8 @@ import android.util.Log;
 public class GPSLocationLogger extends InputPlugin{
 	private final LocationManager gpsm;
 	private final GPSLocationListener gpsll;
-	public int MIN_DIST = 0;
-	public int UPDATE_FREQ = 0;
+	private int MIN_DIST = 0;
+	private int UPDATE_FREQ = 0;
 	
 	public GPSLocationLogger(LocationManager gpsm){
 		this.gpsm = gpsm;

@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<!-- App Strings -->
 	<string name="top_message">Welcome to Pocket Feel!</string>
     <string name="app_name">HSAndroid</string>
-    <string name="start_label">START SERVICE</string>
+	
+	<!-- Object Strings -->
+	<string name="start_label">START SERVICE</string>
     <string name="stop_label">STOP SERVICE</string>
+	
+	<!-- Preferences Strings -->
     <string name="start_phone_boot_label">Start at phone boot</string>
     <string name="no_start_phone_boot_label">Do not start at phone boot</string>
     <string name="start_app_start_label">Start at application start</string>
@@ -11,11 +16,11 @@
     <string name="set_preferences">Preferences</string>
     <string name="set_input_preferences">Input Plugin Preferences</string>
     <string name="set_output_preferences">Output Plugin Preferences</string>
-    <string name="wifilogger_preferences">WifiLogger Preferences</string>
     <string name="wifilogger_interval_pref">Logging Interval</string>
     <string name="wifilogger_interval_pref_summary">The interval of time between two subsequent scans.</string>
     <string name="gpslogger_interval_pref">Logging Interval</string>
     <string name="gpslogger_interval_pref_summary">The interval of time between two subsequent scans.</string>
     <string name="gpslogger_distance_pref">Minimum Distance</string>
-    <string name="gpslogger_distance_pref_summary">The minimum distance that has to be traveled between two subsequent scans.</string>
+    <string name="gpslogger_distance_pref_summary">The minimum distance that has to be travelled between two subsequent scans.</string>
+    
 </resources>

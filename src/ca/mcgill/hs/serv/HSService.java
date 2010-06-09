@@ -104,17 +104,17 @@ public class HSService extends Service{
 	 * Populates the list of input plugins.
 	 */
 	private void addInputPlugins(){
+	//	inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
+	//	inputPluginList.add(new GPSLocationLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE)));
 		inputPluginList.add(new SensorLogger((SensorManager)getSystemService(Context.SENSOR_SERVICE)));
-		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
-		inputPluginList.add(new GPSLocationLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE)));
 	}
 	
 	/**
 	 * Populates the list of output plugins.
 	 */
 	private void addOutputPlugins(){
-		outputPluginList.add(new ScreenOutput());
-		outputPluginList.add(new FileOutput());
+	//	outputPluginList.add(new ScreenOutput());
+	//	outputPluginList.add(new FileOutput());
 	}
 	
 	/**

@@ -8,14 +8,12 @@ import android.util.Log;
 
 public class SensorLogger extends InputPlugin implements SensorEventListener{
 	
-	private SensorManager sensorManager;
-	private float[] values;
-	private boolean logging = false;
-	private static final float eps = 0.05f; // Value under which we consider the user stationary.
-	private float temperature = 0.0f;
-	private float[] magfield = { 0.0f, 0.0f, 0.0f };
-	private boolean magfieldUpdated = false;
-	private float[] orientation = { 0.0f, 0.0f, 0.0f };
+	private final SensorManager sensorManager;
+	private static boolean logging = false;
+	private static float temperature = 0.0f;
+	private static float[] magfield = { 0.0f, 0.0f, 0.0f };
+	private static boolean magfieldUpdated = false;
+	private static float[] orientation = { 0.0f, 0.0f, 0.0f };
 	
 	public SensorLogger(SensorManager sensorManager){
 		this.sensorManager = sensorManager;
@@ -26,7 +24,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		Log.i("SensorLogger", "Registered Sensor Listener");
 		sensorManager.registerListener(this, 
 				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-				SensorManager.SENSOR_DELAY_UI);
+				SensorManager.SENSOR_DELAY_FASTEST);
 		sensorManager.registerListener(this, 
 				sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
 				SensorManager.SENSOR_DELAY_UI);
@@ -73,7 +71,6 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		final float z = values[2];
 		final float m = (float) Math.sqrt(x * x + y * y + z * z) - SensorManager.STANDARD_GRAVITY;
 		
-		//Log.i("SensorLogger", ""+x+" "+y+" "+z);
 		write(new SensorLoggerPacket(timestamp, x, y, z, m, temperature, magfield, orientation));
 	}
 

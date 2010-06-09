@@ -157,7 +157,7 @@ public class WifiLogger extends InputPlugin{
 		@Override
 		public void onReceive(Context c, Intent intent) {
 			final List<ScanResult> results = wifi.getScanResults();
-			Log.i("WifiLogger", "Recieved wifi results.");
+			Log.i("WifiLogger", "Received wifi results.");
 			processResults(results);
 		}
 		

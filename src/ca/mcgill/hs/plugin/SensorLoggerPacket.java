@@ -13,7 +13,7 @@ public class SensorLoggerPacket implements DataPacket{
 	final float[] magfield;
 	final float[] orientation;
 	
-	public SensorLoggerPacket(long timestamp, float x, float y, float z, float m, float temperature,
+	public SensorLoggerPacket(final long timestamp, final float x, final float y, final float z, final float m, final float temperature,
 			final float[] magfield, final float[] orientation){
 		this.timestamp = timestamp;
 		this.x = x;

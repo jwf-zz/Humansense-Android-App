@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import ca.mcgill.hs.R;
+import ca.mcgill.hs.util.PreferenceFactory;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -125,14 +126,9 @@ public class WifiLogger extends InputPlugin{
 	public static Preference[] getPreferences(Context c) {
 		Preference[] prefs = new Preference[1];
 		
-		ListPreference intervals = new ListPreference(c);
-		intervals.setEntries(R.array.wifiLoggerIntervalStrings);
-		intervals.setEntryValues(R.array.wifiLoggerIntervalValues);
-		intervals.setDefaultValue("30000");
-		intervals.setKey("wifiIntervalPreference");
-		intervals.setTitle(R.string.wifilogger_interval_pref);
-		intervals.setSummary(R.string.wifilogger_interval_pref_summary);
-		prefs[0] = intervals;
+		prefs[0] = PreferenceFactory.getListPreference(c, R.array.wifiLoggerIntervalStrings,
+				R.array.wifiLoggerIntervalValues, "30000", "wifiIntervalPreference",
+				R.string.wifilogger_interval_pref, R.string.wifilogger_interval_pref_summary);
 		
 		return prefs;
 	}

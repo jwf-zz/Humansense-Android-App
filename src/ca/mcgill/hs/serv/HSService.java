@@ -40,7 +40,7 @@ public class HSService extends Service{
 		};
 	
 	//Thread Pool Executor
-	private static final int CORE_THREADS = outputPluginsAvailable.length;
+	private static final int CORE_THREADS = inputPluginsAvailable.length * outputPluginsAvailable.length;
 	private static final int MAX_THREADS = inputPluginsAvailable.length * outputPluginsAvailable.length;
 	private static final int KEEP_ALIVE_TIME = 100;
 	private static final ThreadPoolExecutor tpe = new ThreadPoolExecutor(CORE_THREADS,

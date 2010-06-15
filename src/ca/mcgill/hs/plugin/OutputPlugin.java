@@ -4,6 +4,7 @@ import java.util.LinkedList;
 
 import android.content.Context;
 import android.preference.Preference;
+import android.util.Log;
 
 /**
  * Abstract class to be extended by all OutputPlugins. Provides an interface for using OutputPlugins.

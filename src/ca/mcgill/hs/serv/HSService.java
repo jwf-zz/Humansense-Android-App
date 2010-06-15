@@ -40,10 +40,13 @@ public class HSService extends Service{
 		};
 	
 	//Thread Pool Executor
-	private static final ThreadPoolExecutor tpe = new ThreadPoolExecutor(outputPluginsAvailable.length,
+	private static final int CORE_THREADS = outputPluginsAvailable.length;
+	private static final int MAX_THREADS = inputPluginsAvailable.length * outputPluginsAvailable.length;
+	private static final int KEEP_ALIVE_TIME = 100;
+	private static final ThreadPoolExecutor tpe = new ThreadPoolExecutor(CORE_THREADS,
 			//Above: number of core threads to keep alive
-			(inputPluginsAvailable.length * outputPluginsAvailable.length), //Max number of threads
-			100, //time that excess idle threads will wait for new tasks before terminating
+			MAX_THREADS, //Max number of threads
+			KEEP_ALIVE_TIME, //time that excess idle threads will wait for new tasks before terminating
 			TimeUnit.MILLISECONDS, //The time unit for above
 			new LinkedBlockingQueue<Runnable>()); //the queue to use for holding tasks before they are executed
 		

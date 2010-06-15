@@ -30,8 +30,8 @@ public class FileOutput extends OutputPlugin{
 	}
 
 	@Override
-	void onDataReady(DataPacket dp, int sourceId) {
-		try {
+	void onDataReceived(DataPacket dp) {
+		/*try {
 			if (!fileHandles.containsKey(sourceId)){
 				final File j = new File(Environment.getExternalStorageDirectory(), "hsandroidapp/data");
 				if (!j.isDirectory()) {
@@ -67,7 +67,7 @@ public class FileOutput extends OutputPlugin{
 		} catch (IOException e) {
 			Log.e("FileOutput", "Caught IOException");
 			e.printStackTrace();
-		}
+		}*/
 	}
 	
 	/**

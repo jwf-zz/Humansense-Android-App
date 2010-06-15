@@ -14,15 +14,15 @@ import android.util.Log;
 public class ScreenOutput extends OutputPlugin{
 
 	@Override
-	void onDataReady(DataPacket dp, int sourceId) {
+	void onDataReceived(DataPacket dp) {
 		if (dp.getClass() == WifiLoggerPacket.class){
-			dataParse((WifiLoggerPacket) dp, sourceId);
+			dataParse((WifiLoggerPacket) dp);
 		} else if (dp.getClass() == GPSLocationPacket.class) {
-			dataParse((GPSLocationPacket) dp, sourceId);
+			dataParse((GPSLocationPacket) dp);
 		}
 	}
 	
-	private void dataParse(WifiLoggerPacket wlp, int sourceId){
+	private void dataParse(WifiLoggerPacket wlp){
 		Log.i("ScreenOutput", "Time: " + wlp.timestamp);
 		Log.i("ScreenOutput", "Neighbors: " + wlp.neighbors);
 		int j = wlp.levels.length;
@@ -34,7 +34,7 @@ public class ScreenOutput extends OutputPlugin{
 		}
 	}
 	
-	private void dataParse(GPSLocationPacket gpslp, int sourceId){
+	private void dataParse(GPSLocationPacket gpslp){
 		Log.i("GPSLocationLogger SO", "Area: [" + gpslp.altitude + "][" + gpslp.latitude + "][" + gpslp.longitude + "]");
 	}
 

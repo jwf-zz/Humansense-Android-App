@@ -1,5 +1,7 @@
 package ca.mcgill.hs.plugin;
 
+import java.util.LinkedList;
+
 import android.content.Context;
 import android.preference.Preference;
 
@@ -9,9 +11,18 @@ import android.preference.Preference;
  * @author Cicerone Cojocaru, Jonathan Pitre
  *
  */
-public abstract class OutputPlugin implements Plugin {
+public abstract class OutputPlugin implements Plugin, Runnable {
 	
-	private DataPacket dp;
+	private final LinkedList<DataPacket> dpList = new LinkedList<DataPacket>();
+	
+	public final void onDataReady(DataPacket dp){ dpList.addLast(dp); }
+	
+	public void run(){
+		while (!dpList.isEmpty()){
+			DataPacket dp = dpList.removeFirst();
+			onDataReceived(dp);
+		}
+	}
 							
 	/**
 	 * Starts a thread for each DataInputStream this OutputPlugin will listen to.
@@ -42,7 +53,7 @@ public abstract class OutputPlugin implements Plugin {
 	 * @param dp the DataPacket that this plugin is receiving.
 	 * @param sourceId the ID of the input plugin that sent this DataPacket.
 	 */
-	abstract void onDataReady(DataPacket dp, int sourceId);
+	abstract void onDataReceived(DataPacket dp);
 	
 	public static Preference[] getPreferences(Context c){return null;}
 	public static boolean hasPreferences(){return false;}

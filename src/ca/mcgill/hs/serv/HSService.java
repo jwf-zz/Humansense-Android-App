@@ -6,6 +6,9 @@ import java.io.ObjectOutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.Pipe;
 import java.util.LinkedList;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import ca.mcgill.hs.plugin.*;
 import android.app.Service;
@@ -22,8 +25,8 @@ public class HSService extends Service{
 	
 	private static boolean isRunning;
 	private Context PASSABLE_CONTEXT;
-	final private LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
-	final private LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
+	private static final LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
+	private static final LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
 	
 	//A simple static array of the input plugin class names.
 	public static final Class[] inputPluginsAvailable = {
@@ -35,6 +38,14 @@ public class HSService extends Service{
 		ScreenOutput.class,
 		FileOutput.class
 		};
+	
+	//Thread Pool Executor
+	private static final ThreadPoolExecutor tpe = new ThreadPoolExecutor(outputPluginsAvailable.length,
+			//Above: number of core threads to keep alive
+			(inputPluginsAvailable.length * outputPluginsAvailable.length), //Max number of threads
+			100, //time that excess idle threads will wait for new tasks before terminating
+			TimeUnit.MILLISECONDS, //The time unit for above
+			new LinkedBlockingQueue<Runnable>()); //the queue to use for holding tasks before they are executed
 		
 	/**
 	 * Returns a boolean indicating if the service is running or not.
@@ -64,6 +75,8 @@ public class HSService extends Service{
 		
 		for (InputPlugin plugin : inputPluginList) plugin.stopPlugin();
 		for (OutputPlugin plugin : outputPluginList) plugin.stopPlugin();
+		
+		tpe.shutdown();
 		
 		isRunning = false;
 	}
@@ -98,8 +111,8 @@ public class HSService extends Service{
 	 * Populates the list of input plugins.
 	 */
 	private void addInputPlugins(){
-		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
-		inputPluginList.add(new GPSLocationLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE)));
+		//inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
+		//inputPluginList.add(new GPSLocationLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE)));
 		inputPluginList.add(new SensorLogger((SensorManager)getSystemService(Context.SENSOR_SERVICE)));
 	}
 	
@@ -108,7 +121,14 @@ public class HSService extends Service{
 	 */
 	private void addOutputPlugins(){
 		outputPluginList.add(new ScreenOutput());
-		outputPluginList.add(new FileOutput());
+		//outputPluginList.add(new FileOutput());
+	}
+	
+	public static void onDataReady(DataPacket dp, InputPlugin source){
+		for (OutputPlugin op : outputPluginList){
+			op.onDataReady(dp);
+			tpe.execute(op);
+		}
 	}
 		
 }

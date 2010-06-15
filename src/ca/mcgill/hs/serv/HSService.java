@@ -31,7 +31,8 @@ public class HSService extends Service{
 	//A simple static array of the input plugin class names.
 	public static final Class[] inputPluginsAvailable = {
 		WifiLogger.class,
-		GPSLocationLogger.class
+		GPSLocationLogger.class,
+		SensorLogger.class
 		};
 	//A simple static array of the output plugin class names.
 	public static final Class[] outputPluginsAvailable = {

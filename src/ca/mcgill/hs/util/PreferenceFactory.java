@@ -1,6 +1,5 @@
 package ca.mcgill.hs.util;
 
-import ca.mcgill.hs.R;
 import android.content.Context;
 import android.preference.ListPreference;
 

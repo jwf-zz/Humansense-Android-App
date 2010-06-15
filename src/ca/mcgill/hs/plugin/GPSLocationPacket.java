@@ -1,8 +1,6 @@
 package ca.mcgill.hs.plugin;
 
 public class GPSLocationPacket implements DataPacket{
-
-	private static final long serialVersionUID = 8914866684642852066L;
 	
 	final long time;
 	final float accuracy;

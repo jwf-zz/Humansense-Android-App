@@ -1,12 +1,7 @@
 package ca.mcgill.hs.plugin;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.LinkedList;
-
 import android.content.Context;
 import android.preference.Preference;
-import android.util.Log;
 
 /**
  * Abstract class to be extended by all OutputPlugins. Provides an interface for using OutputPlugins.
@@ -16,56 +11,12 @@ import android.util.Log;
  */
 public abstract class OutputPlugin implements Plugin {
 	
-	//Linked List of data input streams that each thread will read from.
-	private final LinkedList<ObjectInputStream> oisList = new LinkedList<ObjectInputStream>();
-	private final LinkedList<Thread> threads = new LinkedList<Thread>();
-				
-	//Boolean of the current state of the plugin. If true, plugin is currently running.
-	private boolean running = false;
-	
-	/**
-	 * Adds the given ObjectInputStream to the plugin's list of ObjectInputStreams.
-	 * @param ois the ObjectInputStream to add.
-	 */
-	public final void connect(ObjectInputStream ois){
-		oisList.add(ois);
-	}
-	
+	private DataPacket dp;
+							
 	/**
 	 * Starts a thread for each DataInputStream this OutputPlugin will listen to.
 	 */
 	public final void startPlugin() {
-		int index = 0;
-		//For each ObjectInputStream this OutputPlugin will listen to, start a new thread and enumerate it.
-		for (final ObjectInputStream ois : oisList){
-			final int i = index;
-			Thread t = new Thread(){
-				private final ObjectInputStream stream = ois;
-				private final int identifier = i;
-				public void run(){
-					Log.i(OutputPlugin.class.getSimpleName(), "Thread Started!");
-					//Continually listen for data while the thread runs.
-					while (running){
-						try {
-							DataPacket dp = (DataPacket) stream.readObject();
-							if (dp != null){
-								onDataReady(dp, identifier);
-							}
-						} catch (IOException e) {
-							Log.e("OutputPlugin", "Caught IOException");
-							e.printStackTrace();
-						} catch (ClassNotFoundException e) {
-							Log.e("OutputPlugin", "Caught ClassNotFoundException");
-							e.printStackTrace();
-						}
-					}
-				}
-			};
-			threads.add(t);
-			index++;
-		}
-		running = true;
-		for (Thread t : threads) t.start();
 		onPluginStart();
 	}
 		
@@ -73,7 +24,6 @@ public abstract class OutputPlugin implements Plugin {
 	 * Stops this plugin. All threads are also halted.
 	 */
 	public final void stopPlugin(){
-		running = false;
 		onPluginStop();
 	}
 		

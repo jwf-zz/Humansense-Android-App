@@ -7,7 +7,6 @@ package ca.mcgill.hs.plugin;
  *
  */
 public class WifiLoggerPacket implements DataPacket{
-	private static final long serialVersionUID = 8968453425171905992L;
 	
 	public final int neighbors;
 	public final long timestamp;

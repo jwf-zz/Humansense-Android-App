@@ -80,13 +80,6 @@ public class HSService extends Service{
 		
 		//Instantiate output plugins
 		addOutputPlugins();
-		
-		try {
-			createConnections();
-		} catch (IOException e) {
-			Log.e("HSService", "Caught IOException");
-			e.printStackTrace();
-		}
 				
 		//Start input plugins.
 		for (InputPlugin plugin: inputPluginList) plugin.startPlugin();
@@ -116,20 +109,5 @@ public class HSService extends Service{
 		outputPluginList.add(new ScreenOutput());
 		outputPluginList.add(new FileOutput());
 	}
-	
-	/**
-	 * Creates the connections betweeen the input and output plugins.
-	 */
-	private void createConnections() throws IOException{
-		for (InputPlugin input : inputPluginList){
-			for (OutputPlugin output : outputPluginList){
-				Pipe p = Pipe.open();
-				ObjectOutputStream oos = new ObjectOutputStream(Channels.newOutputStream(p.sink()));
-				ObjectInputStream ois = new ObjectInputStream(Channels.newInputStream(p.source()));
-				input.connect(oos);
-				output.connect(ois);
-			}
-		}
-	}
-	
+		
 }

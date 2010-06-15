@@ -2,8 +2,6 @@ package ca.mcgill.hs.plugin;
 
 public class SensorLoggerPacket implements DataPacket{
 	
-	private static final long serialVersionUID = -3517773425376067968L;
-	
 	final long timestamp;
 	final float x;
 	final float y;

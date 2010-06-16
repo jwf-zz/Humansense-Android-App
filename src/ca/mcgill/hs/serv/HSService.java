@@ -1,10 +1,5 @@
 package ca.mcgill.hs.serv;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.nio.channels.Channels;
-import java.nio.channels.Pipe;
 import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -17,9 +12,7 @@ import android.content.Intent;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
-import android.os.Debug;
 import android.os.IBinder;
-import android.util.Log;
 
 public class HSService extends Service{
 	
@@ -115,8 +108,8 @@ public class HSService extends Service{
 	 * Populates the list of input plugins.
 	 */
 	private void addInputPlugins(){
-		//inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
-		//inputPluginList.add(new GPSLocationLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE)));
+		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
+		inputPluginList.add(new GPSLocationLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE)));
 		inputPluginList.add(new SensorLogger((SensorManager)getSystemService(Context.SENSOR_SERVICE)));
 	}
 	

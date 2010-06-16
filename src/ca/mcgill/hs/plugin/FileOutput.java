@@ -10,6 +10,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.zip.GZIPOutputStream;
 
+import ca.mcgill.hs.plugin.GPSLocationLogger.GPSLocationPacket;
+import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
+
 import android.os.Environment;
 import android.util.Log;
 
@@ -62,7 +65,7 @@ public class FileOutput extends OutputPlugin{
 			}
 			
 		} catch (FileNotFoundException e) {
-			Log.e("FileOutput", "Caught FileNotFoundException");
+			Log.e("FileOutput", "Caught PacketFileNotFoundException");
 			e.printStackTrace();
 		} catch (IOException e) {
 			Log.e("FileOutput", "Caught IOException");

@@ -123,6 +123,10 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		public String getInputPluginName() {
 			return "SensorLogger";
 		}
+		
+		public DataPacket clone(){
+			return new SensorLoggerPacket(timestamp, x, y, z, m, temperature, magfield, orientation);
+		}
 
 	}
 

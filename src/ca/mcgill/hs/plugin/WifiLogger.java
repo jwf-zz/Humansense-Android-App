@@ -184,5 +184,9 @@ public class WifiLogger extends InputPlugin{
 		public String getInputPluginName() {
 			return "WifiLogger";
 		}
+		
+		public DataPacket clone(){
+			return new WifiLoggerPacket(neighbors, timestamp, levels, SSIDs, BSSIDs);
+		}
 	}
 }

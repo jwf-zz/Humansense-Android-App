@@ -41,7 +41,7 @@ public class HSService extends Service{
 		};
 	
 	//Thread Pool Executor
-	private static final int CORE_THREADS = outputPluginsAvailable.length;
+	private static final int CORE_THREADS = inputPluginsAvailable.length * outputPluginsAvailable.length;
 	private static final int MAX_THREADS = inputPluginsAvailable.length * outputPluginsAvailable.length;
 	private static final int KEEP_ALIVE_TIME = 100;
 	private static final ThreadPoolExecutor tpe = new ThreadPoolExecutor(CORE_THREADS,
@@ -80,7 +80,10 @@ public class HSService extends Service{
 		for (InputPlugin plugin : inputPluginList) plugin.stopPlugin();
 		for (OutputPlugin plugin : outputPluginList) plugin.stopPlugin();
 		
-		tpe.shutdown();
+		inputPluginList.clear();
+		outputPluginList.clear();
+		
+		//tpe.shutdown();
 		
 		isRunning = false;
 	}
@@ -91,6 +94,7 @@ public class HSService extends Service{
 	public void onStart(Intent intent, int startId){
 		if (isRunning)return;
 		super.onStart(intent, startId);
+		
 		PASSABLE_CONTEXT = getApplicationContext();
 		
 		//Instantiate input plugins.
@@ -115,8 +119,8 @@ public class HSService extends Service{
 	 * Populates the list of input plugins.
 	 */
 	private void addInputPlugins(){
-		//inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
-		//inputPluginList.add(new GPSLocationLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE)));
+		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
+		inputPluginList.add(new GPSLocationLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE)));
 		inputPluginList.add(new SensorLogger((SensorManager)getSystemService(Context.SENSOR_SERVICE)));
 	}
 	
@@ -125,12 +129,12 @@ public class HSService extends Service{
 	 */
 	private void addOutputPlugins(){
 		outputPluginList.add(new ScreenOutput());
-		//outputPluginList.add(new FileOutput());
+		outputPluginList.add(new FileOutput());
 	}
 	
 	public static void onDataReady(DataPacket dp, InputPlugin source){
 		for (OutputPlugin op : outputPluginList){
-			op.onDataReady(dp);
+			op.onDataReady(dp.clone());
 			tpe.execute(op);
 		}
 	}

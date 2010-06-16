@@ -1,5 +1,6 @@
 package ca.mcgill.hs.plugin;
 
+import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
 import ca.mcgill.hs.plugin.GPSLocationLogger.GPSLocationPacket;
 import android.util.Log;
@@ -20,6 +21,8 @@ public class ScreenOutput extends OutputPlugin{
 			dataParse((WifiLoggerPacket) dp);
 		} else if (dp.getClass() == GPSLocationPacket.class) {
 			dataParse((GPSLocationPacket) dp);
+		} else if (dp.getClass() == SensorLoggerPacket.class){
+			
 		}
 	}
 	

@@ -145,6 +145,10 @@ public class GPSLocationLogger extends InputPlugin{
 		public String getInputPluginName() {
 			return "GPSLocationLogger";
 		}
+		
+		public DataPacket clone(){
+			return new GPSLocationPacket(time, accuracy, bearing, speed, altitude, latitude, longitude);
+		}
 
 	}
 

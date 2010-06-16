@@ -73,7 +73,10 @@ public class HSService extends Service{
 		for (InputPlugin plugin : inputPluginList) plugin.stopPlugin();
 		for (OutputPlugin plugin : outputPluginList) plugin.stopPlugin();
 		
-		tpe.shutdown();
+		inputPluginList.clear();
+		outputPluginList.clear();
+		
+		//tpe.shutdown();
 		
 		isRunning = false;
 	}
@@ -84,6 +87,7 @@ public class HSService extends Service{
 	public void onStart(Intent intent, int startId){
 		if (isRunning)return;
 		super.onStart(intent, startId);
+		
 		PASSABLE_CONTEXT = getApplicationContext();
 		
 		//Instantiate input plugins.
@@ -118,12 +122,12 @@ public class HSService extends Service{
 	 */
 	private void addOutputPlugins(){
 		outputPluginList.add(new ScreenOutput());
-		//outputPluginList.add(new FileOutput());
+		outputPluginList.add(new FileOutput());
 	}
 	
 	public static void onDataReady(DataPacket dp, InputPlugin source){
 		for (OutputPlugin op : outputPluginList){
-			op.onDataReady(dp);
+			op.onDataReady(dp.clone());
 			tpe.execute(op);
 		}
 	}

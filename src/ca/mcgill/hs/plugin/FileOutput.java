@@ -1,21 +1,34 @@
 package ca.mcgill.hs.plugin;
 
+import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.zip.GZIPOutputStream;
+import java.util.Date;
 import java.util.HashMap;
 
 import ca.mcgill.hs.plugin.GPSLocationLogger.GPSLocationPacket;
+import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
 
+import android.os.Environment;
 import android.util.Log;
 
 public class FileOutput extends OutputPlugin{
 	
 	//HashMap used for keeping file handles. There is one file associated with each input plugin connected.
-	private final HashMap<Integer, DataOutputStream> fileHandles = new HashMap<Integer, DataOutputStream>();
+	private final HashMap<String, DataOutputStream> fileHandles = new HashMap<String, DataOutputStream>();
+	
+	//File Extensions
+	private final String WIFI_EXT = "-wifiloc.log";
+	private final String GPS_EXT = "-gpsloc.log";
+	private final String SENS_EXT = "-raw.log";
+	private final String DEF_EXT = ".log";
 	
 	protected void onPluginStop(){
-		for (Integer id : fileHandles.keySet()){
+		for (String id : fileHandles.keySet()){
 			try {
 				fileHandles.get(id).close();
 			} catch (IOException e) {
@@ -26,9 +39,11 @@ public class FileOutput extends OutputPlugin{
 	}
 
 	@Override
-	void onDataReceived(DataPacket dp) {
-		/*try {
-			if (!fileHandles.containsKey(sourceId)){
+	synchronized void onDataReceived(DataPacket dp) {
+		String id = dp.getInputPluginName();
+		
+		try {
+			if (!fileHandles.containsKey(id)){
 				final File j = new File(Environment.getExternalStorageDirectory(), "hsandroidapp/data");
 				if (!j.isDirectory()) {
 					if (!j.mkdirs()) {
@@ -40,30 +55,29 @@ public class FileOutput extends OutputPlugin{
 				}
 				//Generate file name based on the plugin it came from and the current time.
 				Date d = new Date(System.currentTimeMillis());
-				File fh = new File(j, dp.getInputPluginName() + d.getHours() + "-" + d.getMinutes() + "-" + d.getSeconds()+getFileExtension(dp));
+				File fh = new File(j, id + d.getHours() + "-" + d.getMinutes() + "-" + d.getSeconds()+getFileExtension(dp));
 				if (!fh.exists()) fh.createNewFile();
 				Log.i("File Output", "File to write: "+fh.getName());
-				fileHandles.put(sourceId, new DataOutputStream(
+				fileHandles.put(id, new DataOutputStream(
 						new BufferedOutputStream(new GZIPOutputStream(
 								new FileOutputStream(fh), 2 * 1024 // Buffer Size
 						))));
 			}
 			
 			//Choose correct dataParse method based on the format of the data received.
-			DataOutputStream dos = fileHandles.get(sourceId);
+			DataOutputStream dos = fileHandles.get(id);
 			if (dp.getClass() == WifiLoggerPacket.class){
 				dataParse((WifiLoggerPacket) dp, dos);
 			} else if (dp.getClass() == GPSLocationPacket.class) {
 				dataParse((GPSLocationPacket) dp, dos);
+			} else if (dp.getClass() == SensorLoggerPacket.class){
+				dataParse((SensorLoggerPacket) dp, dos);
 			}
 			
-		} catch (FileNotFoundException e) {
-			Log.e("FileOutput", "Caught PacketFileNotFoundException");
-			e.printStackTrace();
 		} catch (IOException e) {
 			Log.e("FileOutput", "Caught IOException");
 			e.printStackTrace();
-		}*/
+		}
 	}
 	
 	/**
@@ -80,6 +94,22 @@ public class FileOutput extends OutputPlugin{
 				dos.writeUTF(wlp.SSIDs[i]);
 				dos.writeUTF(wlp.BSSIDs[i]);
 			}
+		} catch (IOException e) {
+			Log.e("FileOutput", "Caught IOException (WifiLoggerPacket parsing)");
+			e.printStackTrace();
+		}
+	}
+	
+	private void dataParse(SensorLoggerPacket slp, DataOutputStream dos){
+		try {
+			dos.writeLong(slp.timestamp);
+			dos.writeFloat(slp.x);
+			dos.writeFloat(slp.y);
+			dos.writeFloat(slp.z);
+			dos.writeFloat(slp.m);
+			dos.writeFloat(slp.temperature);
+			for (float f : slp.magfield) dos.writeFloat(f);
+			for (float f : slp.orientation) dos.writeFloat(f);
 		} catch (IOException e) {
 			Log.e("FileOutput", "Caught IOException (WifiLoggerPacket parsing)");
 			e.printStackTrace();
@@ -108,11 +138,13 @@ public class FileOutput extends OutputPlugin{
 	
 	private String getFileExtension(DataPacket dp){
 		if (dp.getClass() == WifiLoggerPacket.class){
-			return "-wifiloc.log";
+			return WIFI_EXT;
 		} else if (dp.getClass() == GPSLocationPacket.class) {
-			return "-gpsloc.log";
+			return GPS_EXT;
+		} else if (dp.getClass() == SensorLoggerPacket.class){
+			return SENS_EXT;
 		} else {
-			return ".log";
+			return DEF_EXT;
 		}
 	}
 

@@ -14,10 +14,19 @@ import android.util.Log;
  */
 public abstract class OutputPlugin implements Plugin, Runnable {
 	
+	//Waiting list for incoming DataPackets kept in case more than one arrives before the previous one can be handled.
 	private final LinkedList<DataPacket> dpList = new LinkedList<DataPacket>();
 	
+	/**
+	 * Called when a DataPacket is sent from an InputPlugin. Adds the DataPacket that is now ready to dpList.
+	 * @param dp the DataPacket that is ready to be received.
+	 */
 	public final void onDataReady(DataPacket dp){ dpList.addLast(dp); }
 	
+	/**
+	 * Used by the ThreadPool to continuously retrieved DataPackets from dpList. The DataPacket are
+	 * passed to onDataReceived() one at a time for as long as this plugin is running and dpList is not empty.
+	 */
 	public void run(){
 		while (!dpList.isEmpty()){
 			DataPacket dp = dpList.removeFirst();
@@ -26,14 +35,14 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	}
 							
 	/**
-	 * Starts a thread for each DataInputStream this OutputPlugin will listen to.
+	 * Starts the plugin and calls onPluginStart().
 	 */
 	public final void startPlugin() {
 		onPluginStart();
 	}
 		
 	/**
-	 * Stops this plugin. All threads are also halted.
+	 * Stops the plugin and calls onPluginStop().
 	 */
 	public final void stopPlugin(){
 		onPluginStop();
@@ -52,10 +61,10 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	/**
 	 * Called when there is data available for this plugin.
 	 * @param dp the DataPacket that this plugin is receiving.
-	 * @param sourceId the ID of the input plugin that sent this DataPacket.
 	 */
 	abstract void onDataReceived(DataPacket dp);
 	
+	//TODO Write these comments.
 	public static Preference[] getPreferences(Context c){return null;}
 	public static boolean hasPreferences(){return false;}
 

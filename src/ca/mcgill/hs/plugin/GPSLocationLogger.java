@@ -1,7 +1,5 @@
 package ca.mcgill.hs.plugin;
 
-import java.util.prefs.Preferences;
-
 import ca.mcgill.hs.R;
 
 import android.content.Context;
@@ -25,9 +23,7 @@ public class GPSLocationLogger extends InputPlugin{
 		gpsll = new GPSLocationListener(gpsm);
 	}
 
-	/**
-	 * @override
-	 */
+	@Override
 	public void startPlugin() {
 		gpsm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
 				UPDATE_FREQ,
@@ -36,16 +32,18 @@ public class GPSLocationLogger extends InputPlugin{
 		Log.i("GPSLocationLogger local", "Registered Location Listener.");
 	}
 
-	/**
-	 * @override
-	 */
+	@Override
 	public void stopPlugin() {
 		gpsm.removeUpdates(gpsll);
 		Log.i("GPSLocationLogger local", "Unregistered Location Listener.");
 	}
 	
+	/**
+	 * Creates a GPSLocationPacket with the current location's coordinates.
+	 * @param loc the current Location.
+	 */
 	private void getNewLocation(Location loc){
-		Log.i("GPSLocationLogger local", "Data recieved.");
+		Log.i("GPSLocationLogger local", "Data received.");
 		write(new GPSLocationPacket(
 				loc.getTime(), loc.getAccuracy(), loc.getBearing(), loc.getSpeed(),
 				loc.getAltitude(), loc.getLatitude(), loc.getLongitude()));

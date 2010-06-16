@@ -172,6 +172,14 @@ public class WifiLogger extends InputPlugin{
 		public final String[] SSIDs;
 		public final String[] BSSIDs;
 		
+		/**
+		 * Constructor for this DataPacket.
+		 * @param neighbors the number of access points detected.
+		 * @param timestamp the time of the scan.
+		 * @param level	the signal strength level of each access point.
+		 * @param SSID the SSID of each access point.
+		 * @param BSSID the BSSID of each access point.
+		 */
 		public WifiLoggerPacket(int neighbors, long timestamp, int[] level, String[] SSID, String[] BSSID){
 			this.neighbors = neighbors;
 			this.timestamp = timestamp;
@@ -185,6 +193,7 @@ public class WifiLogger extends InputPlugin{
 			return "WifiLogger";
 		}
 		
+		@Override
 		public DataPacket clone(){
 			return new WifiLoggerPacket(neighbors, timestamp, levels, SSIDs, BSSIDs);
 		}

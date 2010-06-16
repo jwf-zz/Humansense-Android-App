@@ -21,12 +21,17 @@ public class FileOutput extends OutputPlugin{
 	//HashMap used for keeping file handles. There is one file associated with each input plugin connected.
 	private final HashMap<String, DataOutputStream> fileHandles = new HashMap<String, DataOutputStream>();
 	
-	//File Extensions
+	//File Extensions to be added at the end of each file.
 	private final String WIFI_EXT = "-wifiloc.log";
 	private final String GPS_EXT = "-gpsloc.log";
 	private final String SENS_EXT = "-raw.log";
 	private final String DEF_EXT = ".log";
 	
+	/**
+	 * Closes all files currently open.
+	 * 
+	 * @Override
+	 */
 	protected void onPluginStop(){
 		for (String id : fileHandles.keySet()){
 			try {
@@ -100,6 +105,11 @@ public class FileOutput extends OutputPlugin{
 		}
 	}
 	
+	/**
+	 * Parses and writes given SensorLoggerPacket to given DataOutputStream.
+	 * @param wlp the WifiLoggerPacket to parse and write out.
+	 * @param dos the DataOutputStream to write to.
+	 */
 	private void dataParse(SensorLoggerPacket slp, DataOutputStream dos){
 		try {
 			dos.writeLong(slp.timestamp);
@@ -136,6 +146,12 @@ public class FileOutput extends OutputPlugin{
 		}
 	}
 	
+	/**
+	 * Returns the String corresponding to the file extension (of the DataPacket) that should be added to the 
+	 * name of the file currently being created.
+	 * @param dp the given DataPacket
+	 * @return the String representing the extension to add to the filename.
+	 */
 	private String getFileExtension(DataPacket dp){
 		if (dp.getClass() == WifiLoggerPacket.class){
 			return WIFI_EXT;

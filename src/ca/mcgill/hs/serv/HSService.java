@@ -76,8 +76,6 @@ public class HSService extends Service{
 		inputPluginList.clear();
 		outputPluginList.clear();
 		
-		//tpe.shutdown();
-		
 		isRunning = false;
 	}
 	
@@ -125,6 +123,11 @@ public class HSService extends Service{
 		outputPluginList.add(new FileOutput());
 	}
 	
+	/**
+	 * Called when there is a DataPacket available from an InputPlugin.
+	 * @param dp the DataPacket that is ready to be received.
+	 * @param source the InputPlugin that created the DataPacket.
+	 */
 	public static void onDataReady(DataPacket dp, InputPlugin source){
 		for (OutputPlugin op : outputPluginList){
 			op.onDataReady(dp.clone());

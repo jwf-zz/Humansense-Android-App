@@ -1,19 +1,12 @@
 package ca.mcgill.hs.plugin;
 
-import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.zip.GZIPOutputStream;
 
 import ca.mcgill.hs.plugin.GPSLocationLogger.GPSLocationPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
 
-import android.os.Environment;
 import android.util.Log;
 
 public class FileOutput extends OutputPlugin{

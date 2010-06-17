@@ -6,6 +6,7 @@ package ca.mcgill.hs.plugin;
  *
  */
 public interface DataPacket {
+	
 	/**
 	 * Returns a String representing the name of the InputPlugin that created this DataPacket.
 	 * @return a String representing the name of the InputPlugin.

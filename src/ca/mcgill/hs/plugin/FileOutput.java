@@ -16,6 +16,12 @@ import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
 import android.os.Environment;
 import android.util.Log;
 
+/**
+ * An OutputPlugin which writes data to files.
+ * 
+ * @author Cicerone Cojocaru, Jonathan Pitre
+ *
+ */
 public class FileOutput extends OutputPlugin{
 	
 	//HashMap used for keeping file handles. There is one file associated with each input plugin connected.
@@ -43,7 +49,16 @@ public class FileOutput extends OutputPlugin{
 		}
 	}
 
-	@Override
+	/**
+	 * This method gets called whenever an InputPlugin registered to FileOutput has data available
+	 * to output. This method creates a file handle (if it doesn't exist already) for the InputPlugin
+	 * the received DataPacket comes from. This method calls the appropriate version of dataParse based
+	 * on the DataPacket type.
+	 * 
+	 * @param dp the DataPacket recieved.
+	 * 
+	 * @Override
+	 */
 	synchronized void onDataReceived(DataPacket dp) {
 		String id = dp.getInputPluginName();
 		
@@ -55,8 +70,6 @@ public class FileOutput extends OutputPlugin{
 						Log.e("Output Dir", "Could not create output directory!");
 						return;
 					}
-				} else {
-					Log.i("Output Dir", "DIRECTORY EXISTS!");
 				}
 				//Generate file name based on the plugin it came from and the current time.
 				Date d = new Date(System.currentTimeMillis());
@@ -128,8 +141,8 @@ public class FileOutput extends OutputPlugin{
 	
 	/**
 	 * Parses and writes given GPSLoggerPacket to given DataOutputStream.
-	 * @param gpslp
-	 * @param dos
+	 * @param gpslp the GPSLoggerPacket to parse and write out.
+	 * @param dos the DataOutputStream to write to.
 	 */
 	private void dataParse(GPSLocationPacket gpslp, DataOutputStream dos){
 		try {

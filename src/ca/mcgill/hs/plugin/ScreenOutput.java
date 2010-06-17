@@ -2,7 +2,7 @@ package ca.mcgill.hs.plugin;
 
 import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
-import ca.mcgill.hs.plugin.GPSLocationLogger.GPSLocationPacket;
+import ca.mcgill.hs.plugin.GPSLogger.GPSLocationPacket;
 import android.util.Log;
 
 

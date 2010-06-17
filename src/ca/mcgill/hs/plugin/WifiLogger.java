@@ -166,11 +166,11 @@ public class WifiLogger extends InputPlugin{
 	
 	public class WifiLoggerPacket implements DataPacket{
 		
-		public final int neighbors;
-		public final long timestamp;
-		public final int[] levels;
-		public final String[] SSIDs;
-		public final String[] BSSIDs;
+		final int neighbors;
+		final long timestamp;
+		final int[] levels;
+		final String[] SSIDs;
+		final String[] BSSIDs;
 		
 		/**
 		 * Constructor for this DataPacket.

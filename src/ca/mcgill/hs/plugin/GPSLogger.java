@@ -12,13 +12,13 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.util.Log;
 
-public class GPSLocationLogger extends InputPlugin{
+public class GPSLogger extends InputPlugin{
 	private final LocationManager gpsm;
 	private final GPSLocationListener gpsll;
 	private int MIN_DIST = 0;
 	private int UPDATE_FREQ = 0;
 	
-	public GPSLocationLogger(LocationManager gpsm){
+	public GPSLogger(LocationManager gpsm){
 		this.gpsm = gpsm;
 		gpsll = new GPSLocationListener(gpsm);
 	}

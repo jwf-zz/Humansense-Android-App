@@ -24,7 +24,7 @@ public class HSService extends Service{
 	//A simple static array of the input plugin class names.
 	public static final Class[] inputPluginsAvailable = {
 		WifiLogger.class,
-		GPSLocationLogger.class,
+		GPSLogger.class,
 		SensorLogger.class
 		};
 	//A simple static array of the output plugin class names.
@@ -111,7 +111,7 @@ public class HSService extends Service{
 	 */
 	private void addInputPlugins(){
 		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
-		inputPluginList.add(new GPSLocationLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE)));
+		inputPluginList.add(new GPSLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE)));
 		inputPluginList.add(new SensorLogger((SensorManager)getSystemService(Context.SENSOR_SERVICE)));
 	}
 	

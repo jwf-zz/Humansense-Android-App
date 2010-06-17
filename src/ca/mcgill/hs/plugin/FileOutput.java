@@ -9,7 +9,7 @@ import java.util.zip.GZIPOutputStream;
 import java.util.Date;
 import java.util.HashMap;
 
-import ca.mcgill.hs.plugin.GPSLocationLogger.GPSLocationPacket;
+import ca.mcgill.hs.plugin.GPSLogger.GPSLocationPacket;
 import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
 

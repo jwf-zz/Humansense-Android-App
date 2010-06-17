@@ -1,5 +1,7 @@
 package ca.mcgill.hs.plugin;
 
+import java.io.IOException;
+
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -26,11 +28,22 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	private static boolean magfieldUpdated = false;
 	private static float[] orientation = { 0.0f, 0.0f, 0.0f };
 	
+	/**
+	 * This is the basic constructor for the SensorLogger plugin. It has to be instantiated
+	 * before it is started, and needs to be passed a reference to a SensorManager.
+	 * 
+	 * @param gpsm
+	 * @param context
+	 */
 	public SensorLogger(SensorManager sensorManager){
 		this.sensorManager = sensorManager;
 	}
 	
-	@Override
+	/**
+	 * Registers the appropriate listeners using the SensorManager.
+	 * 
+	 * @override
+	 */
 	public void startPlugin() {
 		Log.i("SensorLogger", "Registered Sensor Listener");
 		sensorManager.registerListener(this, 
@@ -45,6 +58,13 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		logging = true;
 	}
 	
+	/**
+	 * This method gets called automatically whenever a sensor has changed.
+	 * 
+	 * @param event the SensorEvent detailing the change in sensor data.
+	 * 
+	 * @override
+	 */
 	public void onSensorChanged(SensorEvent event) {
 		if (logging) {
 			final Sensor sensor = event.sensor;
@@ -75,7 +95,10 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 				
 			}
 		}
-
+	
+	/**
+	 * Processes the results sent by the Sensor change and writes them out.
+	 */
 	private void logAccelerometerData(final float[] values, final long timestamp) {
 		final float x = values[0];
 		final float y = values[1];
@@ -86,7 +109,11 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	}
 
 
-	@Override
+	/**
+	 * Unregisters the appropriate listeners using the SensorManager.
+	 * 
+	 * @override
+	 */
 	public void stopPlugin() {
 		Log.i("SensorLogger", "Unregistered Sensor Listener.");
 		sensorManager.unregisterListener(this, 
@@ -99,7 +126,14 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	}
 
 
-	@Override
+	/**
+	 * This method gets called automatically whenever a Sensor's accuracy has changed.
+	 * 
+	 * @param sensor the Sensor whose accuracy changed.
+	 * @param accuracy the new accuracy of the given Sensor.
+	 * 
+	 * @override
+	 */
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {		
 	}
 	

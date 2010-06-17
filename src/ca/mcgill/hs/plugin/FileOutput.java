@@ -9,7 +9,7 @@ import java.util.zip.GZIPOutputStream;
 import java.util.Date;
 import java.util.HashMap;
 
-import ca.mcgill.hs.plugin.GPSLogger.GPSLocationPacket;
+import ca.mcgill.hs.plugin.GPSLogger.GPSLoggerPacket;
 import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
 
@@ -86,8 +86,8 @@ public class FileOutput extends OutputPlugin{
 			DataOutputStream dos = fileHandles.get(id);
 			if (dp.getClass() == WifiLoggerPacket.class){
 				dataParse((WifiLoggerPacket) dp, dos);
-			} else if (dp.getClass() == GPSLocationPacket.class) {
-				dataParse((GPSLocationPacket) dp, dos);
+			} else if (dp.getClass() == GPSLoggerPacket.class) {
+				dataParse((GPSLoggerPacket) dp, dos);
 			} else if (dp.getClass() == SensorLoggerPacket.class){
 				dataParse((SensorLoggerPacket) dp, dos);
 			}
@@ -144,7 +144,7 @@ public class FileOutput extends OutputPlugin{
 	 * @param gpslp the GPSLoggerPacket to parse and write out.
 	 * @param dos the DataOutputStream to write to.
 	 */
-	private void dataParse(GPSLocationPacket gpslp, DataOutputStream dos){
+	private void dataParse(GPSLoggerPacket gpslp, DataOutputStream dos){
 		try {
 			dos.writeLong(gpslp.time);
 			dos.writeFloat(gpslp.accuracy);
@@ -168,7 +168,7 @@ public class FileOutput extends OutputPlugin{
 	private String getFileExtension(DataPacket dp){
 		if (dp.getClass() == WifiLoggerPacket.class){
 			return WIFI_EXT;
-		} else if (dp.getClass() == GPSLocationPacket.class) {
+		} else if (dp.getClass() == GPSLoggerPacket.class) {
 			return GPS_EXT;
 		} else if (dp.getClass() == SensorLoggerPacket.class){
 			return SENS_EXT;

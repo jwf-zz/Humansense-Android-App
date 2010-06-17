@@ -2,7 +2,7 @@ package ca.mcgill.hs.plugin;
 
 import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
-import ca.mcgill.hs.plugin.GPSLogger.GPSLocationPacket;
+import ca.mcgill.hs.plugin.GPSLogger.GPSLoggerPacket;
 import android.util.Log;
 
 
@@ -26,8 +26,8 @@ public class ScreenOutput extends OutputPlugin{
 	void onDataReceived(DataPacket dp) {
 		if (dp.getClass() == WifiLoggerPacket.class){
 			dataParse((WifiLoggerPacket) dp);
-		} else if (dp.getClass() == GPSLocationPacket.class) {
-			dataParse((GPSLocationPacket) dp);
+		} else if (dp.getClass() == GPSLoggerPacket.class) {
+			dataParse((GPSLoggerPacket) dp);
 		} else if (dp.getClass() == SensorLoggerPacket.class){
 			
 		}
@@ -53,7 +53,7 @@ public class ScreenOutput extends OutputPlugin{
 	 * Parses and writes given GPSLoggerPacket to the Android's logcat.
 	 * @param gpslp the GPSLoggerPacket to parse and write out.
 	 */
-	private void dataParse(GPSLocationPacket gpslp){
+	private void dataParse(GPSLoggerPacket gpslp){
 		Log.i("GPSLocationLogger SO", "Area: [" + gpslp.altitude + "][" + gpslp.latitude + "][" + gpslp.longitude + "]");
 	}
 

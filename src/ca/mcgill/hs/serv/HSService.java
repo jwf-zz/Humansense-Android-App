@@ -111,7 +111,7 @@ public class HSService extends Service{
 	 */
 	private void addInputPlugins(){
 		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
-		inputPluginList.add(new GPSLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE)));
+		inputPluginList.add(new GPSLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE), PASSABLE_CONTEXT));
 		inputPluginList.add(new SensorLogger((SensorManager)getSystemService(Context.SENSOR_SERVICE)));
 	}
 	

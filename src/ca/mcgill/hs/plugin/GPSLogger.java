@@ -1,8 +1,10 @@
 package ca.mcgill.hs.plugin;
 
 import ca.mcgill.hs.R;
+import ca.mcgill.hs.util.PreferenceFactory;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationProvider;
@@ -10,22 +12,52 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
+ * An InputPlugin which gets data from the available GPS signals around.
  * 
  * @author Cicerone Cojocaru, Jonathan Pitre
  *
  */
 public class GPSLogger extends InputPlugin{
-	private final LocationManager gpsm;
-	private final GPSLocationListener gpsll;
-	private int MIN_DIST = 0;
-	private int UPDATE_FREQ = 0;
 	
-	public GPSLogger(LocationManager gpsm){
+	//The LocationManager used to request location updates.
+	private final LocationManager gpsm;
+	
+	//A GPSLocationListener which listens for location updates.
+	private final GPSLocationListener gpsll;
+	
+	//The minimum distance the person has to travel for an update to be valid.
+	private int MIN_DIST;
+	
+	//The minimum amount of time, in milliseconds, that has to pass between two subsequent updates
+	//for an update to be valid.
+	private int UPDATE_FREQ;
+	
+	/**
+	 * This is the basic constructor for the WifiLogger plugin. It has to be instantiated
+	 * before it is started, and needs to be passed a reference to a WifiManager, a Context
+	 * and a WritableByteChannel (java.nio).
+	 * 
+	 * @param gpsm
+	 * @param context
+	 */
+	public GPSLogger(LocationManager gpsm, Context context){
 		this.gpsm = gpsm;
 		gpsll = new GPSLocationListener(gpsm);
+		
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		try {
+			MIN_DIST = Integer.parseInt(prefs.getString("gpsLoggerDistancePreference", "0"));
+			UPDATE_FREQ = Integer.parseInt(prefs.getString("gpsLoggerIntervalPreference", "30000"));
+		} catch (NumberFormatException defVals) {
+			MIN_DIST = 0;
+			UPDATE_FREQ = 30000;
+			Log.e("GPSLogger - PreferenceError", "Unable to get one or more preferences for this plugin.");
+		}
 	}
 
 	@Override
@@ -57,23 +89,13 @@ public class GPSLogger extends InputPlugin{
 	public static Preference[] getPreferences(Context c){
 		Preference[] prefs = new Preference[2];
 		
-		ListPreference intervals = new ListPreference(c);
-		intervals.setEntries(R.array.gpsLoggerIntervalStrings);
-		intervals.setEntryValues(R.array.gpsLoggerIntervalValues);
-		intervals.setKey("gpsLoggerIntervalPreference");
-		intervals.setTitle(R.string.gpslogger_interval_pref);
-		intervals.setSummary(R.string.gpslogger_interval_pref_summary);
-		intervals.setDefaultValue("30000");
-		prefs[0] = intervals;
+		prefs[0] = PreferenceFactory.getListPreference(c, R.array.gpsLoggerIntervalStrings,
+				R.array.gpsLoggerIntervalValues, "30000", "gpsLoggerIntervalPreference",
+				R.string.gpslogger_interval_pref, R.string.gpslogger_interval_pref_summary);
 		
-		ListPreference distance = new ListPreference(c);
-		distance.setEntries(R.array.gpsLoggerDistanceStrings);
-		distance.setEntryValues(R.array.gpsLoggerDistanceValues);
-		distance.setKey("gpsLoggerDistancePreference");
-		distance.setTitle(R.string.gpslogger_distance_pref);
-		distance.setSummary(R.string.gpslogger_distance_pref_summary);
-		distance.setDefaultValue("0");
-		prefs[1] = distance;
+		prefs [1] = PreferenceFactory.getListPreference(c, R.array.gpsLoggerDistanceStrings,
+				R.array.gpsLoggerDistanceValues, "0", "gpsLoggerDistancePreference",
+				R.string.gpslogger_distance_pref, R.string.gpslogger_distance_pref_summary);
 		
 		return prefs;
 	}

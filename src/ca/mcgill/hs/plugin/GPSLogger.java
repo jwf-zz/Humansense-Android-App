@@ -37,12 +37,11 @@ public class GPSLogger extends InputPlugin{
 	private int UPDATE_FREQ;
 	
 	/**
-	 * This is the basic constructor for the WifiLogger plugin. It has to be instantiated
-	 * before it is started, and needs to be passed a reference to a WifiManager, a Context
-	 * and a WritableByteChannel (java.nio).
+	 * This is the basic constructor for the GPSLogger plugin. It has to be instantiated
+	 * before it is started, and needs to be passed a reference to a LocationManager and a Context.
 	 * 
-	 * @param gpsm
-	 * @param context
+	 * @param gpsm the LocationManager used for this plugin.
+	 * @param context needed for the Preference objects.
 	 */
 	public GPSLogger(LocationManager gpsm, Context context){
 		this.gpsm = gpsm;
@@ -59,8 +58,12 @@ public class GPSLogger extends InputPlugin{
 			Log.e("GPSLogger - PreferenceError", "Unable to get one or more preferences for this plugin.");
 		}
 	}
-
-	@Override
+	
+	/**
+	 * This method requests location updates from the LocationManager.
+	 *
+	 * @Override
+	 */
 	public void startPlugin() {
 		gpsm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
 				UPDATE_FREQ,
@@ -69,7 +72,12 @@ public class GPSLogger extends InputPlugin{
 		Log.i("GPSLocationLogger local", "Registered Location Listener.");
 	}
 
-	@Override
+
+	/**
+	 * This method removes the requested location updates.
+	 * 
+	 * @Override
+	 */
 	public void stopPlugin() {
 		gpsm.removeUpdates(gpsll);
 		Log.i("GPSLocationLogger local", "Unregistered Location Listener.");
@@ -77,6 +85,7 @@ public class GPSLogger extends InputPlugin{
 	
 	/**
 	 * Creates a GPSLocationPacket with the current location's coordinates.
+	 * 
 	 * @param loc the current Location.
 	 */
 	private void getNewLocation(Location loc){
@@ -86,6 +95,14 @@ public class GPSLogger extends InputPlugin{
 				loc.getAltitude(), loc.getLatitude(), loc.getLongitude()));
 	}
 	
+	/**
+	 * Returns the list of Preference objects for this InputPlugin.
+	 * 
+	 * @param c the context for the generated Preferences.
+	 * @return an array of the Preferences of this object.
+	 * 
+	 * @override
+	 */
 	public static Preference[] getPreferences(Context c){
 		Preference[] prefs = new Preference[2];
 		
@@ -100,6 +117,11 @@ public class GPSLogger extends InputPlugin{
 		return prefs;
 	}
 	
+	/**
+	 * Returns whether or not this InputPlugin has Preferences.
+	 * 
+	 * @return whether or not this InputPlugin has preferences.
+	 */
 	public static boolean hasPreferences(){return true;}
 	
 	

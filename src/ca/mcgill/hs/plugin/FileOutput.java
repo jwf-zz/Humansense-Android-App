@@ -36,7 +36,7 @@ public class FileOutput extends OutputPlugin{
 	/**
 	 * Closes all files currently open.
 	 * 
-	 * @Override
+	 * @override
 	 */
 	protected void onPluginStop(){
 		for (String id : fileHandles.keySet()){
@@ -57,7 +57,7 @@ public class FileOutput extends OutputPlugin{
 	 * 
 	 * @param dp the DataPacket recieved.
 	 * 
-	 * @Override
+	 * @override
 	 */
 	synchronized void onDataReceived(DataPacket dp) {
 		String id = dp.getInputPluginName();

@@ -15,7 +15,14 @@ import android.util.Log;
  */
 public class ScreenOutput extends OutputPlugin{
 
-	@Override
+	/**
+	 * This method gets called whenever an InputPlugin registered to ScreenOutput has data available
+	 * to output. This method calls the appropriate version of dataParse based on the DataPacket type.
+	 * 
+	 * @param dp the DataPacket recieved.
+	 * 
+	 * @override
+	 */
 	void onDataReceived(DataPacket dp) {
 		if (dp.getClass() == WifiLoggerPacket.class){
 			dataParse((WifiLoggerPacket) dp);
@@ -26,6 +33,10 @@ public class ScreenOutput extends OutputPlugin{
 		}
 	}
 	
+	/**
+	 * Parses and writes given WifiLoggerPacket to the Android's logcat.
+	 * @param wlp the WifiLoggerPacket to parse and write out.
+	 */
 	private void dataParse(WifiLoggerPacket wlp){
 		Log.i("ScreenOutput", "Time: " + wlp.timestamp);
 		Log.i("ScreenOutput", "Neighbors: " + wlp.neighbors);
@@ -38,6 +49,10 @@ public class ScreenOutput extends OutputPlugin{
 		}
 	}
 	
+	/**
+	 * Parses and writes given GPSLoggerPacket to the Android's logcat.
+	 * @param gpslp the GPSLoggerPacket to parse and write out.
+	 */
 	private void dataParse(GPSLocationPacket gpslp){
 		Log.i("GPSLocationLogger SO", "Area: [" + gpslp.altitude + "][" + gpslp.latitude + "][" + gpslp.longitude + "]");
 	}

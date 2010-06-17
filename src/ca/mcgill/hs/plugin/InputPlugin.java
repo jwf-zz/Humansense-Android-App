@@ -35,7 +35,7 @@ public abstract class InputPlugin implements Plugin{
 	 * false. If a given InputPlugin overrides the getPreferences(Context) method, they must also
 	 * override this method to let it return true.
 	 * 
-	 * @return
+	 * @return whether or not this InputPlugin has preferences.
 	 */
 	public static boolean hasPreferences() {return false;}
 

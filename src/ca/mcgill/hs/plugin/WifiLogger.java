@@ -32,6 +32,12 @@ public class WifiLogger extends InputPlugin{
 	private static int sleepIntervalMillisecs;
 	private WifiLoggerReceiver wlr;
 	private final Context context;
+	
+	int numResults;
+	long timestamp;
+	int[] levels;
+	String[] SSIDs;
+	String[] BSSIDs;
 		
 	/**
 	 * This is the basic constructor for the WifiLogger plugin. It has to be instantiated
@@ -104,14 +110,13 @@ public class WifiLogger extends InputPlugin{
 	 */
 	private void processResults(List<ScanResult> results){
 		
-		int numResults = results.size();
-		long timestamp;
-		int[] levels = new int[numResults];
-		String[] SSIDs = new String[numResults];
-		String[] BSSIDs = new String[numResults];
+		numResults = results.size();
+		timestamp = System.currentTimeMillis();
+		levels = new int[numResults];
+		SSIDs = new String[numResults];
+		BSSIDs = new String[numResults];
 		
 		int i = 0;
-		timestamp = System.currentTimeMillis();
 		for (ScanResult sr : results){
 			levels[i] = sr.level;
 			SSIDs[i] = sr.SSID;

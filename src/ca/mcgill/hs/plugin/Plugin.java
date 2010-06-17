@@ -11,14 +11,12 @@ package ca.mcgill.hs.plugin;
 public interface Plugin {
 	
 	/**
-	 * Starts a threads the plugin will run.
-	 * This method must be overwritten in all input plugins but not output plugins.
+	 * Sets up the plugin in order for it to run.
 	 */
 	public void startPlugin();
 	
 	/**
-	 * Stops the threads the plugin ran.
-	 * This method must be overwritten in all input plugins but not output plugins.
+	 * Cleans up once the plugin execution is halted.
 	 */
 	public void stopPlugin();
 

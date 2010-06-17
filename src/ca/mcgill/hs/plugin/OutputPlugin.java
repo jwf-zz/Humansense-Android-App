@@ -64,8 +64,23 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	 */
 	abstract void onDataReceived(DataPacket dp);
 	
-	//TODO Write these comments.
+	/**
+	 * This method returns an array of Preference objects for the given OutputPlugin. By default,
+	 * this method returns null. If a specific OutputPlugin wants to define Preferences, they must
+	 * override this method.
+	 * 
+	 * @param c the context for the generated Preferences.
+	 * @return an array of the Preferences of this object.
+	 */
 	public static Preference[] getPreferences(Context c){return null;}
+	
+	/**
+	 * Returns whether or not this OutputPlugin has Preferences. By default, this method returns
+	 * false. If a given OutputPlugin overrides the getPreferences(Context) method, they must also
+	 * override this method to let it return true.
+	 * 
+	 * @return whether or not this OutputPlugin has preferences.
+	 */
 	public static boolean hasPreferences(){return false;}
 
 }

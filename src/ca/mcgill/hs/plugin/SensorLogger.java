@@ -6,10 +6,21 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
+/**
+ * An InputPlugin which gets data from the phone's available sensors.
+ * 
+ * @author Cicerone Cojocaru, Jonathan Pitre
+ *
+ */
 public class SensorLogger extends InputPlugin implements SensorEventListener{
 	
+	//The SensorManager used to register listeners.
 	private final SensorManager sensorManager;
+	
+	//A boolean checking whether or not we are logging at a given moment.
 	private static boolean logging = false;
+	
+	//Variables used to write out the sensor data received.
 	private static float temperature = 0.0f;
 	private static float[] magfield = { 0.0f, 0.0f, 0.0f };
 	private static boolean magfieldUpdated = false;

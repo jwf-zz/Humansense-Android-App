@@ -1,10 +1,7 @@
 package ca.mcgill.hs.plugin;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.List;
 
-import ca.mcgill.hs.plugin.GPSLogger.GPSLocationPacket;
 
 import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
@@ -18,13 +15,19 @@ import android.util.Log;
 public class GSMLogger extends InputPlugin{
 	private static final String TAG = "GSMLocationLogger";
 	private final TelephonyManager tm;
-	private final DataOutputStream os;
 	private PhoneStateListener psl;
 	private Thread updateThread;
 	
-	public GSMLogger(DataOutputStream os, TelephonyManager tm) {
+	private static long time;
+	private static int cid;
+	private static int lac;
+	private static int ns;
+	private static int[] cids;
+	private static int[] lacs;
+	private static int[] rssis;
+	
+	public GSMLogger(TelephonyManager tm) {
 		this.tm = tm;
-		this.os = os;
 	}	
 
 	/**
@@ -86,33 +89,29 @@ public class GSMLogger extends InputPlugin{
 				}
 
 				public void logSignals(GsmCellLocation cell) {
-					try {
-						
-						os.writeLong(System.currentTimeMillis());
-						os.writeInt(mcc);
-						os.writeInt(mnc);
-						os.writeInt(cell.getCid());
-						os.writeInt(cell.getLac());
-						os.writeInt(rssi);
+					time = System.currentTimeMillis();
+					cid = cell.getCid();
+					lac = cell.getLac();
 
-						final List<NeighboringCellInfo> neighbours = tm.getNeighboringCellInfo();
-						os.writeInt(neighbours.size());
+					final List<NeighboringCellInfo> neighbours = tm.getNeighboringCellInfo();
+					ns = neighbours.size();
 
-						int asu, rssi;
-						for (NeighboringCellInfo neighbour : neighbours) {
-							os.writeInt(neighbour.getCid());
-							os.writeInt(neighbour.getLac());
-							asu = neighbour.getRssi();
-							if (asu == -1) {
-								rssi = -1;
-							} else {
-								rssi = (-113 + 2 * asu);
-							}
-							os.writeInt(rssi);
+					int asu, rssi;
+					int i = 0;
+					for (NeighboringCellInfo neighbour : neighbours) {
+						cids[i] = neighbour.getCid();
+						lacs[i] = neighbour.getLac();
+						asu = neighbour.getRssi();
+						if (asu == -1) {
+							rssi = -1;
+						} else {
+							rssi = (-113 + 2 * asu);
 						}
-					} catch (IOException e) {
-						Log.e(TAG, "Exception while logging GSM Data:", e);
+						rssis[i] = rssi;
+						i++;
 					}
+					
+					write(new GSMLoggerPacket(time, mcc, mnc, cid, lac, this.rssi, ns, cids, lacs, rssis));
 				}
 			};
 			tm.listen(psl, PhoneStateListener.LISTEN_SERVICE_STATE | 
@@ -122,9 +121,9 @@ public class GSMLogger extends InputPlugin{
 				public void run() {
 					try {
 						while (true) {
-							//Log.d(TAG, "Requesting Cell Location Update.");
+							Log.d(TAG, "Requesting Cell Location Update.");
 							CellLocation.requestLocationUpdate();
-							sleep(30000); // Sleep for 30 seconds
+							sleep(5000);
 						}
 					} catch (InterruptedException e) {
 						Log.d(TAG, "Logging thread terminated.");

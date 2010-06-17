@@ -9,13 +9,19 @@ import java.util.zip.GZIPOutputStream;
 import java.util.Date;
 import java.util.HashMap;
 
-import ca.mcgill.hs.plugin.GPSLocationLogger.GPSLocationPacket;
+import ca.mcgill.hs.plugin.GPSLogger.GPSLocationPacket;
 import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
 
 import android.os.Environment;
 import android.util.Log;
 
+/**
+ * 
+ * 
+ * @author Cicerone Cojocaru, Jonathan Pitre
+ *
+ */
 public class FileOutput extends OutputPlugin{
 	
 	//HashMap used for keeping file handles. There is one file associated with each input plugin connected.

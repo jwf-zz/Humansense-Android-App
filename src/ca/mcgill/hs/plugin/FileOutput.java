@@ -9,7 +9,8 @@ import java.util.zip.GZIPOutputStream;
 import java.util.Date;
 import java.util.HashMap;
 
-import ca.mcgill.hs.plugin.GPSLogger.GPSLocationPacket;
+import ca.mcgill.hs.plugin.GPSLogger.GPSLoggerPacket;
+import ca.mcgill.hs.plugin.GSMLogger.GSMLoggerPacket;
 import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
 
@@ -31,6 +32,7 @@ public class FileOutput extends OutputPlugin{
 	private final String WIFI_EXT = "-wifiloc.log";
 	private final String GPS_EXT = "-gpsloc.log";
 	private final String SENS_EXT = "-raw.log";
+	private final String GSM_EXT = "-gsmloc.log";
 	private final String DEF_EXT = ".log";
 	
 	/**
@@ -86,10 +88,12 @@ public class FileOutput extends OutputPlugin{
 			DataOutputStream dos = fileHandles.get(id);
 			if (dp.getClass() == WifiLoggerPacket.class){
 				dataParse((WifiLoggerPacket) dp, dos);
-			} else if (dp.getClass() == GPSLocationPacket.class) {
-				dataParse((GPSLocationPacket) dp, dos);
+			} else if (dp.getClass() == GPSLoggerPacket.class) {
+				dataParse((GPSLoggerPacket) dp, dos);
 			} else if (dp.getClass() == SensorLoggerPacket.class){
 				dataParse((SensorLoggerPacket) dp, dos);
+			} else if (dp.getClass() == GSMLoggerPacket.class){
+				dataParse((GSMLoggerPacket) dp, dos);
 			}
 			
 		} catch (IOException e) {
@@ -144,7 +148,7 @@ public class FileOutput extends OutputPlugin{
 	 * @param gpslp the GPSLoggerPacket to parse and write out.
 	 * @param dos the DataOutputStream to write to.
 	 */
-	private void dataParse(GPSLocationPacket gpslp, DataOutputStream dos){
+	private void dataParse(GPSLoggerPacket gpslp, DataOutputStream dos){
 		try {
 			dos.writeLong(gpslp.time);
 			dos.writeFloat(gpslp.accuracy);
@@ -160,6 +164,31 @@ public class FileOutput extends OutputPlugin{
 	}
 	
 	/**
+	 * Parses and writes given GSMLoggerPacket to given DataOutputStream.
+	 * @param gsmlp the GSMLoggerPacket to parse and write out.
+	 * @param dos the DataOutputStream to write to.
+	 */
+	private void dataParse(GSMLoggerPacket gsmlp, DataOutputStream dos){
+		try {
+			dos.writeLong(gsmlp.time);
+			dos.writeInt(gsmlp.mcc);
+			dos.writeInt(gsmlp.mnc);
+			dos.writeInt(gsmlp.cid);
+			dos.writeInt(gsmlp.lac);
+			dos.writeInt(gsmlp.rssi);
+			dos.writeInt(gsmlp.neighbors);
+			for (int i = gsmlp.neighbors - 1; i >= 0; i--){
+				dos.writeInt(gsmlp.cids[i]);
+				dos.writeInt(gsmlp.lacs[i]);
+				dos.writeInt(gsmlp.rssis[i]);
+			}
+		}catch (IOException e) {
+			Log.e("FileOutput", "Caught IOException (GSMLoggerPacket parsing)");
+			e.printStackTrace();
+		}
+	}
+	
+	/**
 	 * Returns the String corresponding to the file extension (of the DataPacket) that should be added to the 
 	 * name of the file currently being created.
 	 * @param dp the given DataPacket
@@ -168,10 +197,12 @@ public class FileOutput extends OutputPlugin{
 	private String getFileExtension(DataPacket dp){
 		if (dp.getClass() == WifiLoggerPacket.class){
 			return WIFI_EXT;
-		} else if (dp.getClass() == GPSLocationPacket.class) {
+		} else if (dp.getClass() == GPSLoggerPacket.class) {
 			return GPS_EXT;
 		} else if (dp.getClass() == SensorLoggerPacket.class){
 			return SENS_EXT;
+		} else if (dp.getClass() == GSMLoggerPacket.class){
+			return GSM_EXT;
 		} else {
 			return DEF_EXT;
 		}

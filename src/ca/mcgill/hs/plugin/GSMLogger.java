@@ -3,6 +3,7 @@ package ca.mcgill.hs.plugin;
 import java.util.List;
 
 
+import android.content.Context;
 import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
@@ -13,7 +14,7 @@ import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
 public class GSMLogger extends InputPlugin{
-	private static final String TAG = "GSMLocationLogger";
+	private static final String TAG = "GSMLogger";
 	private final TelephonyManager tm;
 	private PhoneStateListener psl;
 	private Thread updateThread;
@@ -26,7 +27,7 @@ public class GSMLogger extends InputPlugin{
 	private static int[] lacs;
 	private static int[] rssis;
 	
-	public GSMLogger(TelephonyManager tm) {
+	public GSMLogger(TelephonyManager tm, Context context) {
 		this.tm = tm;
 	}	
 
@@ -37,7 +38,7 @@ public class GSMLogger extends InputPlugin{
 	 * @Override
 	 */
 	public void startPlugin() {
-		if (tm.getPhoneType() == TelephonyManager.PHONE_TYPE_GSM) {
+		if (tm.getPhoneType() == TelephonyManager.PHONE_TYPE_GSM && tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT) {
 			psl = new PhoneStateListener() {
 				private int rssi = -1, mcc = -1, mnc = -1;
 
@@ -50,6 +51,7 @@ public class GSMLogger extends InputPlugin{
 					} else {
 						rssi = (-113 + 2 * asu);
 					}
+					
 					logSignals((GsmCellLocation)tm.getCellLocation());
 				}
 
@@ -132,16 +134,17 @@ public class GSMLogger extends InputPlugin{
 			};
 			updateThread.start();
 		} else {
-			Log.i(TAG, "GSM Location Logging Unavailable. Wrong phone type!");
+			Log.i(TAG, "GSM Location Logging Unavailable! Wrong phone type or SIM card not present!");
 		}
 		
 	}
 
 	@Override
 	public void stopPlugin() {
-		updateThread.interrupt();
+		if (tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT){
+			updateThread.interrupt();
 		tm.listen(psl, PhoneStateListener.LISTEN_NONE);
-		
+		}
 	}
 	
 	// ***********************************************************************************

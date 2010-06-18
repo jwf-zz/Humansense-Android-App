@@ -13,6 +13,7 @@ import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
+import android.telephony.TelephonyManager;
 
 public class HSService extends Service{
 	
@@ -25,7 +26,8 @@ public class HSService extends Service{
 	public static final Class<?>[] inputPluginsAvailable = {
 		WifiLogger.class,
 		GPSLogger.class,
-		SensorLogger.class
+		SensorLogger.class,
+		GSMLogger.class
 		};
 	//A simple static array of the output plugin class names.
 	public static final Class<?>[] outputPluginsAvailable = {
@@ -113,6 +115,7 @@ public class HSService extends Service{
 		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
 		inputPluginList.add(new GPSLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE), PASSABLE_CONTEXT));
 		inputPluginList.add(new SensorLogger((SensorManager)getSystemService(Context.SENSOR_SERVICE)));
+		inputPluginList.add(new GSMLogger((TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE), PASSABLE_CONTEXT));
 	}
 	
 	/**

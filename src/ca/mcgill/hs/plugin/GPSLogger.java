@@ -90,7 +90,7 @@ public class GPSLogger extends InputPlugin{
 	 */
 	private void getNewLocation(Location loc){
 		Log.i("GPSLocationLogger local", "Data received.");
-		write(new GPSLocationPacket(
+		write(new GPSLoggerPacket(
 				loc.getTime(), loc.getAccuracy(), loc.getBearing(), loc.getSpeed(),
 				loc.getAltitude(), loc.getLatitude(), loc.getLongitude()));
 	}
@@ -168,7 +168,7 @@ public class GPSLogger extends InputPlugin{
 	// PUBLIC INNER CLASS -- GPSLocationPacket
 	// ***********************************************************************************
 	
-	public class GPSLocationPacket implements DataPacket{
+	public class GPSLoggerPacket implements DataPacket{
 		
 		final long time;
 		final float accuracy;
@@ -178,7 +178,7 @@ public class GPSLogger extends InputPlugin{
 		final double latitude;
 		final double longitude;
 		
-		public GPSLocationPacket(long time, float accuracy, float bearing, float speed, double altitude, double latitude, double longitude){
+		public GPSLoggerPacket(long time, float accuracy, float bearing, float speed, double altitude, double latitude, double longitude){
 			this.time = time;
 			this.accuracy = accuracy;
 			this.bearing = bearing;
@@ -194,7 +194,7 @@ public class GPSLogger extends InputPlugin{
 		}
 		
 		public DataPacket clone(){
-			return new GPSLocationPacket(time, accuracy, bearing, speed, altitude, latitude, longitude);
+			return new GPSLoggerPacket(time, accuracy, bearing, speed, altitude, latitude, longitude);
 		}
 
 	}

@@ -15,7 +15,7 @@ import android.preference.Preference.OnPreferenceClickListener;
  * menu for the HSAndroid Activity. Whenever the user accesses the settings from the options
  * menu, this PreferenceActivity is launched.
  * 
- * @author Jonathan Pitre
+ * @author Cicerone Cojocaru, Jonathan Pitre
  *
  */
 public class HSAndroidPreferences extends PreferenceActivity {

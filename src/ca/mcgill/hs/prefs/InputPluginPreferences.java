@@ -14,20 +14,45 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
 import android.util.Log;
 
+/**
+ * InputPluginPreferenes is a class extending PreferenceActivity which defines the settings
+ * menu for the HSAndroid InputPlugin objects. Whenever the user accesses the "Input Plugins" option
+ * from the Settings menu, this PreferenceActivity is launched.
+ * 
+ * @author Cicerone Cojocaru, Jonathan Pitre
+ *
+ */
 public class InputPluginPreferences extends PreferenceActivity{
 	
+	/**
+	 * This is called when the PreferenceActivity is requested and created. This allows
+	 * the user to visually see the preferences menu on the screen. This method calls the
+	 * private method createPreferenceHierarchy() in order to generate the Preference menu
+	 * from the available InputPlugin objects.
+	 * 
+	 * @override
+	 */
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		try{
-			setPreferenceScreen(createPreferenceHierarchy());
-		} catch (IllegalArgumentException e) { e.printStackTrace(); }
+		try{ setPreferenceScreen(createPreferenceHierarchy()); }
+		catch (IllegalArgumentException e) { e.printStackTrace(); }
 		catch (SecurityException e) {e.printStackTrace();}
 		catch (IllegalAccessException e) {e.printStackTrace();}
 		catch (InvocationTargetException e) {e.printStackTrace();}
 		catch (NoSuchMethodException e) {e.printStackTrace();}
 	}
 	
+	/**
+	 * This method creates a PreferenceScreen from the available InputPlugin classes.
+	 * 
+	 * @return a PreferenceScreen with the appropriate Preference objects.
+	 * @throws IllegalArgumentException
+	 * @throws SecurityException
+	 * @throws IllegalAccessException
+	 * @throws InvocationTargetException
+	 * @throws NoSuchMethodException
+	 */
 	private PreferenceScreen createPreferenceHierarchy() throws IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException, NoSuchMethodException{
 		PreferenceScreen root = getPreferenceManager().createPreferenceScreen(this);
 		

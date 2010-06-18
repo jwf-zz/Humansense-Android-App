@@ -26,13 +26,25 @@ import android.util.Log;
  */
 public class WifiLogger extends InputPlugin{
 	
+	//The Thread for requesting scans.
 	private Thread wifiLoggerThread;
+	
+	//A boolean detailing whether or not the Thread is running.
 	private boolean threadRunning = false;
+	
+	//A WifiManager used to request scans.
 	private final WifiManager wm;
-	private static int sleepIntervalMillisecs;
+	
+	//The interval of time between two subsequent scans.
+	private int sleepIntervalMillisecs;
+	
+	//The WifiLoggerReceiver from which we will get the Wifi scan results.
 	private WifiLoggerReceiver wlr;
+	
+	//The Context in which the WifiLoggerReceiver will be registered.
 	private final Context context;
 	
+	//Variables used to write out the Wifi data received.
 	int numResults;
 	long timestamp;
 	int[] levels;
@@ -41,12 +53,10 @@ public class WifiLogger extends InputPlugin{
 		
 	/**
 	 * This is the basic constructor for the WifiLogger plugin. It has to be instantiated
-	 * before it is started, and needs to be passed a reference to a WifiManager, a Context
-	 * and a WritableByteChannel (java.nio).
+	 * before it is started, and needs to be passed a reference to a WifiManager and a Context.
 	 * 
 	 * @param wm - the WifiManager for this WifiLogger.
 	 * @param context - the context in which this plugin is created.
-	 * @param wbc - the WritableByteChannel through which data will be written.
 	 */
 	public WifiLogger(WifiManager wm, Context context){
 		this.wm = wm;
@@ -90,7 +100,6 @@ public class WifiLogger extends InputPlugin{
 
 	/**
 	 * This method stops the thread if it is running, and does nothing if it is not.
-	 * This method must be overridden in all input plugins.
 	 * 
 	 * @override
 	 */
@@ -103,10 +112,7 @@ public class WifiLogger extends InputPlugin{
 	}
 	
 	/**
-	 * Processes the results sent by the Wifi scan and writes them to the
-	 * DataOutputStream.
-	 * 
-	 * @throws IOException 
+	 * Processes the results sent by the Wifi scan and writes them out.
 	 */
 	private void processResults(List<ScanResult> results){
 		
@@ -128,6 +134,14 @@ public class WifiLogger extends InputPlugin{
 		
 	}
 	
+	/**
+	 * Returns the list of Preference objects for this InputPlugin.
+	 * 
+	 * @param c the context for the generated Preferences.
+	 * @return an array of the Preferences of this object.
+	 * 
+	 * @override
+	 */
 	public static Preference[] getPreferences(Context c) {
 		Preference[] prefs = new Preference[1];
 		
@@ -138,6 +152,11 @@ public class WifiLogger extends InputPlugin{
 		return prefs;
 	}
 	
+	/**
+	 * Returns whether or not this InputPlugin has Preferences.
+	 * 
+	 * @return whether or not this InputPlugin has preferences.
+	 */
 	public static boolean hasPreferences(){ return true; }
 	
 	// ***********************************************************************************

@@ -1,10 +1,6 @@
 package ca.mcgill.hs.prefs;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import ca.mcgill.hs.R;
-import ca.mcgill.hs.plugin.WifiLogger;
 import ca.mcgill.hs.serv.HSService;
 import android.content.Context;
 import android.os.Bundle;
@@ -12,7 +8,7 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
-import android.util.Log;
+import android.util.AttributeSet;
 
 /**
  * InputPluginPreferenes is a class extending PreferenceActivity which defines the settings

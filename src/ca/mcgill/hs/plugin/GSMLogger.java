@@ -96,7 +96,11 @@ public class GSMLogger extends InputPlugin{
 					lac = cell.getLac();
 
 					final List<NeighboringCellInfo> neighbours = tm.getNeighboringCellInfo();
+					
 					ns = neighbours.size();
+					cids = new int[ns];
+					lacs = new int[ns];
+					rssis = new int[ns];
 
 					int asu, rssi;
 					int i = 0;
@@ -123,12 +127,12 @@ public class GSMLogger extends InputPlugin{
 				public void run() {
 					try {
 						while (true) {
-							Log.d(TAG, "Requesting Cell Location Update.");
+							Log.i(TAG, "Requesting Cell Location Update.");
 							CellLocation.requestLocationUpdate();
 							sleep(5000);
 						}
 					} catch (InterruptedException e) {
-						Log.d(TAG, "Logging thread terminated.");
+						Log.i(TAG, "Logging thread terminated.");
 					}
 				}
 			};

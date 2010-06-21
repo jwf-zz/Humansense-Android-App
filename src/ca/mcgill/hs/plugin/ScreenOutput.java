@@ -1,6 +1,5 @@
 package ca.mcgill.hs.plugin;
 
-import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSLoggerPacket;
 import ca.mcgill.hs.plugin.GSMLogger.GSMLoggerPacket;

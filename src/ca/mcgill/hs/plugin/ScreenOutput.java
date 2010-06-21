@@ -1,6 +1,7 @@
 package ca.mcgill.hs.plugin;
 
 import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
+import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSLoggerPacket;
 import ca.mcgill.hs.plugin.GSMLogger.GSMLoggerPacket;
 import android.util.Log;
@@ -30,6 +31,8 @@ public class ScreenOutput extends OutputPlugin{
 			dataParse((GPSLoggerPacket) dp);
 		} else if (dp.getClass() == GSMLoggerPacket.class){
 			dataParse((GSMLoggerPacket) dp);
+		} else if (dp.getClass() == BluetoothPacket.class){
+			dataParse((BluetoothPacket) dp);
 		}
 	}
 	
@@ -70,6 +73,12 @@ public class ScreenOutput extends OutputPlugin{
 			Log.i("GSMLogger SO", "Neighbor " + i + " LAC : " + gsmlp.lacs[i]);
 			Log.i("GSMLogger SO", "Neighbor " + i + " RSSI : " + gsmlp.rssis[i]);
 		}
+	}
+	
+	private void dataParse(BluetoothPacket bp){
+		Log.i("BluetoothLogger SO", "Bluetooth Device Found");
+		Log.i("BluetoothLogger SO", "Name : " + bp.name);
+		Log.i("BluetoothLogger SO", "Address : " + bp.address);
 	}
 
 }

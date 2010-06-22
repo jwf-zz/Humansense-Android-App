@@ -77,8 +77,8 @@ public class ScreenOutput extends OutputPlugin{
 	
 	private void dataParse(BluetoothPacket bp){
 		Log.i("BluetoothLogger SO", "Bluetooth Device Found");
-		Log.i("BluetoothLogger SO", "Name : " + bp.name);
-		Log.i("BluetoothLogger SO", "Address : " + bp.address);
+		Log.i("BluetoothLogger SO", "Name : " + bp.names.toString());
+		Log.i("BluetoothLogger SO", "Address : " + bp.addresses.toString());
 	}
 
 }

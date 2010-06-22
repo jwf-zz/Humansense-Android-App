@@ -96,6 +96,8 @@ public class FileOutput extends OutputPlugin{
 				dataParse((SensorLoggerPacket) dp, dos);
 			} else if (dp.getClass() == GSMLoggerPacket.class){
 				dataParse((GSMLoggerPacket) dp, dos);
+			} else if (dp.getClass() == BluetoothPacket.class){
+				dataParse((BluetoothPacket) dp, dos);
 			}
 			
 		} catch (IOException e) {
@@ -193,8 +195,11 @@ public class FileOutput extends OutputPlugin{
 	private void dataParse(BluetoothPacket btp, DataOutputStream dos){
 		try {
 			dos.writeLong(btp.time);
-			dos.writeUTF(btp.name);
-			dos.writeUTF(btp.address);
+			dos.writeInt(btp.neighbours);
+			for (int i = 0; i<btp.neighbours; i++){
+				dos.writeUTF(btp.names.get(i) == null ? "null" : btp.names.get(i));
+				dos.writeUTF(btp.addresses.get(i) == null ? "null" : btp.addresses.get(i));
+			}
 		} catch (IOException e){
 			Log.e("FileOutput", "Caught IOException (BluetoothPacket parsing)");
 			e.printStackTrace();

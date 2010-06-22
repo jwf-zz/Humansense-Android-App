@@ -9,6 +9,7 @@ import java.util.zip.GZIPOutputStream;
 import java.util.Date;
 import java.util.HashMap;
 
+import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSLoggerPacket;
 import ca.mcgill.hs.plugin.GSMLogger.GSMLoggerPacket;
 import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
@@ -33,6 +34,7 @@ public class FileOutput extends OutputPlugin{
 	private final String GPS_EXT = "-gpsloc.log";
 	private final String SENS_EXT = "-raw.log";
 	private final String GSM_EXT = "-gsmloc.log";
+	private final String BT_EXT = "-bt.log";
 	private final String DEF_EXT = ".log";
 	
 	/**
@@ -129,7 +131,7 @@ public class FileOutput extends OutputPlugin{
 	 */
 	private void dataParse(SensorLoggerPacket slp, DataOutputStream dos){
 		try {
-			dos.writeLong(slp.timestamp);
+			dos.writeLong(slp.time);
 			dos.writeFloat(slp.x);
 			dos.writeFloat(slp.y);
 			dos.writeFloat(slp.z);
@@ -188,6 +190,17 @@ public class FileOutput extends OutputPlugin{
 		}
 	}
 	
+	private void dataParse(BluetoothPacket btp, DataOutputStream dos){
+		try {
+			dos.writeLong(btp.time);
+			dos.writeUTF(btp.name);
+			dos.writeUTF(btp.address);
+		} catch (IOException e){
+			Log.e("FileOutput", "Caught IOException (BluetoothPacket parsing)");
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Returns the String corresponding to the file extension (of the DataPacket) that should be added to the 
 	 * name of the file currently being created.
@@ -203,6 +216,8 @@ public class FileOutput extends OutputPlugin{
 			return SENS_EXT;
 		} else if (dp.getClass() == GSMLoggerPacket.class){
 			return GSM_EXT;
+		} else if (dp.getClass() == BluetoothPacket.class){
+			return BT_EXT;
 		} else {
 			return DEF_EXT;
 		}

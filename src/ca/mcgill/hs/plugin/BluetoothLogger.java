@@ -69,7 +69,7 @@ public class BluetoothLogger extends InputPlugin{
 	}
 	
 	private void onDeviceFound(BluetoothDevice bd){
-		write(new BluetoothPacket(bd.getName(), bd.getAddress()));
+		write(new BluetoothPacket(System.currentTimeMillis(), bd.getName(), bd.getAddress()));
 	}
 
 	@Override
@@ -77,6 +77,7 @@ public class BluetoothLogger extends InputPlugin{
 		if (ba == null) return;
 		
 		if (threadRunning){
+			if (ba.isDiscovering()) ba.cancelDiscovery();
 			//TODO: Add user prompt
 			ba.disable();
 			threadRunning = false;
@@ -108,10 +109,12 @@ public class BluetoothLogger extends InputPlugin{
 
 	public class BluetoothPacket implements DataPacket{
 		
-		public final String name;
-		public final String address;
+		final long time;
+		final String name;
+		final String address;
 		
-		public BluetoothPacket(String name, String address){
+		public BluetoothPacket(long time, String name, String address){
+			this.time = time;
 			this.name = name;
 			this.address = address;
 		}
@@ -121,7 +124,7 @@ public class BluetoothLogger extends InputPlugin{
 		}
 		
 		public DataPacket clone(){
-			return new BluetoothPacket(name, address);
+			return new BluetoothPacket(time, name, address);
 		}
 		
 	}

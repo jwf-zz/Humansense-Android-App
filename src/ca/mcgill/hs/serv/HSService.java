@@ -27,7 +27,8 @@ public class HSService extends Service{
 		WifiLogger.class,
 		GPSLogger.class,
 		SensorLogger.class,
-		GSMLogger.class
+		GSMLogger.class,
+		BluetoothLogger.class
 		};
 	//A simple static array of the output plugin class names.
 	public static final Class<?>[] outputPluginsAvailable = {
@@ -112,18 +113,19 @@ public class HSService extends Service{
 	 * Populates the list of input plugins.
 	 */
 	private void addInputPlugins(){
-		//inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
-		//inputPluginList.add(new GPSLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE), PASSABLE_CONTEXT));
+		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
+		inputPluginList.add(new GPSLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE), PASSABLE_CONTEXT));
 		//inputPluginList.add(new SensorLogger((SensorManager)getSystemService(Context.SENSOR_SERVICE)));
 		inputPluginList.add(new GSMLogger((TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE), PASSABLE_CONTEXT));
+		//inputPluginList.add(new BluetoothLogger(PASSABLE_CONTEXT));
 	}
 	
 	/**
 	 * Populates the list of output plugins.
 	 */
 	private void addOutputPlugins(){
-		outputPluginList.add(new ScreenOutput());
-		//outputPluginList.add(new FileOutput());
+		//outputPluginList.add(new ScreenOutput());
+		outputPluginList.add(new FileOutput());
 	}
 	
 	/**

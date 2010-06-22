@@ -143,7 +143,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	
 	public class SensorLoggerPacket implements DataPacket{
 		
-		final long timestamp;
+		final long time;
 		final float x;
 		final float y;
 		final float z;
@@ -152,9 +152,9 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		final float[] magfield;
 		final float[] orientation;
 		
-		public SensorLoggerPacket(final long timestamp, final float x, final float y, final float z, final float m, final float temperature,
+		public SensorLoggerPacket(final long time, final float x, final float y, final float z, final float m, final float temperature,
 				final float[] magfield, final float[] orientation){
-			this.timestamp = timestamp;
+			this.time = time;
 			this.x = x;
 			this.y = y;
 			this.z = z;
@@ -170,7 +170,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		}
 		
 		public DataPacket clone(){
-			return new SensorLoggerPacket(timestamp, x, y, z, m, temperature, magfield, orientation);
+			return new SensorLoggerPacket(time, x, y, z, m, temperature, magfield, orientation);
 		}
 
 	}

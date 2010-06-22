@@ -74,6 +74,7 @@ public class BluetoothLogger extends InputPlugin{
 		if (ba == null) return;
 		
 		if (threadRunning){
+			if (ba.isDiscovering()) ba.cancelDiscovery();
 			//TODO: Add user prompt
 			ba.disable();
 			threadRunning = false;

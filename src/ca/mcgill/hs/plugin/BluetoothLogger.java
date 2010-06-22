@@ -10,13 +10,11 @@ import android.util.Log;
 
 public class BluetoothLogger extends InputPlugin{
 	
+	//The BluetoothAdapter used to start and stop discovery of devices.
 	private final BluetoothAdapter ba;
 	
 	//The interval of time between two subsequent scans.
-	private int sleepIntervalMillisecs = 30000;
-	
-	//The Thread for requesting scans.
-	private Thread bluetoothThread;
+	private int timeBetweenDiscoveries = 0;
 	
 	//A boolean detailing whether or not the Thread is running.
 	private boolean threadRunning = false;
@@ -27,12 +25,19 @@ public class BluetoothLogger extends InputPlugin{
 	//The BluetoothLoggerReceiver from which we will get the bluetooth scan results.
 	private BluetoothLoggerReceiver blr;
 	
+	//The BluetoothDiscoveryListener used to know when the discovery of bluetooth devices is completed.
+	private BluetoothDiscoveryListener bdl;
+	
+	/**
+	 * The default and only constructor for the BluetoothLogger InputPlugin.
+	 * 
+	 * @param context the required context to register the BluetoothLoggerReceiver.
+	 */
 	public BluetoothLogger(Context context){
 		this.ba = BluetoothAdapter.getDefaultAdapter();
 		this.context = context;
 	}
-
-	@Override
+	
 	public void startPlugin() {
 		if (ba == null) return; //Device does not support Bluetooth
 		
@@ -43,33 +48,25 @@ public class BluetoothLogger extends InputPlugin{
 		
 		blr = new BluetoothLoggerReceiver();
 		context.registerReceiver(blr, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-		Log.i("BluetoothLogger", "Registered receiver.");
+		Log.i("BluetoothLogger", "Registered logger receiver.");
 		
-		bluetoothThread = new Thread() {
-			public void run() {
-				try {
-					while(threadRunning) {
-						if (ba.isDiscovering()){
-							ba.cancelDiscovery();
-							Log.i("BluetoothLogger", "Stopped current discovery.");
-						}
-						Log.i("BluetoothLogger", "Checking for devices...");
-						ba.startDiscovery();
-						sleep(sleepIntervalMillisecs);
-					}
-				}
-				catch(InterruptedException e) {
-					Log.e("BluetoothLogger", "Logging thread terminated due to InterruptedException.");
-				}
-			}
-		};
+		bdl = new BluetoothDiscoveryListener();
+		context.registerReceiver(bdl, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
+		Log.i("BluetoothLogger", "Registered discovery listener.");
 		
-		bluetoothThread.start();
 		threadRunning = true;
 	}
 	
 	private void onDeviceFound(BluetoothDevice bd){
-		write(new BluetoothPacket(bd.getName(), bd.getAddress()));
+		write(new BluetoothPacket(System.currentTimeMillis(), bd.getName(), bd.getAddress()));
+	}
+	
+	private void startDiscovery(){
+		if (ba != null){
+			if (!ba.isDiscovering()){
+				ba.startDiscovery();
+			}
+		}
 	}
 
 	@Override
@@ -103,15 +100,37 @@ public class BluetoothLogger extends InputPlugin{
 	}
 	
 	// ***********************************************************************************
+	// PRIVATE INNER CLASS -- BluetoothDiscoveryListener
+	// ***********************************************************************************
+	
+	private class BluetoothDiscoveryListener extends BroadcastReceiver {
+		
+		public BluetoothDiscoveryListener() {
+			super();
+		}
+
+		public void onReceive(Context c, Intent intent) {
+			try {
+				wait(timeBetweenDiscoveries);
+				startDiscovery();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	// ***********************************************************************************
 	// PRIVATE INNER CLASS -- BluetoothPacket
 	// ***********************************************************************************
 
 	public class BluetoothPacket implements DataPacket{
 		
-		public final String name;
-		public final String address;
+		final long time;
+		final String name;
+		final String address;
 		
-		public BluetoothPacket(String name, String address){
+		public BluetoothPacket(long time, String name, String address){
+			this.time = time;
 			this.name = name;
 			this.address = address;
 		}
@@ -121,7 +140,7 @@ public class BluetoothLogger extends InputPlugin{
 		}
 		
 		public DataPacket clone(){
-			return new BluetoothPacket(name, address);
+			return new BluetoothPacket(time, name, address);
 		}
 		
 	}

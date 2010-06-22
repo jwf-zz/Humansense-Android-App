@@ -125,7 +125,7 @@ public class HSService extends Service{
 	 */
 	private void addOutputPlugins(){
 		outputPluginList.add(new ScreenOutput());
-		outputPluginList.add(new FileOutput());
+		//outputPluginList.add(new FileOutput());
 	}
 	
 	/**

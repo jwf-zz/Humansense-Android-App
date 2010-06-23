@@ -15,12 +15,7 @@ public class BluetoothLogger extends InputPlugin{
 	private final BluetoothAdapter ba;
 	
 	//The interval of time between two subsequent scans.
-	private int timeBetweenDiscoveries = 5000;
-	
-	//A boolean detailing whether or not the Thread is running.
-	private boolean threadRunning = false;
-	
-	private boolean threadStopped = false;
+	private int timeBetweenDiscoveries = 10000;
 
 	//The Context in which the BluetoothLoggerReceiver will be registered.
 	private final Context context;
@@ -34,34 +29,12 @@ public class BluetoothLogger extends InputPlugin{
 	private final LinkedList<String> names;
 	private final LinkedList<String> addresses;
 	
-	private final Thread waiter = new Thread(){
-		public void run(){
-			while (!threadStopped){
-				while (threadRunning){
-					try {
-						sleep(timeBetweenDiscoveries);
-						if (!ba.isEnabled()) {
-							//TODO: Add user prompt
-							ba.enable();
-							while (!ba.isEnabled()){}
-						}
-						if (ba != null){
-							if (!ba.isDiscovering()){
-								Log.i("BluetoothLogger", "Discovery started.");
-								ba.startDiscovery();
-							}
-						}
-					} catch (InterruptedException e) {
-						Log.e("BluetoothLogger", "Expected thread interruption: InterruptedException expected.");
-					}
-					threadRunning = false;
-				}
-			}
-		}
-	};
-	
 	//Was the Bluetooth enable when the plugin was started
 	private boolean wasEnabled = false;
+	
+	private boolean expectedInterrupt = false;
+	
+	private Thread exec;
 	
 	/**
 	 * The default and only constructor for the BluetoothLogger InputPlugin.
@@ -89,8 +62,8 @@ public class BluetoothLogger extends InputPlugin{
 		context.registerReceiver(bdl, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 		Log.i("BluetoothLogger", "Registered discovery listener.");
 		
-		threadRunning = true;
-		waiter.start();
+		exec = getExecutionThread();
+		exec.start();
 	}
 	
 	private void onDeviceFound(BluetoothDevice bd){
@@ -102,8 +75,8 @@ public class BluetoothLogger extends InputPlugin{
 	public void stopPlugin() {
 		if (ba == null) return;
 		
-		waiter.interrupt();
-		threadStopped = true;
+		expectedInterrupt = true;
+		exec.interrupt();
 		
 		context.unregisterReceiver(blr);
 		Log.i("BluetoothLogger", "Unegistered receiver.");
@@ -116,6 +89,29 @@ public class BluetoothLogger extends InputPlugin{
 		if (!wasEnabled) ba.disable();
 	}
 	
+	private Thread getExecutionThread(){
+		Log.i("BluetoothThread", "Starting execution thread.");
+		return new Thread(){
+			public void run(){
+				try {
+					sleep(timeBetweenDiscoveries);
+					if (ba != null){
+						if (!ba.isEnabled()){
+							Log.i("BluetoothThread", "Enabling BluetoothAdapter.");
+							ba.enable();
+							while (!ba.isEnabled()){}
+						}
+						Log.i("BluetoothThread", "Starting discovery.");
+						ba.startDiscovery();
+					}
+				} catch (InterruptedException e) {
+					if (expectedInterrupt) Log.e("BluetoothThread", "Expected thread interruption.");
+					else e.printStackTrace();
+				}
+			}
+		};
+	}
+	
 	// ***********************************************************************************
 	// PRIVATE INNER CLASS -- BluetoothLoggerReceiver
 	// ***********************************************************************************
@@ -125,8 +121,7 @@ public class BluetoothLogger extends InputPlugin{
 		public BluetoothLoggerReceiver() {
 			super();
 		}
-
-		@Override
+		
 		public void onReceive(Context c, Intent intent) {
 			BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			onDeviceFound(device);
@@ -144,10 +139,13 @@ public class BluetoothLogger extends InputPlugin{
 		}
 
 		public void onReceive(Context c, Intent intent) {
+			c.unregisterReceiver(this);
 			write(new BluetoothPacket(System.currentTimeMillis(), names.size(), names, addresses));
 			names.clear();
 			addresses.clear();
-			threadRunning = true;
+			exec = getExecutionThread();
+			exec.start();
+			c.registerReceiver(this, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 		}
 	}
 	

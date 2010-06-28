@@ -5,7 +5,7 @@ import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 
 /**
- * An API allowing pluging programmers to easily generate preference objects.
+ * An API allowing plugin programmers to easily generate preference objects.
  *  
  * @author Cicerone Cojocaru, Jonathan Pitre
  *

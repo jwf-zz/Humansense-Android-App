@@ -1,6 +1,7 @@
 package ca.mcgill.hs.util;
 
 import android.content.Context;
+import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 
 /**
@@ -63,6 +64,56 @@ public class PreferenceFactory {
 		result.setSummary(summary);
 		
 		return result;
+	}
+	
+	/**
+	 * Returns a CheckBoxPreference preference specified by the parameters. This method does not use
+	 * resource IDs for its parameters.
+	 * 
+	 * @param c The context for this preference.
+	 * @param key The key of this preference.
+	 * @param titleResId The resource ID for the title of this preference.
+	 * @param summaryDefResId The resource ID for the default summary of this preference.
+	 * @param summaryOnResId The resource ID for the summary displayed when this checkbox is checked.
+	 * @param summaryOffResId The resource ID for the summary displayed when this checkbox is unchecked.
+	 * @return A CheckBoxPreference object.
+	 */
+	public static CheckBoxPreference getCheckBoxPreference(Context c, String key, int titleResId,
+			int summaryDefResId, int summaryOnResId, int summaryOffResId){
+		CheckBoxPreference cbp = new CheckBoxPreference(c);
+		
+		cbp.setKey(key);
+		cbp.setTitle(titleResId);
+		cbp.setSummary(summaryDefResId);
+		cbp.setSummaryOn(summaryOnResId);
+		cbp.setSummaryOff(summaryOffResId);
+		
+		return cbp;
+	}
+	
+	/**
+	 * Returns a CheckBoxPreference preference specified by the parameters. This method does not use
+	 * resource IDs for its parameters.
+	 * 
+	 * @param c The context for this preference.
+	 * @param key The key of this preference.
+	 * @param title The String for the title of this preference.
+	 * @param summaryDef The String for the default summary of this preference.
+	 * @param summaryOn The String for the summary displayed when this checkbox is checked.
+	 * @param summaryOff The String for the summary displayed when this checkbox is unchecked.
+	 * @return A CheckBoxPreference object.
+	 */
+	public static CheckBoxPreference getCheckBoxPreference(Context c, String key, String title,
+			String summaryDef, String summaryOn, String summaryOff){
+		CheckBoxPreference cbp = new CheckBoxPreference(c);
+		
+		cbp.setKey(key);
+		cbp.setTitle(title);
+		cbp.setSummary(summaryDef);
+		cbp.setSummaryOn(summaryOn);
+		cbp.setSummaryOff(summaryOff);
+		
+		return cbp;
 	}
 
 }

@@ -29,7 +29,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	private static boolean logging = false;
 	
 	//The speed at which the accelerometer will log.
-	private static int loggingSpeed = 0;
+	private static int loggingSpeed;
 	
 	//Variables used to write out the sensor data received.
 	private static float temperature = 0.0f;

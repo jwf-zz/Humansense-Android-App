@@ -23,7 +23,7 @@ public class BluetoothLogger extends InputPlugin{
 	private final boolean PLUGIN_ACTIVE;
 	
 	//The interval of time between two subsequent scans.
-	private int timeBetweenDiscoveries = 60000;
+	private int timeBetweenDiscoveries;
 
 	//The Context in which the BluetoothLoggerReceiver will be registered.
 	private final Context context;

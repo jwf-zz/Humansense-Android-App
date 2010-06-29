@@ -125,14 +125,16 @@ public class FileOutput extends OutputPlugin{
 			
 			//Choose correct dataParse method based on the format of the data received.
 			DataOutputStream dos = fileHandles.get(id);
-			if (id == WifiLoggerPacket.PLUGIN_ID){
+			if (id == SensorLoggerPacket.PLUGIN_ID){
+				dataParse((SensorLoggerPacket) dp, dos);
+			} else if (id == WifiLoggerPacket.PLUGIN_ID){
 				dataParse((WifiLoggerPacket) dp, dos);
+			} else if (id == GSMLoggerPacket.PLUGIN_ID){
+				dataParse((GSMLoggerPacket) dp, dos);
 			} else if (id == GPSLoggerPacket.PLUGIN_ID) {
 				dataParse((GPSLoggerPacket) dp, dos);
 			} else if (id == SensorLoggerPacket.PLUGIN_ID){
 				dataParse((SensorLoggerPacket) dp, dos);
-			} else if (id == GSMLoggerPacket.PLUGIN_ID){
-				dataParse((GSMLoggerPacket) dp, dos);
 			} else if (id == BluetoothPacket.PLUGIN_ID){
 				dataParse((BluetoothPacket) dp, dos);
 			}

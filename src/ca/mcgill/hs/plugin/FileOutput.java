@@ -52,6 +52,11 @@ public class FileOutput extends OutputPlugin{
 	private final boolean PLUGIN_ACTIVE;
 	private final static String PLUGIN_ACTIVE_KEY = "fileOutputEnabled";
 	
+	// Location for the log files, under the external storage directory
+	private final static String OUTPUT_DIRECTORY = "hsandroidapp/data";
+	
+	// Date format used in the log file names
+	private final static String LOG_DATE_FORMAT = "yy-MM-dd-HHmmss";
 	/**
 	 * This is the basic constructor for the FileOutput plugin. It has to be instantiated
 	 * before it is started, and needs to be passed a reference to a Context.
@@ -63,7 +68,8 @@ public class FileOutput extends OutputPlugin{
     		PreferenceManager.getDefaultSharedPreferences(context);
 		
 		PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
-		BUFFER_SIZE = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY, "4096"));
+		BUFFER_SIZE = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY, 
+				(String)context.getResources().getText(R.string.fileoutput_buffersizedefault_pref)));
 	}
 	
 	/**
@@ -98,7 +104,7 @@ public class FileOutput extends OutputPlugin{
 		
 		try {
 			if (!fileHandles.containsKey(id)){
-				final File j = new File(Environment.getExternalStorageDirectory(), "hsandroidapp/data");
+				final File j = new File(Environment.getExternalStorageDirectory(), OUTPUT_DIRECTORY);
 				if (!j.isDirectory()) {
 					if (!j.mkdirs()) {
 						Log.e("Output Dir", "Could not create output directory!");
@@ -107,7 +113,7 @@ public class FileOutput extends OutputPlugin{
 				}
 				//Generate file name based on the plugin it came from and the current time.
 				Date d = new Date(System.currentTimeMillis());
-				SimpleDateFormat dfm = new SimpleDateFormat("yy-MM-dd-HHmmss");
+				SimpleDateFormat dfm = new SimpleDateFormat(LOG_DATE_FORMAT);
 				File fh = new File(j, dfm.format(d) + getFileExtension(dp));
 				if (!fh.exists()) fh.createNewFile();
 				Log.i("File Output", "File to write: "+fh.getName());
@@ -283,10 +289,10 @@ public class FileOutput extends OutputPlugin{
 		Preference[] prefs = new Preference[2];
 		
 		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, PLUGIN_ACTIVE_KEY,
-				(String)c.getResources().getText(R.string.fileoutput_pluginname_pref), 
-				(String)c.getResources().getText(R.string.fileoutput_pluginsummary_pref),
-				(String)c.getResources().getText(R.string.fileoutput_pluginenabled_pref), 
-				(String)c.getResources().getText(R.string.fileoutput_plugindisabled_pref));
+				R.string.fileoutput_pluginname_pref,
+				R.string.fileoutput_pluginsummary_pref,
+				R.string.fileoutput_pluginenabled_pref,
+				R.string.fileoutput_plugindisabled_pref);
 		prefs[1] = PreferenceFactory.getListPreference(c, 
 				R.array.fileOutputPluginBufferSizeStrings,
 				R.array.fileOutputPluginBufferSizeValues, 

@@ -83,7 +83,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	 * @override
 	 */
 	public static Preference[] getPreferences(Context c) {
-		Preference[] prefs = new Preference[1];
+		Preference[] prefs = new Preference[2];
 		
 		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, "sensorLoggerEnable",
 				"Sensor Plugin", "Enables or disables this plugin.",

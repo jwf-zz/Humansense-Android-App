@@ -108,7 +108,7 @@ public class FileOutput extends OutputPlugin{
 				//Generate file name based on the plugin it came from and the current time.
 				Date d = new Date(System.currentTimeMillis());
 				SimpleDateFormat dfm = new SimpleDateFormat("yy-MM-dd-HHmmss");
-				File fh = new File(j, id + dfm.format(d) + getFileExtension(dp));
+				File fh = new File(j, dfm.format(d) + getFileExtension(dp));
 				if (!fh.exists()) fh.createNewFile();
 				Log.i("File Output", "File to write: "+fh.getName());
 				fileHandles.put(id, new DataOutputStream(

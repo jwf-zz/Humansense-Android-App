@@ -124,8 +124,8 @@ public class HSService extends Service{
 	 * Populates the list of output plugins.
 	 */
 	private void addOutputPlugins(){
-		outputPluginList.add(new ScreenOutput());
-		outputPluginList.add(new FileOutput());
+		outputPluginList.add(new ScreenOutput(PASSABLE_CONTEXT));
+		outputPluginList.add(new FileOutput(PASSABLE_CONTEXT));
 	}
 	
 	/**

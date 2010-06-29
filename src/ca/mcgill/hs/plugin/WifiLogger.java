@@ -25,6 +25,8 @@ import android.util.Log;
  */
 public class WifiLogger extends InputPlugin{
 	
+	private final boolean PLUGIN_ACTIVE;
+	
 	//The Thread for requesting scans.
 	private Thread wifiLoggerThread;
 	
@@ -64,6 +66,8 @@ public class WifiLogger extends InputPlugin{
 		SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(context);
 		sleepIntervalMillisecs = Integer.parseInt(prefs.getString("wifiIntervalPreference", "30000"));
+		
+		PLUGIN_ACTIVE = prefs.getBoolean("wifiLoggerEnable", false);
 	}
 	
 	/**
@@ -74,6 +78,7 @@ public class WifiLogger extends InputPlugin{
 	 * @override
 	 */
 	public void startPlugin() {
+		if (!PLUGIN_ACTIVE) return;
 		
 		wlr = new WifiLoggerReceiver(wm);
 		context.registerReceiver(wlr, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
@@ -142,9 +147,13 @@ public class WifiLogger extends InputPlugin{
 	 * @override
 	 */
 	public static Preference[] getPreferences(Context c) {
-		Preference[] prefs = new Preference[1];
+		Preference[] prefs = new Preference[2];
 		
-		prefs[0] = PreferenceFactory.getListPreference(c, R.array.wifiLoggerIntervalStrings,
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, "wifiLoggerEnable",
+				"Wifi Plugin", "Enables or disables this plugin.",
+				"WifiLogger is on.", "WifiLogger is off.");
+		
+		prefs[1] = PreferenceFactory.getListPreference(c, R.array.wifiLoggerIntervalStrings,
 				R.array.wifiLoggerIntervalValues, "30000", "wifiIntervalPreference",
 				R.string.wifilogger_interval_pref, R.string.wifilogger_interval_pref_summary);
 		

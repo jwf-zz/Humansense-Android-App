@@ -2,10 +2,17 @@ package ca.mcgill.hs.plugin;
 
 import java.io.IOException;
 
+import ca.mcgill.hs.R;
+import ca.mcgill.hs.util.PreferenceFactory;
+
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -15,6 +22,8 @@ import android.util.Log;
  *
  */
 public class SensorLogger extends InputPlugin implements SensorEventListener{
+	
+	private final boolean PLUGIN_ACTIVE;
 	
 	//The SensorManager used to register listeners.
 	private final SensorManager sensorManager;
@@ -35,8 +44,13 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	 * @param gpsm
 	 * @param context
 	 */
-	public SensorLogger(SensorManager sensorManager){
+	public SensorLogger(SensorManager sensorManager, Context context){
 		this.sensorManager = sensorManager;
+		
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		
+		PLUGIN_ACTIVE = prefs.getBoolean("sensorLoggerEnable", false);
 	}
 	
 	/**
@@ -45,6 +59,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	 * @override
 	 */
 	public void startPlugin() {
+		if (!PLUGIN_ACTIVE) return;
 		Log.i("SensorLogger", "Registered Sensor Listener");
 		sensorManager.registerListener(this, 
 				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -135,6 +150,18 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	 * @override
 	 */
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {		
+	}
+	
+	public static boolean hasPreferences() {return true;}
+	
+	public static Preference[] getPreferences(Context c){
+		Preference[] prefs = new Preference[1];
+		
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, "sensorLoggerEnable",
+				"Sensor Plugin", "Enables or disables this plugin.",
+				"SensorLogger is on.", "SensorLogger is off.");
+		
+		return prefs;
 	}
 	
 	// ***********************************************************************************

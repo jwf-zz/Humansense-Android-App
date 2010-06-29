@@ -20,6 +20,8 @@ public class BluetoothLogger extends InputPlugin{
 	//The BluetoothAdapter used to start and stop discovery of devices.
 	private final BluetoothAdapter ba;
 	
+	private final boolean PLUGIN_ACTIVE;
+	
 	//The interval of time between two subsequent scans.
 	private int timeBetweenDiscoveries = 60000;
 
@@ -64,9 +66,12 @@ public class BluetoothLogger extends InputPlugin{
 		forceBluetoothActivation = prefs.getBoolean("forceBluetoothOn", false);
 		
 		timeBetweenDiscoveries = Integer.parseInt(prefs.getString("bluetoothLoggerTimeInterval", "60000"));
+		
+		PLUGIN_ACTIVE = prefs.getBoolean("bluetoothLoggerEnable", false);
 	}
 	
 	public void startPlugin() {
+		if (!PLUGIN_ACTIVE) return;
 		if (ba == null) return; //Device does not support Bluetooth
 				
 		blr = new BluetoothLoggerReceiver();
@@ -89,13 +94,17 @@ public class BluetoothLogger extends InputPlugin{
 	public static boolean hasPreferences() {return true;}
 	
 	public static Preference[] getPreferences(Context c){
-		Preference[] prefs = new Preference[2];
+		Preference[] prefs = new Preference[3];
 		
-		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, "forceBluetoothOn",
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, "bluetoothLoggerEnable",
+				"BT Plugin", "Enables or disables this plugin.",
+				"BluetoothLogger is on.", "BluetoothLogger is off.");
+		
+		prefs[1] = PreferenceFactory.getCheckBoxPreference(c, "forceBluetoothOn",
 				"BT Auto-Enable", "Auto-Enables the Bluetooth adapter when logging is started.",
 				"Bluetooth will be Auto-Enabled when logging is started.", "Bluetooth will not be Auto-Enabled when logging is started.");
 	
-		prefs[1] = PreferenceFactory.getListPreference(c, R.array.bluetoothLoggerIntervalStrings,
+		prefs[2] = PreferenceFactory.getListPreference(c, R.array.bluetoothLoggerIntervalStrings,
 				R.array.bluetoothLoggerIntervalValues, "60000", "bluetoothLoggerTimeInterval",
 				R.string.bluetoothlogger_interval_pref, R.string.bluetoothlogger_interval_pref_summary);
 		

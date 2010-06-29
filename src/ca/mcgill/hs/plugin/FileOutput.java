@@ -9,13 +9,19 @@ import java.util.zip.GZIPOutputStream;
 import java.util.Date;
 import java.util.HashMap;
 
+import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSLoggerPacket;
 import ca.mcgill.hs.plugin.GSMLogger.GSMLoggerPacket;
 import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
+import ca.mcgill.hs.util.PreferenceFactory;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Environment;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -36,6 +42,15 @@ public class FileOutput extends OutputPlugin{
 	private final String GSM_EXT = "-gsmloc.log";
 	private final String BT_EXT = "-bt.log";
 	private final String DEF_EXT = ".log";
+	
+	private final boolean PLUGIN_ACTIVE;
+	
+	public FileOutput(Context context){
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		
+		PLUGIN_ACTIVE = prefs.getBoolean("fileOutputEnable", false);
+	}
 	
 	/**
 	 * Closes all files currently open.
@@ -64,6 +79,7 @@ public class FileOutput extends OutputPlugin{
 	 * @override
 	 */
 	synchronized void onDataReceived(DataPacket dp) {
+		if (!PLUGIN_ACTIVE) return;
 		String id = dp.getInputPluginName();
 		
 		try {
@@ -226,6 +242,18 @@ public class FileOutput extends OutputPlugin{
 		} else {
 			return DEF_EXT;
 		}
+	}
+	
+	public static boolean hasPreferences() {return true;}
+	
+	public static Preference[] getPreferences(Context c){
+		Preference[] prefs = new Preference[1];
+		
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, "fileOutputEnable",
+				"FileOutput Plugin", "Enables or disables this plugin.",
+				"FileOutput is on.", "FileOutput is off.");
+		
+		return prefs;
 	}
 
 }

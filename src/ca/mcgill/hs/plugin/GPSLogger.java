@@ -22,6 +22,8 @@ import android.util.Log;
  */
 public class GPSLogger extends InputPlugin{
 	
+	private final boolean PLUGIN_ACTIVE;
+	
 	//The LocationManager used to request location updates.
 	private final LocationManager gpsm;
 	
@@ -43,11 +45,13 @@ public class GPSLogger extends InputPlugin{
 	 * @param context needed for the Preference objects.
 	 */
 	public GPSLogger(LocationManager gpsm, Context context){
+
 		this.gpsm = gpsm;
 		gpsll = new GPSLocationListener(gpsm);
 		
 		SharedPreferences prefs = 
-    		PreferenceManager.getDefaultSharedPreferences(context);
+    		PreferenceManager.getDefaultSharedPreferences(context);		
+		PLUGIN_ACTIVE = prefs.getBoolean("gpsLoggerEnable", false);
 		try {
 			MIN_DIST = Integer.parseInt(prefs.getString("gpsLoggerDistancePreference", "0"));
 			UPDATE_FREQ = Integer.parseInt(prefs.getString("gpsLoggerIntervalPreference", "30000"));
@@ -64,6 +68,7 @@ public class GPSLogger extends InputPlugin{
 	 * @Override
 	 */
 	public void startPlugin() {
+		if (!PLUGIN_ACTIVE) return;
 		gpsm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
 				UPDATE_FREQ,
 				MIN_DIST, 
@@ -103,13 +108,17 @@ public class GPSLogger extends InputPlugin{
 	 * @override
 	 */
 	public static Preference[] getPreferences(Context c){
-		Preference[] prefs = new Preference[2];
+		Preference[] prefs = new Preference[3];
 		
-		prefs[0] = PreferenceFactory.getListPreference(c, R.array.gpsLoggerIntervalStrings,
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, "gpsLoggerEnable",
+				"GPS Plugin", "Enables or disables this plugin.",
+				"GPSLogger is on.", "GPSLogger is off.");
+		
+		prefs[1] = PreferenceFactory.getListPreference(c, R.array.gpsLoggerIntervalStrings,
 				R.array.gpsLoggerIntervalValues, "30000", "gpsLoggerIntervalPreference",
 				R.string.gpslogger_interval_pref, R.string.gpslogger_interval_pref_summary);
 		
-		prefs [1] = PreferenceFactory.getListPreference(c, R.array.gpsLoggerDistanceStrings,
+		prefs [2] = PreferenceFactory.getListPreference(c, R.array.gpsLoggerDistanceStrings,
 				R.array.gpsLoggerDistanceValues, "0", "gpsLoggerDistancePreference",
 				R.string.gpslogger_distance_pref, R.string.gpslogger_distance_pref_summary);
 		

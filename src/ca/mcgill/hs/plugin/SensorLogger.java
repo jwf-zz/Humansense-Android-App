@@ -32,6 +32,9 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	//The speed at which the accelerometer will log.
 	private static int loggingSpeed;
 	
+	// Offset for timestamps
+	private static long timestamp_offset = 0;
+	
 	//Variables used to write out the sensor data received.
 	private static float temperature = 0.0f;
 	private static float[] magfield = { 0.0f, 0.0f, 0.0f };
@@ -126,7 +129,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		       	case Sensor.TYPE_ACCELEROMETER:
 					if (magfieldUpdated) {
 						magfieldUpdated = false;
-							final int matrix_size = 16;
+						final int matrix_size = 16;
 						float[] R = new float[matrix_size];
 						float[] I = new float[matrix_size];
 						float[] outR = new float[matrix_size];
@@ -135,9 +138,18 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 			                SensorManager.remapCoordinateSystem(R, SensorManager.AXIS_X, SensorManager.AXIS_Z, outR);
 		                SensorManager.getOrientation(outR, orientation);							// Update the orientation information.
 					}
-					logAccelerometerData(event.values, event.timestamp/1000000);
+					/*
+					 * The event.timestamp gives the timestamp in nanoseconds
+					 * since the device was booted, so we need to do some math
+					 * to translate this into system time.
+					 */
+					if (timestamp_offset == 0) {
+						final long millis = event.timestamp/1000000;
+						timestamp_offset = System.currentTimeMillis()-millis;
+					}
+					
+					logAccelerometerData(event.values, event.timestamp/1000000+timestamp_offset);
         	}
-				
 		}
 	}
 	

@@ -51,7 +51,7 @@
 
 <string-array name="sensorLoggerIntervalStrings">
 	<item>Fastest</item>
-	<item>Slower</item>
+	<item>Slowest</item>
 </string-array>
 
 <string-array name="sensorLoggerIntervalValues">

@@ -2,7 +2,6 @@ package ca.mcgill.hs.plugin;
 
 import java.util.List;
 
-import ca.mcgill.hs.R;
 import ca.mcgill.hs.util.PreferenceFactory;
 
 
@@ -21,12 +20,19 @@ import android.util.Log;
 
 public class GSMLogger extends InputPlugin{
 	
+	//Boolean ON-OFF switch *Temporary only*
 	private final boolean PLUGIN_ACTIVE;
 	
+	//A String used for logging information to the android's logcat.
 	private static final String TAG = "GSMLogger";
+	
+	//The TelephonyManager required to receive information about the device.
 	private final TelephonyManager tm;
+	
+	//A PhoneStateListener used to listen to phone signals.
 	private PhoneStateListener psl;
 	
+	//Variables used to write out the GSM data received.
 	private static long time;
 	private static int cid;
 	private static int lac;
@@ -34,7 +40,14 @@ public class GSMLogger extends InputPlugin{
 	private static int[] cids;
 	private static int[] lacs;
 	private static int[] rssis;
-		
+	
+	/**
+	 * This is the basic constructor for the GSMLogger plugin. It has to be instantiated
+	 * before it is started, and needs to be passed a reference to a TelephonyManager and a Context.
+	 * 
+	 * @param wm - the WifiManager for this WifiLogger.
+	 * @param context - the context in which this plugin is created.
+	 */
 	public GSMLogger(TelephonyManager tm, Context context) {
 		this.tm = tm;
 		
@@ -142,7 +155,11 @@ public class GSMLogger extends InputPlugin{
 		}
 	}
 
-	@Override
+	/**
+	 * Tells the phone to stop listening for available GSM signals.
+	 * 
+	 * @override
+	 */
 	public void stopPlugin() {
 		if (!PLUGIN_ACTIVE) return;
 		if (tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT){
@@ -150,8 +167,21 @@ public class GSMLogger extends InputPlugin{
 		}
 	}
 	
+	/**
+	 * Returns whether or not this InputPlugin has Preferences.
+	 * 
+	 * @return whether or not this InputPlugin has preferences.
+	 */
 	public static boolean hasPreferences() {return true;}
 	
+	/**
+	 * Returns the list of Preference objects for this InputPlugin.
+	 * 
+	 * @param c the context for the generated Preferences.
+	 * @return an array of the Preferences of this object.
+	 * 
+	 * @override
+	 */
 	public static Preference[] getPreferences(Context c){
 		Preference[] prefs = new Preference[1];
 		

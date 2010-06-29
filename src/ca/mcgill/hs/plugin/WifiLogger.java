@@ -17,13 +17,14 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
- * Reads Wifi data.
+ * An InputPlugin which gets data from the available GPS signals around.
  * 
  * @author Cicerone Cojocaru, Jonathan Pitre
  *
  */
 public class WifiLogger extends InputPlugin{
 	
+	//Boolean ON-OFF switch *Temporary only*
 	private final boolean PLUGIN_ACTIVE;
 	
 	//The Thread for requesting scans.

@@ -186,7 +186,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	// PUBLIC INNER CLASS -- SensorLoggerPacket
 	// ***********************************************************************************
 	
-	public class SensorLoggerPacket implements DataPacket{
+	public static class SensorLoggerPacket implements DataPacket{
 		
 		final long time;
 		final float x;
@@ -196,6 +196,8 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		final float temperature;
 		final float[] magfield;
 		final float[] orientation;
+		final static String PLUGIN_NAME = "SensorLogger";
+		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
 		
 		public SensorLoggerPacket(final long time, final float x, final float y, final float z, final float m, final float temperature,
 				final float[] magfield, final float[] orientation){
@@ -210,12 +212,18 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		}
 		
 		@Override
-		public String getInputPluginName() {
-			return "SensorLogger";
-		}
-		
 		public DataPacket clone(){
 			return new SensorLoggerPacket(time, x, y, z, m, temperature, magfield, orientation);
+		}
+
+		@Override
+		public int getInputPluginId() {
+			return SensorLoggerPacket.PLUGIN_ID;
+		}
+
+		@Override
+		public String getInputPluginName() {
+			return SensorLoggerPacket.PLUGIN_NAME;
 		}
 
 	}

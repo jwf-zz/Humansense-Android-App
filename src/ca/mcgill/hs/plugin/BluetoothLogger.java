@@ -234,27 +234,36 @@ public class BluetoothLogger extends InputPlugin{
 	// PRIVATE INNER CLASS -- BluetoothPacket
 	// ***********************************************************************************
 
-	public class BluetoothPacket implements DataPacket{
+	public static class BluetoothPacket implements DataPacket{
 		
 		final long time;
 		final int neighbours;
 		final LinkedList<String> names;
 		final LinkedList<String> addresses;
-		
+		final static String PLUGIN_NAME = "BluetoothLogger";
+		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+
 		public BluetoothPacket(long time, int neighbours, LinkedList<String> names, LinkedList<String> addresses){
 			this.time = time;
 			this.neighbours = neighbours;
 			this.names = names;
 			this.addresses = addresses;
 		}
-
-		public String getInputPluginName() {
-			return "BluetoothLogger";
-		}
 		
 		@SuppressWarnings("unchecked")
+		@Override
 		public DataPacket clone(){
 			return new BluetoothPacket(time, neighbours, (LinkedList<String>)names.clone(), (LinkedList<String>)addresses.clone());
+		}
+
+		@Override
+		public int getInputPluginId() {
+			return BluetoothPacket.PLUGIN_ID;
+		}
+
+		@Override
+		public String getInputPluginName() {
+			return BluetoothPacket.PLUGIN_NAME;
 		}
 		
 	}

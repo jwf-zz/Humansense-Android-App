@@ -196,7 +196,7 @@ public class GSMLogger extends InputPlugin{
 	// PUBLIC INNER CLASS -- GSMLoggerPacket
 	// ***********************************************************************************
 	
-	public class GSMLoggerPacket implements DataPacket{
+	public static class GSMLoggerPacket implements DataPacket{
 		final long time;
 		final int mcc;
 		final int mnc;
@@ -207,7 +207,9 @@ public class GSMLogger extends InputPlugin{
 		final int[] cids;
 		final int[] lacs;
 		final int[] rssis;
-
+		final static String PLUGIN_NAME = "GSMLogger";
+		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+		
 		public GSMLoggerPacket(long time, int mcc, int mnc, int cid, int lac,
 				int rssi, int neighbors, int[] cids, int[] lacs,
 				int[] rssis) {
@@ -222,14 +224,20 @@ public class GSMLogger extends InputPlugin{
 			this.lacs = lacs;
 			this.rssis = rssis;
 		}
+		
+		@Override
+		public DataPacket clone(){
+			return new GSMLoggerPacket(time, mcc, mnc, cid, lac, rssi, neighbors, cids, lacs, rssis);
+		}
+
+		@Override
+		public int getInputPluginId() {
+			return GSMLoggerPacket.PLUGIN_ID;
+		}
 
 		@Override
 		public String getInputPluginName() {
-			return "GSMLogger";
-		}
-		
-		public DataPacket clone(){
-			return new GSMLoggerPacket(time, mcc, mnc, cid, lac, rssi, neighbors, cids, lacs, rssis);
+			return GSMLoggerPacket.PLUGIN_NAME;
 		}
 		
 	}

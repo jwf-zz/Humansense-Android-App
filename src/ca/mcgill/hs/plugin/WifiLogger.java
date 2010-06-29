@@ -197,14 +197,16 @@ public class WifiLogger extends InputPlugin {
 	// PUBLIC INNER CLASS -- WifiLoggerPacket
 	// ***********************************************************************************
 	
-	public class WifiLoggerPacket implements DataPacket{
+	public static class WifiLoggerPacket implements DataPacket{
 		
 		final int neighbors;
 		final long timestamp;
 		final int[] levels;
 		final String[] SSIDs;
 		final String[] BSSIDs;
-		
+		final static String PLUGIN_NAME = "WifiLogger";
+		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+
 		/**
 		 * Constructor for this DataPacket.
 		 * @param neighbors the number of access points detected.
@@ -222,13 +224,18 @@ public class WifiLogger extends InputPlugin {
 		}
 
 		@Override
-		public String getInputPluginName() {
-			return "WifiLogger";
-		}
-		
-		@Override
 		public DataPacket clone(){
 			return new WifiLoggerPacket(neighbors, timestamp, levels, SSIDs, BSSIDs);
+		}
+
+		@Override
+		public int getInputPluginId() {
+			return WifiLoggerPacket.PLUGIN_ID;
+		}
+
+		@Override
+		public String getInputPluginName() {
+			return WifiLoggerPacket.PLUGIN_NAME;
 		}
 	}
 }

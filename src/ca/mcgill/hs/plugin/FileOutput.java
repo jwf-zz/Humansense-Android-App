@@ -34,7 +34,7 @@ import android.util.Log;
 public class FileOutput extends OutputPlugin{
 	
 	//HashMap used for keeping file handles. There is one file associated with each input plugin connected.
-	private final HashMap<String, DataOutputStream> fileHandles = new HashMap<String, DataOutputStream>();
+	private final HashMap<Integer, DataOutputStream> fileHandles = new HashMap<Integer, DataOutputStream>();
 	
 	//File Extensions to be added at the end of each file.
 	private final String WIFI_EXT = "-wifiloc.log";
@@ -78,7 +78,7 @@ public class FileOutput extends OutputPlugin{
 	 * @override
 	 */
 	protected void onPluginStop(){
-		for (String id : fileHandles.keySet()){
+		for (int id : fileHandles.keySet()){
 			try {
 				fileHandles.get(id).close();
 			} catch (IOException e) {
@@ -100,7 +100,7 @@ public class FileOutput extends OutputPlugin{
 	 */
 	synchronized void onDataReceived(DataPacket dp) {
 		if (!PLUGIN_ACTIVE) return;
-		String id = dp.getInputPluginName();
+		int id = dp.getInputPluginId();
 		
 		try {
 			if (!fileHandles.containsKey(id)){
@@ -125,15 +125,15 @@ public class FileOutput extends OutputPlugin{
 			
 			//Choose correct dataParse method based on the format of the data received.
 			DataOutputStream dos = fileHandles.get(id);
-			if (dp.getClass() == WifiLoggerPacket.class){
+			if (id == WifiLoggerPacket.PLUGIN_ID){
 				dataParse((WifiLoggerPacket) dp, dos);
-			} else if (dp.getClass() == GPSLoggerPacket.class) {
+			} else if (id == GPSLoggerPacket.PLUGIN_ID) {
 				dataParse((GPSLoggerPacket) dp, dos);
-			} else if (dp.getClass() == SensorLoggerPacket.class){
+			} else if (id == SensorLoggerPacket.PLUGIN_ID){
 				dataParse((SensorLoggerPacket) dp, dos);
-			} else if (dp.getClass() == GSMLoggerPacket.class){
+			} else if (id == GSMLoggerPacket.PLUGIN_ID){
 				dataParse((GSMLoggerPacket) dp, dos);
-			} else if (dp.getClass() == BluetoothPacket.class){
+			} else if (id == BluetoothPacket.PLUGIN_ID){
 				dataParse((BluetoothPacket) dp, dos);
 			}
 			

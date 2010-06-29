@@ -12,6 +12,7 @@ public interface DataPacket {
 	 * @return a String representing the name of the InputPlugin.
 	 */
 	public String getInputPluginName();
+	public int getInputPluginId(); // For faster lookups
 	
 	/**
 	 * Clones the DataPacket by instantiating a new DataPacket.

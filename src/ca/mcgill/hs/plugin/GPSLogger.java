@@ -178,7 +178,7 @@ public class GPSLogger extends InputPlugin{
 	// PUBLIC INNER CLASS -- GPSLocationPacket
 	// ***********************************************************************************
 	
-	public class GPSLoggerPacket implements DataPacket{
+	public static class GPSLoggerPacket implements DataPacket{
 		
 		final long time;
 		final float accuracy;
@@ -187,6 +187,8 @@ public class GPSLogger extends InputPlugin{
 		final double altitude;
 		final double latitude;
 		final double longitude;
+		final static String PLUGIN_NAME = "GPSLogger";
+		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
 		
 		public GPSLoggerPacket(long time, float accuracy, float bearing, float speed, double altitude, double latitude, double longitude){
 			this.time = time;
@@ -199,12 +201,18 @@ public class GPSLogger extends InputPlugin{
 		}
 
 		@Override
-		public String getInputPluginName() {
-			return "GPSLocationLogger";
-		}
-		
 		public DataPacket clone(){
 			return new GPSLoggerPacket(time, accuracy, bearing, speed, altitude, latitude, longitude);
+		}
+
+		@Override
+		public int getInputPluginId() {
+			return GPSLoggerPacket.PLUGIN_ID;
+		}
+
+		@Override
+		public String getInputPluginName() {
+			return GPSLoggerPacket.PLUGIN_NAME;
 		}
 
 	}

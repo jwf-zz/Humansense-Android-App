@@ -20,6 +20,7 @@ public class BluetoothLogger extends InputPlugin{
 	//The BluetoothAdapter used to start and stop discovery of devices.
 	private final BluetoothAdapter ba;
 	
+	//Boolean ON-OFF switch *Temporary only*
 	private final boolean PLUGIN_ACTIVE;
 	
 	//The interval of time between two subsequent scans.
@@ -34,16 +35,20 @@ public class BluetoothLogger extends InputPlugin{
 	//The BluetoothDiscoveryListener used to know when the discovery of bluetooth devices is completed.
 	private BluetoothDiscoveryListener bdl;
 	
+	//Lists holding results.
 	private final LinkedList<String> names;
 	private final LinkedList<String> addresses;
 	
 	//Was the Bluetooth enable when the plugin was started
 	private boolean wasEnabled = false;
 	
+	//If this is true, the BluetoothThread is interrupted and an expected InterruptedException is caught.
 	private boolean expectedInterrupt = false;
 	
+	//The main BluetoothThread for this plugin.
 	private Thread exec;
 	
+	//If true, the Bluetooth adapter will be automatically enabled when the service is started.
 	private final boolean forceBluetoothActivation;
 	
 	/**
@@ -70,6 +75,7 @@ public class BluetoothLogger extends InputPlugin{
 		PLUGIN_ACTIVE = prefs.getBoolean("bluetoothLoggerEnable", false);
 	}
 	
+	@Override
 	public void startPlugin() {
 		if (!PLUGIN_ACTIVE) return;
 		if (ba == null) return; //Device does not support Bluetooth
@@ -86,14 +92,33 @@ public class BluetoothLogger extends InputPlugin{
 		exec.start();
 	}
 	
+	/**
+	 * Called when a device is found. Adds the name and address of the found device to the lists of names/addresses
+	 * found during this scan.
+	 * @param bd the BluetoothDevice that was found.
+	 */
 	private void onDeviceFound(BluetoothDevice bd){
 		if (bd.getName() == null) return;
 		names.add(bd.getName());
 		addresses.add(bd.getAddress());
 	}
 	
+	/**
+	 * Returns true if this plugin has preferences, and false otherwise.
+	 * @return a boolean representing whether or not this plugin has preferences.
+	 * 
+	 * @override
+	 */
 	public static boolean hasPreferences() {return true;}
 	
+	/**
+	 * Returns the list of Preference objects for this InputPlugin.
+	 * 
+	 * @param c the context for the generated Preferences.
+	 * @return an array of the Preferences of this object.
+	 * 
+	 * @override
+	 */
 	public static Preference[] getPreferences(Context c){
 		Preference[] prefs = new Preference[3];
 		
@@ -112,7 +137,12 @@ public class BluetoothLogger extends InputPlugin{
 		return prefs;
 	}
 
-	@Override
+	/**
+	 * Stops the plugin, interrupts the execution thread, unregisters all broadcast receivers and
+	 * cancels any ongoing discoveries. Disables Bluetooth adapter if it was disabled when the service was started.
+	 * 
+	 * @override
+	 */
 	public void stopPlugin() {
 		if (!PLUGIN_ACTIVE) return;
 		if (ba == null) return;
@@ -127,10 +157,13 @@ public class BluetoothLogger extends InputPlugin{
 		
 		ba.cancelDiscovery();
 		
-		//TODO: Add user prompt
 		if (!wasEnabled) ba.disable();
 	}
 	
+	/**
+	 * Returns a new thread that will serve as the execution thread for this plugin.
+	 * @return the execution thread for this plugin.
+	 */
 	private Thread getExecutionThread(){
 		Log.i("BluetoothThread", "Starting execution thread");
 		return new Thread(){
@@ -166,6 +199,7 @@ public class BluetoothLogger extends InputPlugin{
 			super();
 		}
 		
+		@Override
 		public void onReceive(Context c, Intent intent) {
 			BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			onDeviceFound(device);
@@ -181,7 +215,8 @@ public class BluetoothLogger extends InputPlugin{
 		public BluetoothDiscoveryListener() {
 			super();
 		}
-
+		
+		@Override
 		public void onReceive(Context c, Intent intent) {
 			c.unregisterReceiver(this);
 			if (names.size()>0 && addresses.size()>0){

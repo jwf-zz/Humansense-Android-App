@@ -19,6 +19,8 @@ public class HSService extends Service{
 	
 	private static boolean isRunning;
 	private Context PASSABLE_CONTEXT;
+	
+	//Lists of the plugins currently enabled.
 	private static final LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
 	private static final LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
 	
@@ -56,6 +58,7 @@ public class HSService extends Service{
 	}
 
 	@Override
+	//Unused
 	public IBinder onBind(Intent intent) {
 		return null;
 	}
@@ -111,7 +114,6 @@ public class HSService extends Service{
 	
 	/**
 	 * Populates the list of input plugins.
-	 * Comment out whichever ones you don't want.
 	 */
 	private void addInputPlugins(){
 		inputPluginList.add(new BluetoothLogger(PASSABLE_CONTEXT));
@@ -123,7 +125,6 @@ public class HSService extends Service{
 	
 	/**
 	 * Populates the list of output plugins.
-	 * Comment out whichever ones you don't want.
 	 */
 	private void addOutputPlugins(){
 		outputPluginList.add(new ScreenOutput(PASSABLE_CONTEXT));

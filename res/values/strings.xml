@@ -20,6 +20,8 @@
     <string name="wifilogger_interval_pref_summary">The time interval between two subsequent scans.</string>
     <string name="bluetoothlogger_interval_pref">BT Logging Interval</string>
     <string name="bluetoothlogger_interval_pref_summary">The time interval between two subsequent scans.</string>
+    <string name="sensorlogger_interval_pref">Sensor Speed</string>
+    <string name="sensorlogger_interval_pref_summary">The logging speed of the accelerometer.</string>
     <string name="gpslogger_interval_pref">GPS Logging Interval</string>
     <string name="gpslogger_interval_pref_summary">The time interval between two subsequent scans.</string>
     <string name="gpslogger_distance_pref">GPS Minimum Distance</string>

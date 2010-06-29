@@ -1,11 +1,16 @@
 package ca.mcgill.hs.plugin;
 
-import java.io.IOException;
+import ca.mcgill.hs.R;
+import ca.mcgill.hs.util.PreferenceFactory;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -22,6 +27,9 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	//A boolean checking whether or not we are logging at a given moment.
 	private static boolean logging = false;
 	
+	//The speed at which the accelerometer will log.
+	private static int loggingSpeed = 0;
+	
 	//Variables used to write out the sensor data received.
 	private static float temperature = 0.0f;
 	private static float[] magfield = { 0.0f, 0.0f, 0.0f };
@@ -35,8 +43,12 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	 * @param gpsm
 	 * @param context
 	 */
-	public SensorLogger(SensorManager sensorManager){
+	public SensorLogger(SensorManager sensorManager, Context context){
 		this.sensorManager = sensorManager;
+		
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		loggingSpeed = Integer.parseInt(prefs.getString("sensorIntervalPreference", "0"));
 	}
 	
 	/**
@@ -48,7 +60,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		Log.i("SensorLogger", "Registered Sensor Listener");
 		sensorManager.registerListener(this, 
 				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-				SensorManager.SENSOR_DELAY_FASTEST);
+				loggingSpeed);
 		sensorManager.registerListener(this, 
 				sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
 				SensorManager.SENSOR_DELAY_UI);
@@ -57,6 +69,31 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 				SensorManager.SENSOR_DELAY_UI);
 		logging = true;
 	}
+	
+	/**
+	 * Returns the list of Preference objects for this InputPlugin.
+	 * 
+	 * @param c the context for the generated Preferences.
+	 * @return an array of the Preferences of this object.
+	 * 
+	 * @override
+	 */
+	public static Preference[] getPreferences(Context c) {
+		Preference[] prefs = new Preference[1];
+		
+		prefs[0] = PreferenceFactory.getListPreference(c, R.array.sensorLoggerIntervalStrings,
+				R.array.sensorLoggerIntervalValues, "0", "sensorIntervalPreference",
+				R.string.sensorlogger_interval_pref, R.string.sensorlogger_interval_pref_summary);
+		
+		return prefs;
+	}
+	
+	/**
+	 * Returns whether or not this InputPlugin has Preferences.
+	 * 
+	 * @return whether or not this InputPlugin has preferences.
+	 */
+	public static boolean hasPreferences(){ return true; }
 	
 	/**
 	 * This method gets called automatically whenever a sensor has changed.

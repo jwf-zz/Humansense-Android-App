@@ -23,7 +23,6 @@ public class GSMLogger extends InputPlugin{
 	private static final String TAG = "GSMLogger";
 	private final TelephonyManager tm;
 	private PhoneStateListener psl;
-	private Thread updateThread;
 	
 	private static long time;
 	private static int cid;

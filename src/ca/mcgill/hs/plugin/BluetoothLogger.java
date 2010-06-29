@@ -110,9 +110,9 @@ public class BluetoothLogger extends InputPlugin{
 		exec.interrupt();
 		
 		context.unregisterReceiver(blr);
-		Log.i("BluetoothLogger", "Unegistered receiver.");
+		Log.i("BluetoothLogger", "Unegistered receiver");
 		context.unregisterReceiver(bdl);
-		Log.i("BluetoothLogger", "Unegistered discovery listener.");
+		Log.i("BluetoothLogger", "Unegistered discovery listener");
 		
 		ba.cancelDiscovery();
 		
@@ -121,22 +121,24 @@ public class BluetoothLogger extends InputPlugin{
 	}
 	
 	private Thread getExecutionThread(){
-		Log.i("BluetoothThread", "Starting execution thread.");
+		Log.i("BluetoothThread", "Starting execution thread");
 		return new Thread(){
 			public void run(){
 				try {
 					sleep(timeBetweenDiscoveries);
 					if (ba != null){
 						if (!ba.isEnabled()){
-							Log.i("BluetoothThread", "Enabling BluetoothAdapter.");
-							if (forceBluetoothActivation) ba.enable();
+							if (forceBluetoothActivation){
+								ba.enable();
+								Log.i("BluetoothThread", "Enabling Bluetooth Adapter");
+							}				
 							while (!ba.isEnabled()){}
 						}
-						Log.i("BluetoothThread", "Starting discovery.");
+						Log.i("BluetoothThread", "Starting discovery");
 						ba.startDiscovery();
 					}
 				} catch (InterruptedException e) {
-					if (expectedInterrupt) Log.e("BluetoothThread", "Expected thread interruption.");
+					if (expectedInterrupt) Log.e("BluetoothThread", "Expected thread interruption");
 					else e.printStackTrace();
 				}
 			}

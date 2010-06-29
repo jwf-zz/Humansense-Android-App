@@ -2,7 +2,6 @@ package ca.mcgill.hs.plugin;
 
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.util.PreferenceFactory;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
@@ -20,6 +19,8 @@ import android.util.Log;
  *
  */
 public class SensorLogger extends InputPlugin implements SensorEventListener{
+	
+	private final boolean PLUGIN_ACTIVE;
 	
 	//The SensorManager used to register listeners.
 	private final SensorManager sensorManager;
@@ -49,6 +50,8 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(context);
 		loggingSpeed = Integer.parseInt(prefs.getString("sensorIntervalPreference", "0"));
+		
+		PLUGIN_ACTIVE = prefs.getBoolean("sensorLoggerEnable", false);
 	}
 	
 	/**
@@ -57,6 +60,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	 * @override
 	 */
 	public void startPlugin() {
+		if (!PLUGIN_ACTIVE) return;
 		Log.i("SensorLogger", "Registered Sensor Listener");
 		sensorManager.registerListener(this, 
 				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -81,7 +85,11 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	public static Preference[] getPreferences(Context c) {
 		Preference[] prefs = new Preference[1];
 		
-		prefs[0] = PreferenceFactory.getListPreference(c, R.array.sensorLoggerIntervalStrings,
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, "sensorLoggerEnable",
+				"Sensor Plugin", "Enables or disables this plugin.",
+				"SensorLogger is on.", "SensorLogger is off.");
+		
+		prefs[1] = PreferenceFactory.getListPreference(c, R.array.sensorLoggerIntervalStrings,
 				R.array.sensorLoggerIntervalValues, "0", "sensorIntervalPreference",
 				R.string.sensorlogger_interval_pref, R.string.sensorlogger_interval_pref_summary);
 		
@@ -105,33 +113,35 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	public void onSensorChanged(SensorEvent event) {
 		if (logging) {
 			final Sensor sensor = event.sensor;
-	        final int type = sensor.getType();	
-		        switch (type) {
-		        	case Sensor.TYPE_MAGNETIC_FIELD:
-		        		magfield = event.values.clone();
-		        		magfieldUpdated = true;
-		        		break;
-		        	case Sensor.TYPE_TEMPERATURE:
-		        		temperature = event.values[0];
-		        		break;
-		        	case Sensor.TYPE_ACCELEROMETER:
-						if (magfieldUpdated) {
-							magfieldUpdated = false;
+			final int type = sensor.getType();	
+			switch (type) {
+		    	case Sensor.TYPE_MAGNETIC_FIELD:
+		        	magfield = event.values.clone();
+		        	magfieldUpdated = true;
+		       		break;
+		       	case Sensor.TYPE_TEMPERATURE:
+		       		temperature = event.values[0];
+		       		break;
+		       	case Sensor.TYPE_ACCELEROMETER:
+					if (magfieldUpdated) {
+						magfieldUpdated = false;
 							final int matrix_size = 16;
-							float[] R = new float[matrix_size];
-							float[] I = new float[matrix_size];
-							float[] outR = new float[matrix_size];
-							
-							SensorManager.getRotationMatrix(R, I, event.values, magfield);
-
+						float[] R = new float[matrix_size];
+						float[] I = new float[matrix_size];
+						float[] outR = new float[matrix_size];
+						
+						SensorManager.getRotationMatrix(R, I, event.values, magfield);
 			                SensorManager.remapCoordinateSystem(R, SensorManager.AXIS_X, SensorManager.AXIS_Z, outR);
-			                SensorManager.getOrientation(outR, orientation);							// Update the orientation information.
-						}
-						logAccelerometerData(event.values, event.timestamp/1000000);
-		        	}
+		                SensorManager.getOrientation(outR, orientation);							// Update the orientation information.
+					}
+					logAccelerometerData(event.values, event.timestamp/1000000);
+        	}
 				
-			}
 		}
+	}
+	
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+	}
 	
 	/**
 	 * Processes the results sent by the Sensor change and writes them out.
@@ -152,6 +162,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	 * @override
 	 */
 	public void stopPlugin() {
+		if (!PLUGIN_ACTIVE) return;
 		Log.i("SensorLogger", "Unregistered Sensor Listener.");
 		sensorManager.unregisterListener(this, 
 				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
@@ -160,18 +171,6 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		sensorManager.unregisterListener(this, 
 				sensorManager.getDefaultSensor(Sensor.TYPE_TEMPERATURE));
 		logging = false;
-	}
-
-
-	/**
-	 * This method gets called automatically whenever a Sensor's accuracy has changed.
-	 * 
-	 * @param sensor the Sensor whose accuracy changed.
-	 * @param accuracy the new accuracy of the given Sensor.
-	 * 
-	 * @override
-	 */
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {		
 	}
 	
 	// ***********************************************************************************

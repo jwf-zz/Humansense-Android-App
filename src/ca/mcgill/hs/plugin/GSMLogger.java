@@ -20,6 +20,9 @@ import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
 public class GSMLogger extends InputPlugin{
+	
+	private final boolean PLUGIN_ACTIVE;
+	
 	private static final String TAG = "GSMLogger";
 	private final TelephonyManager tm;
 	private PhoneStateListener psl;
@@ -34,6 +37,11 @@ public class GSMLogger extends InputPlugin{
 		
 	public GSMLogger(TelephonyManager tm, Context context) {
 		this.tm = tm;
+		
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		
+		PLUGIN_ACTIVE = prefs.getBoolean("gsmLoggerEnable", false);
 	}	
 	
 	/**
@@ -43,6 +51,7 @@ public class GSMLogger extends InputPlugin{
 	 * @Override
 	 */
 	public void startPlugin() {
+		if (!PLUGIN_ACTIVE) return;
 		if (tm.getPhoneType() == TelephonyManager.PHONE_TYPE_GSM && tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT) {
 			psl = new PhoneStateListener() {
 				private int rssi = -1, mcc = -1, mnc = -1;
@@ -138,6 +147,18 @@ public class GSMLogger extends InputPlugin{
 		if (tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT){
 			tm.listen(psl, PhoneStateListener.LISTEN_NONE);
 		}
+	}
+	
+	public static boolean hasPreferences() {return true;}
+	
+	public static Preference[] getPreferences(Context c){
+		Preference[] prefs = new Preference[1];
+		
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, "gsmLoggerEnable",
+				"GSM Plugin", "Enables or disables this plugin.",
+				"GSMLogger is on.", "GSMLogger is off.");
+		
+		return prefs;
 	}
 	
 	// ***********************************************************************************

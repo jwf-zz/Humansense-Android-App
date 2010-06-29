@@ -4,6 +4,11 @@ import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSLoggerPacket;
 import ca.mcgill.hs.plugin.GSMLogger.GSMLoggerPacket;
+import ca.mcgill.hs.util.PreferenceFactory;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 
@@ -15,6 +20,15 @@ import android.util.Log;
  *
  */
 public class ScreenOutput extends OutputPlugin{
+	
+	private final boolean PLUGIN_ACTIVE;
+	
+	public ScreenOutput(Context context){
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		
+		PLUGIN_ACTIVE = prefs.getBoolean("screenOutputEnable", false);
+	}
 
 	/**
 	 * This method gets called whenever an InputPlugin registered to ScreenOutput has data available
@@ -25,6 +39,7 @@ public class ScreenOutput extends OutputPlugin{
 	 * @override
 	 */
 	void onDataReceived(DataPacket dp) {
+		if (!PLUGIN_ACTIVE) return;
 		if (dp.getClass() == WifiLoggerPacket.class){
 			dataParse((WifiLoggerPacket) dp);
 		} else if (dp.getClass() == GPSLoggerPacket.class) {
@@ -79,6 +94,18 @@ public class ScreenOutput extends OutputPlugin{
 		Log.i("BluetoothLogger SO", "Bluetooth Device Found");
 		Log.i("BluetoothLogger SO", "Name : " + bp.names.toString());
 		Log.i("BluetoothLogger SO", "Address : " + bp.addresses.toString());
+	}
+	
+	public static boolean hasPreferences() {return true;}
+	
+	public static Preference[] getPreferences(Context c){
+		Preference[] prefs = new Preference[1];
+		
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, "screenOutputEnable",
+				"ScreenOutput Plugin", "Enables or disables this plugin.",
+				"ScreenOutput is on.", "ScreenOutput is off.");
+		
+		return prefs;
 	}
 
 }

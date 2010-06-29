@@ -5,10 +5,12 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.zip.GZIPOutputStream;
 import java.util.Date;
 import java.util.HashMap;
 
+import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSLoggerPacket;
 import ca.mcgill.hs.plugin.GSMLogger.GSMLoggerPacket;
@@ -42,8 +44,13 @@ public class FileOutput extends OutputPlugin{
 	private final String BT_EXT = "-bt.log";
 	private final String DEF_EXT = ".log";
 	
+	// Size of BufferedOutputStream buffer
+	private final int BUFFER_SIZE;
+	private final static String BUFFER_SIZE_KEY = "fileOutputBufferSize";
+	
 	//Boolean ON-OFF switch *Temporary only*
 	private final boolean PLUGIN_ACTIVE;
+	private final static String PLUGIN_ACTIVE_KEY = "fileOutputEnabled";
 	
 	/**
 	 * This is the basic constructor for the FileOutput plugin. It has to be instantiated
@@ -55,7 +62,8 @@ public class FileOutput extends OutputPlugin{
 		SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(context);
 		
-		PLUGIN_ACTIVE = prefs.getBoolean("fileOutputEnable", false);
+		PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
+		BUFFER_SIZE = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY, "4096"));
 	}
 	
 	/**
@@ -99,12 +107,13 @@ public class FileOutput extends OutputPlugin{
 				}
 				//Generate file name based on the plugin it came from and the current time.
 				Date d = new Date(System.currentTimeMillis());
-				File fh = new File(j, id + d.getHours() + "-" + d.getMinutes() + "-" + d.getSeconds()+getFileExtension(dp));
+				SimpleDateFormat dfm = new SimpleDateFormat("yy-MM-dd-HHmmss");
+				File fh = new File(j, id + dfm.format(d) + getFileExtension(dp));
 				if (!fh.exists()) fh.createNewFile();
 				Log.i("File Output", "File to write: "+fh.getName());
 				fileHandles.put(id, new DataOutputStream(
 						new BufferedOutputStream(new GZIPOutputStream(
-								new FileOutputStream(fh), 2 * 1024 // Buffer Size
+								new FileOutputStream(fh), BUFFER_SIZE
 						))));
 			}
 			
@@ -271,12 +280,21 @@ public class FileOutput extends OutputPlugin{
 	 * @override
 	 */
 	public static Preference[] getPreferences(Context c){
-		Preference[] prefs = new Preference[1];
+		Preference[] prefs = new Preference[2];
 		
-		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, "fileOutputEnable",
-				"FileOutput Plugin", "Enables or disables this plugin.",
-				"FileOutput is on.", "FileOutput is off.");
-		
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, PLUGIN_ACTIVE_KEY,
+				(String)c.getResources().getText(R.string.fileoutput_pluginname_pref), 
+				(String)c.getResources().getText(R.string.fileoutput_pluginsummary_pref),
+				(String)c.getResources().getText(R.string.fileoutput_pluginenabled_pref), 
+				(String)c.getResources().getText(R.string.fileoutput_plugindisabled_pref));
+		prefs[1] = PreferenceFactory.getListPreference(c, 
+				R.array.fileOutputPluginBufferSizeStrings,
+				R.array.fileOutputPluginBufferSizeValues, 
+				(String)c.getResources().getText(R.string.fileoutput_buffersizedefault_pref),
+				BUFFER_SIZE_KEY,
+				R.string.fileoutput_buffersize_pref, 
+				R.string.fileoutput_buffersize_pref_summary);
+
 		return prefs;
 	}
 

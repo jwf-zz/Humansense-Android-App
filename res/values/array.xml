@@ -75,4 +75,17 @@
 	<item>300000</item>
 </string-array>
 
+<string-array name="fileOutputPluginBufferSizeStrings"><item>1 Kb</item>
+<item>2 Kb</item>
+<item>4 Kb</item>
+<item>8 Kb</item>
+<item>16 Kb</item>
+</string-array>
+
+<string-array name="fileOutputPluginBufferSizeValues"><item>1024</item>
+<item>2048</item>
+<item>4096</item>
+<item>8192</item>
+<item>16384</item>
+</string-array>
 </resources>

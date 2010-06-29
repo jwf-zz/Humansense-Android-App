@@ -22,7 +22,7 @@ import android.util.Log;
  * @author Cicerone Cojocaru, Jonathan Pitre
  *
  */
-public class WifiLogger extends InputPlugin{
+public class WifiLogger extends InputPlugin {
 	
 	//Boolean ON-OFF switch *Temporary only*
 	private final boolean PLUGIN_ACTIVE;

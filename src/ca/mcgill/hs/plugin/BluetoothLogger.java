@@ -1,12 +1,18 @@
 package ca.mcgill.hs.plugin;
 
 import java.util.LinkedList;
+
+import ca.mcgill.hs.R;
+import ca.mcgill.hs.util.PreferenceFactory;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class BluetoothLogger extends InputPlugin{
@@ -15,7 +21,7 @@ public class BluetoothLogger extends InputPlugin{
 	private final BluetoothAdapter ba;
 	
 	//The interval of time between two subsequent scans.
-	private int timeBetweenDiscoveries = 10000;
+	private int timeBetweenDiscoveries = 60000;
 
 	//The Context in which the BluetoothLoggerReceiver will be registered.
 	private final Context context;
@@ -36,6 +42,8 @@ public class BluetoothLogger extends InputPlugin{
 	
 	private Thread exec;
 	
+	private final boolean forceBluetoothActivation;
+	
 	/**
 	 * The default and only constructor for the BluetoothLogger InputPlugin.
 	 * 
@@ -49,6 +57,13 @@ public class BluetoothLogger extends InputPlugin{
 		this.context = context;
 		names = new LinkedList<String>();
 		addresses = new LinkedList<String>();
+		
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		
+		forceBluetoothActivation = prefs.getBoolean("forceBluetoothOn", false);
+		
+		timeBetweenDiscoveries = Integer.parseInt(prefs.getString("bluetoothLoggerTimeInterval", "60000"));
 	}
 	
 	public void startPlugin() {
@@ -69,6 +84,22 @@ public class BluetoothLogger extends InputPlugin{
 	private void onDeviceFound(BluetoothDevice bd){
 		names.add(bd.getName());
 		addresses.add(bd.getAddress());
+	}
+	
+	public static boolean hasPreferences() {return true;}
+	
+	public static Preference[] getPreferences(Context c){
+		Preference[] prefs = new Preference[2];
+		
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, "forceBluetoothOn",
+				"BT Auto-Enable", "Auto-Enables the Bluetooth adapter when logging is started.",
+				"Bluetooth will be Auto-Enabled when logging is started.", "Bluetooth will not be Auto-Enabled when logging is started.");
+	
+		prefs[1] = PreferenceFactory.getListPreference(c, R.array.bluetoothLoggerIntervalStrings,
+				R.array.bluetoothLoggerIntervalValues, "60000", "bluetoothLoggerTimeInterval",
+				R.string.bluetoothlogger_interval_pref, R.string.bluetoothlogger_interval_pref_summary);
+		
+		return prefs;
 	}
 
 	@Override
@@ -98,7 +129,7 @@ public class BluetoothLogger extends InputPlugin{
 					if (ba != null){
 						if (!ba.isEnabled()){
 							Log.i("BluetoothThread", "Enabling BluetoothAdapter.");
-							ba.enable();
+							if (forceBluetoothActivation) ba.enable();
 							while (!ba.isEnabled()){}
 						}
 						Log.i("BluetoothThread", "Starting discovery.");
@@ -140,9 +171,11 @@ public class BluetoothLogger extends InputPlugin{
 
 		public void onReceive(Context c, Intent intent) {
 			c.unregisterReceiver(this);
-			write(new BluetoothPacket(System.currentTimeMillis(), names.size(), names, addresses));
-			names.clear();
-			addresses.clear();
+			if (names.size()>0 && addresses.size()>0){
+				write(new BluetoothPacket(System.currentTimeMillis(), names.size(), names, addresses));
+				names.clear();
+				addresses.clear();
+			}
 			exec = getExecutionThread();
 			exec.start();
 			c.registerReceiver(this, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));

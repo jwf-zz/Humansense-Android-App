@@ -24,16 +24,16 @@ public class HSService extends Service{
 	
 	//A simple static array of the input plugin class names.
 	public static final Class<?>[] inputPluginsAvailable = {
-		WifiLogger.class,
+		BluetoothLogger.class,
 		GPSLogger.class,
-		SensorLogger.class,
 		GSMLogger.class,
-		BluetoothLogger.class
+		SensorLogger.class,
+		WifiLogger.class
 		};
 	//A simple static array of the output plugin class names.
 	public static final Class<?>[] outputPluginsAvailable = {
-		ScreenOutput.class,
-		FileOutput.class
+		FileOutput.class,
+		ScreenOutput.class
 		};
 	
 	//Thread Pool Executor
@@ -113,18 +113,18 @@ public class HSService extends Service{
 	 * Populates the list of input plugins.
 	 */
 	private void addInputPlugins(){
-		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
-		inputPluginList.add(new GPSLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE), PASSABLE_CONTEXT));
-		inputPluginList.add(new SensorLogger((SensorManager)getSystemService(Context.SENSOR_SERVICE)));
+		//inputPluginList.add(new BluetoothLogger(PASSABLE_CONTEXT));
+		//inputPluginList.add(new GPSLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE), PASSABLE_CONTEXT));
 		inputPluginList.add(new GSMLogger((TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE), PASSABLE_CONTEXT));
-		inputPluginList.add(new BluetoothLogger(PASSABLE_CONTEXT));
+		//inputPluginList.add(new SensorLogger((SensorManager)getSystemService(Context.SENSOR_SERVICE)));
+		//inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
 	}
 	
 	/**
 	 * Populates the list of output plugins.
 	 */
 	private void addOutputPlugins(){
-		//outputPluginList.add(new ScreenOutput());
+		outputPluginList.add(new ScreenOutput());
 		outputPluginList.add(new FileOutput());
 	}
 	

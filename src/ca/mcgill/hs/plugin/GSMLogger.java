@@ -2,8 +2,14 @@ package ca.mcgill.hs.plugin;
 
 import java.util.List;
 
+import ca.mcgill.hs.R;
+import ca.mcgill.hs.util.PreferenceFactory;
+
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
@@ -26,11 +32,11 @@ public class GSMLogger extends InputPlugin{
 	private static int[] cids;
 	private static int[] lacs;
 	private static int[] rssis;
-	
+		
 	public GSMLogger(TelephonyManager tm, Context context) {
 		this.tm = tm;
 	}	
-
+	
 	/**
 	 * Taken from Jordan Frank (hsandroidv1.ca.mcgill.cs.humansense.hsandroid.service) and
 	 * modified for this plugin.
@@ -123,30 +129,14 @@ public class GSMLogger extends InputPlugin{
 			tm.listen(psl, PhoneStateListener.LISTEN_SERVICE_STATE | 
 					PhoneStateListener.LISTEN_CELL_LOCATION | 
 					PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-			updateThread = new Thread() {
-				public void run() {
-					try {
-						while (true) {
-							Log.i(TAG, "Requesting Cell Location Update.");
-							CellLocation.requestLocationUpdate();
-							sleep(5000);
-						}
-					} catch (InterruptedException e) {
-						Log.i(TAG, "Logging thread terminated.");
-					}
-				}
-			};
-			updateThread.start();
 		} else {
 			Log.i(TAG, "GSM Location Logging Unavailable! Wrong phone type or SIM card not present!");
 		}
-		
 	}
 
 	@Override
 	public void stopPlugin() {
 		if (tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT){
-			updateThread.interrupt();
 			tm.listen(psl, PhoneStateListener.LISTEN_NONE);
 		}
 	}

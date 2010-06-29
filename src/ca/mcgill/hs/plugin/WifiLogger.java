@@ -1,6 +1,5 @@
 package ca.mcgill.hs.plugin;
 
-import java.io.IOException;
 import java.util.List;
 
 import ca.mcgill.hs.R;

@@ -27,7 +27,7 @@
     <string name="gpslogger_distance_pref">GPS Minimum Distance</string>
     <string name="gpslogger_distance_pref_summary">The minimum distance that has to be travelled between two subsequent scans.</string>
     <string name="fileoutput_buffersize_pref">Buffer Size</string>
-    <string name="fileoutput_buffersizedefault_pref">4 Kb</string>
+    <string name="fileoutput_buffersizedefault_pref">4096</string>
     <string name="fileoutput_buffersize_pref_summary">The size of the BufferedOutputStream buffer.</string>
     <string name="fileoutput_pluginname_pref">FileOutput Plugin</string>
     <string name="fileoutput_pluginsummary_pref">Enables or disables this plugin.</string>

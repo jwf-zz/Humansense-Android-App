@@ -145,6 +145,7 @@ public class GSMLogger extends InputPlugin{
 
 	@Override
 	public void stopPlugin() {
+		if (!PLUGIN_ACTIVE) return;
 		if (tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT){
 			tm.listen(psl, PhoneStateListener.LISTEN_NONE);
 		}

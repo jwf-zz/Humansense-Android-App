@@ -83,6 +83,7 @@ public class GPSLogger extends InputPlugin{
 	 * @Override
 	 */
 	public void stopPlugin() {
+		if (!PLUGIN_ACTIVE) return;
 		gpsm.removeUpdates(gpsll);
 		Log.i("GPSLocationLogger local", "Unregistered Location Listener.");
 	}

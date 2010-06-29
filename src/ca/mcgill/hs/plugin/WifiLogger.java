@@ -108,6 +108,7 @@ public class WifiLogger extends InputPlugin{
 	 * @override
 	 */
 	public void stopPlugin() {
+		if (!PLUGIN_ACTIVE) return;
 		if (threadRunning){
 			threadRunning = false;
 			context.unregisterReceiver(wlr);

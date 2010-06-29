@@ -130,6 +130,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	 * @override
 	 */
 	public void stopPlugin() {
+		if (!PLUGIN_ACTIVE) return;
 		Log.i("SensorLogger", "Unregistered Sensor Listener.");
 		sensorManager.unregisterListener(this, 
 				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));

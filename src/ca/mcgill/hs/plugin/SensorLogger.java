@@ -20,6 +20,7 @@ import android.util.Log;
  */
 public class SensorLogger extends InputPlugin implements SensorEventListener{
 	
+	//Boolean ON-OFF switch *Temporary only*
 	private final boolean PLUGIN_ACTIVE;
 	
 	//The SensorManager used to register listeners.
@@ -140,6 +141,14 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		}
 	}
 	
+	/**
+	 * This method gets called automatically whenever a sensor's accuracy has changed.
+	 * 
+	 * @param event the SensorEvent detailing the change in sensor data.
+	 * @param accuracy the new accuracy.
+	 * 
+	 * @override
+	 */
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 	}
 	

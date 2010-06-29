@@ -42,8 +42,15 @@ public class FileOutput extends OutputPlugin{
 	private final String BT_EXT = "-bt.log";
 	private final String DEF_EXT = ".log";
 	
+	//Boolean ON-OFF switch *Temporary only*
 	private final boolean PLUGIN_ACTIVE;
 	
+	/**
+	 * This is the basic constructor for the FileOutput plugin. It has to be instantiated
+	 * before it is started, and needs to be passed a reference to a Context.
+	 * 
+	 * @param context - the context in which this plugin is created.
+	 */
 	public FileOutput(Context context){
 		SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(context);
@@ -207,6 +214,11 @@ public class FileOutput extends OutputPlugin{
 		}
 	}
 	
+	/**
+	 * Parses and writes given BluetoothPacket to given DataOutputStream.
+	 * @param gsmlp the BluetoothPacket to parse and write out.
+	 * @param dos the DataOutputStream to write to.
+	 */
 	private void dataParse(BluetoothPacket btp, DataOutputStream dos){
 		try {
 			dos.writeLong(btp.time);
@@ -243,8 +255,21 @@ public class FileOutput extends OutputPlugin{
 		}
 	}
 	
+	/**
+	 * Returns whether or not this OutputPlugin has Preferences.
+	 * 
+	 * @return whether or not this OutputPlugin has preferences.
+	 */
 	public static boolean hasPreferences() {return true;}
 	
+	/**
+	 * Returns the list of Preference objects for this OutputPlugin.
+	 * 
+	 * @param c the context for the generated Preferences.
+	 * @return an array of the Preferences of this object.
+	 * 
+	 * @override
+	 */
 	public static Preference[] getPreferences(Context c){
 		Preference[] prefs = new Preference[1];
 		

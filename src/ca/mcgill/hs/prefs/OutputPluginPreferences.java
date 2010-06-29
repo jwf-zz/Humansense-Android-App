@@ -53,8 +53,8 @@ public class OutputPluginPreferences extends PreferenceActivity{
 	private PreferenceScreen createPreferenceHierarchy() throws IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException, NoSuchMethodException{
 		PreferenceScreen root = getPreferenceManager().createPreferenceScreen(this);
 		
-		for (Class c : HSService.outputPluginsAvailable){
-			if ((Boolean) c.getMethod("hasPreferences", null).invoke(null, null)){
+		for (Class<?> c : HSService.outputPluginsAvailable){
+			if ((Boolean) c.getMethod("hasPreferences", (Class[]) null).invoke(null, (Object[]) null)){
 				PreferenceCategory newCategory = new PreferenceCategory(this);
 				newCategory.setTitle(c.getSimpleName() + " Preferences");
 				root.addPreference(newCategory);

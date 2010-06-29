@@ -2,17 +2,13 @@ package ca.mcgill.hs.prefs;
 
 import java.lang.reflect.InvocationTargetException;
 
-import ca.mcgill.hs.R;
 import ca.mcgill.hs.serv.HSService;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
-import android.preference.Preference.OnPreferenceClickListener;
-import android.util.AttributeSet;
 
 /**
  * InputPluginPreferenes is a class extending PreferenceActivity which defines the settings
@@ -56,24 +52,8 @@ public class InputPluginPreferences extends PreferenceActivity{
 	private PreferenceScreen createPreferenceHierarchy() throws IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException, NoSuchMethodException{
 		PreferenceScreen root = getPreferenceManager().createPreferenceScreen(this);
 		
-		for (Class c : HSService.inputPluginsAvailable){
-			if ((Boolean) c.getMethod("hasPreferences", null).invoke(null, null)){
-				/*Preference nest = new Preference(this);
-				nest.setTitle(c.getSimpleName() + " Preferences");
-				
-				final PreferenceScreen leaf = getPreferenceManager().createPreferenceScreen(this);
-				for (Preference p : (Preference[]) c.getMethod("getPreferences", Context.class).invoke(null, this)){
-					if (p != null) leaf.addPreference(p);
-				}
-				
-				nest.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-					public boolean onPreferenceClick(Preference preference) {
-						setPreferenceScreen(leaf);
-						return true;
-					}
-				});
-				
-				root.addPreference(nest);*/
+		for (Class<?> c : HSService.inputPluginsAvailable){
+			if ((Boolean) c.getMethod("hasPreferences", (Class[]) null).invoke(null, (Object[]) null)){
 				
 				PreferenceCategory newCategory = new PreferenceCategory(this);
 				newCategory.setTitle(c.getSimpleName() + " Preferences");

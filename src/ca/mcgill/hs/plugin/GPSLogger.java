@@ -22,6 +22,7 @@ import android.util.Log;
  */
 public class GPSLogger extends InputPlugin{
 	
+	//Boolean ON-OFF switch *Temporary only*
 	private final boolean PLUGIN_ACTIVE;
 	
 	//The LocationManager used to request location updates.

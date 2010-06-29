@@ -21,8 +21,15 @@ import android.util.Log;
  */
 public class ScreenOutput extends OutputPlugin{
 	
+	//Boolean ON-OFF switch *Temporary only*
 	private final boolean PLUGIN_ACTIVE;
 	
+	/**
+	 * This is the basic constructor for the ScreenOutput plugin. It has to be instantiated
+	 * before it is started, and needs to be passed a reference to a Context.
+	 * 
+	 * @param context - the context in which this plugin is created.
+	 */
 	public ScreenOutput(Context context){
 		SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(context);
@@ -75,6 +82,10 @@ public class ScreenOutput extends OutputPlugin{
 		Log.i("GPSLocationLogger SO", "Area: [" + gpslp.altitude + "][" + gpslp.latitude + "][" + gpslp.longitude + "]");
 	}
 	
+	/**
+	 * Parses and writes given GSMLoggerPacket to the Android's logcat.
+	 * @param gsmlp the GSMLoggerPacket to parse and write out.
+	 */
 	private void dataParse(GSMLoggerPacket gsmlp){
 		Log.i("GSMLogger SO", "Timestamp : " + gsmlp.time);
 		Log.i("GSMLogger SO", "MCC : " + gsmlp.mcc);
@@ -90,14 +101,31 @@ public class ScreenOutput extends OutputPlugin{
 		}
 	}
 	
+	/**
+	 * Parses and writes given BluetoothPacket to the Android's logcat.
+	 * @param gpslp the BluetoothPacket to parse and write out.
+	 */
 	private void dataParse(BluetoothPacket bp){
 		Log.i("BluetoothLogger SO", "Bluetooth Device Found");
 		Log.i("BluetoothLogger SO", "Name : " + bp.names.toString());
 		Log.i("BluetoothLogger SO", "Address : " + bp.addresses.toString());
 	}
 	
+	/**
+	 * Returns whether or not this OutputPlugin has Preferences.
+	 * 
+	 * @return whether or not this OutputPlugin has preferences.
+	 */
 	public static boolean hasPreferences() {return true;}
 	
+	/**
+	 * Returns the list of Preference objects for this OutputPlugin.
+	 * 
+	 * @param c the context for the generated Preferences.
+	 * @return an array of the Preferences of this object.
+	 * 
+	 * @override
+	 */
 	public static Preference[] getPreferences(Context c){
 		Preference[] prefs = new Preference[1];
 		

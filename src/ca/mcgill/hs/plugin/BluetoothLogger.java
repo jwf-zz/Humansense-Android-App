@@ -87,6 +87,7 @@ public class BluetoothLogger extends InputPlugin{
 	}
 	
 	private void onDeviceFound(BluetoothDevice bd){
+		if (bd.getName() == null) return;
 		names.add(bd.getName());
 		addresses.add(bd.getAddress());
 	}
@@ -113,6 +114,7 @@ public class BluetoothLogger extends InputPlugin{
 
 	@Override
 	public void stopPlugin() {
+		if (!PLUGIN_ACTIVE) return;
 		if (ba == null) return;
 		
 		expectedInterrupt = true;

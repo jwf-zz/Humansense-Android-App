@@ -114,11 +114,11 @@ public class HSService extends Service{
 	 * Comment out whichever ones you don't want.
 	 */
 	private void addInputPlugins(){
-	//	inputPluginList.add(new BluetoothLogger(PASSABLE_CONTEXT));
-	//	inputPluginList.add(new GPSLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE), PASSABLE_CONTEXT));
-	//	inputPluginList.add(new GSMLogger((TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE), PASSABLE_CONTEXT));
+		inputPluginList.add(new BluetoothLogger(PASSABLE_CONTEXT));
+		inputPluginList.add(new GPSLogger((LocationManager) getSystemService(Context.LOCATION_SERVICE), PASSABLE_CONTEXT));
+		inputPluginList.add(new GSMLogger((TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE), PASSABLE_CONTEXT));
 		inputPluginList.add(new SensorLogger((SensorManager)getSystemService(Context.SENSOR_SERVICE), PASSABLE_CONTEXT));
-	//	inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
+		inputPluginList.add(new WifiLogger((WifiManager)getSystemService(Context.WIFI_SERVICE),PASSABLE_CONTEXT));
 	}
 	
 	/**

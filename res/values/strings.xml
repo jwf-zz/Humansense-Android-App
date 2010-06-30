@@ -9,6 +9,7 @@
     <string name="stop_label">STOP SERVICE</string>
 	
 	<!-- Preferences Strings -->
+	<string name="settingString">Settings</string>
     <string name="start_phone_boot_label">Start at phone boot.</string>
     <string name="no_start_phone_boot_label">Do not start at phone boot.</string>
     <string name="start_app_start_label">Start at application start.</string>
@@ -18,6 +19,10 @@
     <string name="set_output_preferences">Output Plugin Preferences</string>
     <string name="wifilogger_interval_pref">Wifi Logging Interval</string>
     <string name="wifilogger_interval_pref_summary">The time interval between two subsequent scans.</string>
+    <string name="bluetoothlogger_autonable_pref_label">BT Auto-Enable</string>
+    <string name="bluetoothlogger_autonable_pref_summary">Auto-Enables the Bluetooth adapter when logging is started.</string>
+    <string name="bluetoothlogger_autonable_pref_on">Bluetooth will be Auto-Enabled when logging is started.</string>
+	<string name="bluetoothlogger_autonable_pref_off">Bluetooth will not be Auto-Enabled when logging is started.</string> 
     <string name="bluetoothlogger_interval_pref">BT Logging Interval</string>
     <string name="bluetoothlogger_interval_pref_summary">The time interval between two subsequent scans.</string>
     <string name="sensorlogger_interval_pref">Sensor Speed</string>

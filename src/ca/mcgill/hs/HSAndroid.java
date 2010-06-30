@@ -75,7 +75,7 @@ public class HSAndroid extends Activity{
      * This method is called whenever the user wants to access the settings menu.
      */
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(0, MENU_SETTINGS, 0, "Settings").setIcon(R.drawable.options);
+        menu.add(0, MENU_SETTINGS, 0, R.string.settingString).setIcon(R.drawable.options);
         return true;
     }
 

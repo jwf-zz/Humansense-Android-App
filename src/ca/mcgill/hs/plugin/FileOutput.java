@@ -103,7 +103,7 @@ public class FileOutput extends OutputPlugin{
 	 */
 	synchronized void onDataReceived(DataPacket dp) {
 		if (!PLUGIN_ACTIVE) return;
-		int id = dp.getInputPluginId();
+		int id = dp.getDataPacketId();
 		
 		try {
 			if (!fileHandles.containsKey(id)){

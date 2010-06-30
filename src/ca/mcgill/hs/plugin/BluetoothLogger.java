@@ -257,7 +257,7 @@ public class BluetoothLogger extends InputPlugin{
 		}
 
 		@Override
-		public int getInputPluginId() {
+		public int getDataPacketId() {
 			return BluetoothPacket.PLUGIN_ID;
 		}
 

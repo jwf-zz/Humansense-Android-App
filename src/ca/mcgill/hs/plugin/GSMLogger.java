@@ -231,7 +231,7 @@ public class GSMLogger extends InputPlugin{
 		}
 
 		@Override
-		public int getInputPluginId() {
+		public int getDataPacketId() {
 			return GSMLoggerPacket.PLUGIN_ID;
 		}
 

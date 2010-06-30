@@ -229,7 +229,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		}
 
 		@Override
-		public int getInputPluginId() {
+		public int getDataPacketId() {
 			return SensorLoggerPacket.PLUGIN_ID;
 		}
 

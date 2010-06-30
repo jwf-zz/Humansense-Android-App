@@ -200,7 +200,7 @@ public class GPSLogger extends InputPlugin{
 		}
 
 		@Override
-		public int getInputPluginId() {
+		public int getDataPacketId() {
 			return GPSLoggerPacket.PLUGIN_ID;
 		}
 

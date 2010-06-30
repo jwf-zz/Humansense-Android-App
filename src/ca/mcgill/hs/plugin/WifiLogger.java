@@ -229,7 +229,7 @@ public class WifiLogger extends InputPlugin {
 		}
 
 		@Override
-		public int getInputPluginId() {
+		public int getDataPacketId() {
 			return WifiLoggerPacket.PLUGIN_ID;
 		}
 

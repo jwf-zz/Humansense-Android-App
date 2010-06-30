@@ -26,7 +26,7 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	 * Used by the ThreadPool to continuously retrieved DataPackets from dpList. The DataPacket are
 	 * passed to onDataReceived() one at a time for as long as this plugin is running and dpList is not empty.
 	 */
-	public void run(){
+	public synchronized void run(){
 		while (!dpList.isEmpty()){
 			DataPacket dp = dpList.removeFirst();
 			onDataReceived(dp);

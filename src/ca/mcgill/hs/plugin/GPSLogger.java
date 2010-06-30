@@ -53,14 +53,8 @@ public class GPSLogger extends InputPlugin{
 		SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(context);		
 		PLUGIN_ACTIVE = prefs.getBoolean("gpsLoggerEnable", false);
-		try {
-			MIN_DIST = Integer.parseInt(prefs.getString("gpsLoggerDistancePreference", "0"));
-			UPDATE_FREQ = Integer.parseInt(prefs.getString("gpsLoggerIntervalPreference", "30000"));
-		} catch (NumberFormatException defVals) {
-			MIN_DIST = 0;
-			UPDATE_FREQ = 30000;
-			Log.e("GPSLogger - PreferenceError", "Unable to get one or more preferences for this plugin.");
-		}
+		MIN_DIST = Integer.parseInt(prefs.getString("gpsLoggerDistancePreference", "0"));
+		UPDATE_FREQ = Integer.parseInt(prefs.getString("gpsLoggerIntervalPreference", "30000"));
 	}
 	
 	/**

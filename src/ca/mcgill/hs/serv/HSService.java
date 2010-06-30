@@ -3,9 +3,6 @@ package ca.mcgill.hs.serv;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import ca.mcgill.hs.plugin.*;
 import android.app.Service;

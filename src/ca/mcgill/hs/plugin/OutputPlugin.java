@@ -1,7 +1,6 @@
 package ca.mcgill.hs.plugin;
 
 import java.util.LinkedList;
-import java.util.Random;
 
 import android.content.Context;
 import android.preference.Preference;

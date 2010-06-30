@@ -136,7 +136,11 @@ public class GPSLogger extends InputPlugin{
 	private class GPSLocationListener implements android.location.LocationListener {
 
 		private static final String TAG = "GPSLocationLogger";
+		
+		@SuppressWarnings("unused")
 		private final LocationManager lm;
+		
+		@SuppressWarnings("unused")
 		private boolean available = false;
 
 		public GPSLocationListener(LocationManager lm) {

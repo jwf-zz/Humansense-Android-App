@@ -20,7 +20,7 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	 * Called when a DataPacket is sent from an InputPlugin. Adds the DataPacket that is now ready to dpList.
 	 * @param dp the DataPacket that is ready to be received.
 	 */
-	public final void onDataReady(DataPacket dp){ dpList.addLast(dp); }
+	public final synchronized void onDataReady(DataPacket dp){ dpList.addLast(dp); }
 	
 	/**
 	 * Used by the ThreadPool to continuously retrieved DataPackets from dpList. The DataPacket are

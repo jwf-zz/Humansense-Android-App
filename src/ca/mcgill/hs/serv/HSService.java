@@ -1,6 +1,8 @@
 package ca.mcgill.hs.serv;
 
 import java.util.LinkedList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -38,16 +40,8 @@ public class HSService extends Service{
 		ScreenOutput.class
 		};
 	
-	//Thread Pool Executor
-	private static final int CORE_THREADS = inputPluginsAvailable.length * outputPluginsAvailable.length;
-	private static final int MAX_THREADS = inputPluginsAvailable.length * outputPluginsAvailable.length;
-	private static final int KEEP_ALIVE_TIME = 100;
-	private static final ThreadPoolExecutor tpe = new ThreadPoolExecutor(CORE_THREADS,
-			//Above: number of core threads to keep alive
-			MAX_THREADS, //Max number of threads
-			KEEP_ALIVE_TIME, //time that excess idle threads will wait for new tasks before terminating
-			TimeUnit.MILLISECONDS, //The time unit for above
-			new LinkedBlockingQueue<Runnable>()); //the queue to use for holding tasks before they are executed
+	//ExecutorService
+	private static final ExecutorService tpe = Executors.newCachedThreadPool();
 		
 	/**
 	 * Returns a boolean indicating if the service is running or not.

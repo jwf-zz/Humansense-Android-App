@@ -50,6 +50,8 @@ public class FileOutput extends OutputPlugin{
 	
 	//Boolean ON-OFF switch *Temporary only*
 	private final boolean PLUGIN_ACTIVE;
+	
+	//Preference key for this plugin's state
 	private final static String PLUGIN_ACTIVE_KEY = "fileOutputEnabled";
 	
 	// Location for the log files, under the external storage directory
@@ -57,6 +59,7 @@ public class FileOutput extends OutputPlugin{
 	
 	// Date format used in the log file names
 	private final static String LOG_DATE_FORMAT = "yy-MM-dd-HHmmss";
+	
 	/**
 	 * This is the basic constructor for the FileOutput plugin. It has to be instantiated
 	 * before it is started, and needs to be passed a reference to a Context.

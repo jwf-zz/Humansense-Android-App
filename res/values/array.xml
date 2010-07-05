@@ -94,7 +94,7 @@
 <item>6 Hours</item>
 <item>12 Hours</item>
 <item>24 Hours</item>
-<item>Unlimited</item>
+<item>Never</item>
 </string-array>
 
 <string-array name="fileOutputPluginRolloverIntervalValues">

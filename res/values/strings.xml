@@ -41,6 +41,6 @@
     <string name="fileoutput_plugindisabled_pref">FileOutput is off.</string>
     <string name="fileoutput_rolloverinterval_pref">File Rollover Interval</string>
     <string name="fileoutput_rolloverintervaldefault_pref">43200000</string>
-    <string name="fileoutput_rolloverinterval_pref_summary">Put some shit in right now.</string>
+    <string name="fileoutput_rolloverinterval_pref_summary">How often should new log files be started.</string>
     
 </resources>

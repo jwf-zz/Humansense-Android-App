@@ -6,7 +6,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPOutputStream;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
@@ -36,7 +38,7 @@ import android.util.Log;
 public class FileOutput extends OutputPlugin{
 	
 	//HashMap used for keeping file handles. There is one file associated with each input plugin connected.
-	private final HashMap<Integer, DataOutputStream> fileHandles = new HashMap<Integer, DataOutputStream>();
+	private final ConcurrentHashMap<Integer, DataOutputStream> fileHandles = new ConcurrentHashMap<Integer, DataOutputStream>();
 	
 	//File Extensions to be added at the end of each file.
 	private final String WIFI_EXT = "-wifiloc.log";
@@ -93,6 +95,10 @@ public class FileOutput extends OutputPlugin{
 	 * @override
 	 */
 	protected void onPluginStop(){
+		closeAll();
+	}
+	
+	private void closeAll(){
 		for (int id : fileHandles.keySet()){
 			try {
 				fileHandles.get(id).close();
@@ -125,15 +131,7 @@ public class FileOutput extends OutputPlugin{
 		if (currentTimeMillis >= rolloverTimestamp && ROLLOVER_INTERVAL != -1){
 			
 			//If files need to be rolled over, close all currently open files and clear the hash map.
-			for (int fh : fileHandles.keySet()){
-				try {
-					fileHandles.get(fh).close();
-					fileHandles.remove(fh);
-				} catch (IOException e) {
-					Log.e("FileOutput", "Caught IOException");
-					e.printStackTrace();
-				}
-			}
+			closeAll();
 			Log.i("ROLLOVER","Creating rollover timestamp.");
 			rolloverTimestamp = currentTimeMillis + ROLLOVER_INTERVAL;
 		}

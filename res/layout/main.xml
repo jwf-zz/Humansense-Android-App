@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:background="@color/background"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    >
+<AbsoluteLayout android:id="@+id/AbsoluteLayout01" android:layout_width="fill_parent" android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android">
+
 	<TextView  
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content" android:text="@string/top_message"/>
@@ -12,10 +8,12 @@
     android:id="@+id/button"
    	android:layout_width="fill_parent"
    	android:layout_height="wrap_content"
-   	android:text="@string/start_label" />
-   	<TextView  
-   	android:id="@+id/counterText"
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content"/>
-</LinearLayout>
-
+   	android:text="@string/start_label"
+   	android:layout_y="20dip"/>
+	<Button 
+	android:layout_height="wrap_content" 
+	android:layout_x="190dip"
+	android:layout_y="360dip" 
+	android:id="@+id/uploadButton"
+	android:text="@string/upload_label" android:layout_width="130dip"></Button>
+</AbsoluteLayout>

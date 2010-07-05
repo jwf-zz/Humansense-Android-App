@@ -7,6 +7,7 @@
 	<!-- Object Strings -->
 	<string name="start_label">START SERVICE</string>
     <string name="stop_label">STOP SERVICE</string>
+    <string name="upload_label">UPLOAD</string>
 	
 	<!-- Preferences Strings -->
 	<string name="settingString">Settings</string>

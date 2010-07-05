@@ -6,14 +6,17 @@ package ca.mcgill.hs;
 import ca.mcgill.hs.serv.HSService;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 /**
  * This Activity is the entry point to the HSAndroid application. This Activity is launched
@@ -26,6 +29,7 @@ import android.widget.Button;
 public class HSAndroid extends Activity{
 	
 	private static Button button;
+	private static Button uploadButton;
 	private Intent i;
 	
 	private boolean autoStartAppStart = false;
@@ -66,6 +70,13 @@ public class HSAndroid extends Activity{
 					stopService(i);
 					button.setText(R.string.start_label);
 				}
+			}
+		});
+        
+        uploadButton = (Button) findViewById(R.id.uploadButton);
+        uploadButton.setOnClickListener( new View.OnClickListener() {
+			public void onClick(View v) {
+				Toast.makeText(uploadButton.getContext(), "UNIMPLEMENTED FEATURE!!! :(", Toast.LENGTH_SHORT).show();
 			}
 		});
         

@@ -118,9 +118,13 @@ public class FileOutput extends OutputPlugin{
 		if (!PLUGIN_ACTIVE) return;
 		int id = dp.getDataPacketId();
 		
+		//Record system time
 		long currentTimeMillis = System.currentTimeMillis();
-				
+		
+		//Check to see if files need to be rolled over
 		if (currentTimeMillis >= rolloverTimestamp && ROLLOVER_INTERVAL != -1){
+			
+			//If files need to be rolled over, close all currently open files and clear the hash map.
 			for (int fh : fileHandles.keySet()){
 				try {
 					fileHandles.get(fh).close();

@@ -19,10 +19,10 @@
     <string name="set_output_preferences">Output Plugin Preferences</string>
     <string name="wifilogger_interval_pref">Wifi Logging Interval</string>
     <string name="wifilogger_interval_pref_summary">The time interval between two subsequent scans.</string>
-    <string name="bluetoothlogger_autonable_pref_label">BT Auto-Enable</string>
-    <string name="bluetoothlogger_autonable_pref_summary">Auto-Enables the Bluetooth adapter when logging is started.</string>
-    <string name="bluetoothlogger_autonable_pref_on">Bluetooth will be Auto-Enabled when logging is started.</string>
-	<string name="bluetoothlogger_autonable_pref_off">Bluetooth will not be Auto-Enabled when logging is started.</string> 
+    <string name="bluetoothlogger_autoenable_pref_label">BT Auto-Enable</string>
+    <string name="bluetoothlogger_autoenable_pref_summary">Auto-Enables the Bluetooth adapter when logging is started.</string>
+    <string name="bluetoothlogger_autoenable_pref_on">Bluetooth will be Auto-Enabled when logging is started.</string>
+	<string name="bluetoothlogger_autoenable_pref_off">Bluetooth will not be Auto-Enabled when logging is started.</string> 
     <string name="bluetoothlogger_interval_pref">BT Logging Interval</string>
     <string name="bluetoothlogger_interval_pref_summary">The time interval between two subsequent scans.</string>
     <string name="sensorlogger_interval_pref">Sensor Speed</string>
@@ -38,5 +38,8 @@
     <string name="fileoutput_pluginsummary_pref">Enables or disables this plugin.</string>
     <string name="fileoutput_pluginenabled_pref">FileOutput is on.</string>
     <string name="fileoutput_plugindisabled_pref">FileOutput is off.</string>
+    <string name="fileoutput_rolloverinterval_pref">File Rollover Interval</string>
+    <string name="fileoutput_rolloverintervaldefault_pref">43200000</string>
+    <string name="fileoutput_rolloverinterval_pref_summary">Put some shit in right now.</string>
     
 </resources>

@@ -9,6 +9,8 @@ import java.text.SimpleDateFormat;
 import java.util.zip.GZIPOutputStream;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
@@ -48,6 +50,9 @@ public class FileOutput extends OutputPlugin{
 	private final int BUFFER_SIZE;
 	private final static String BUFFER_SIZE_KEY = "fileOutputBufferSize";
 	
+	// Rollover Interval pref key
+	private final static String ROLLOVER_INTERVAL_KEY = "fileOutputRolloverInterval";
+	
 	//Boolean ON-OFF switch *Temporary only*
 	private final boolean PLUGIN_ACTIVE;
 	
@@ -59,6 +64,10 @@ public class FileOutput extends OutputPlugin{
 	
 	// Date format used in the log file names
 	private final static String LOG_DATE_FORMAT = "yy-MM-dd-HHmmss";
+	
+	//Timestamps used for file rollover.
+	private long rolloverTimestamp = -1;
+	private final long ROLLOVER_INTERVAL;
 	
 	/**
 	 * This is the basic constructor for the FileOutput plugin. It has to be instantiated
@@ -73,6 +82,9 @@ public class FileOutput extends OutputPlugin{
 		PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
 		BUFFER_SIZE = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY, 
 				(String)context.getResources().getText(R.string.fileoutput_buffersizedefault_pref)));
+		
+		ROLLOVER_INTERVAL = Integer.parseInt(prefs.getString(ROLLOVER_INTERVAL_KEY, 
+				(String)context.getResources().getText(R.string.fileoutput_rolloverintervaldefault_pref)));
 	}
 	
 	/**
@@ -84,6 +96,7 @@ public class FileOutput extends OutputPlugin{
 		for (int id : fileHandles.keySet()){
 			try {
 				fileHandles.get(id).close();
+				fileHandles.remove(id);
 			} catch (IOException e) {
 				Log.e("FileOutput", "Caught IOException");
 				e.printStackTrace();
@@ -105,6 +118,22 @@ public class FileOutput extends OutputPlugin{
 		if (!PLUGIN_ACTIVE) return;
 		int id = dp.getDataPacketId();
 		
+		long currentTimeMillis = System.currentTimeMillis();
+				
+		if (currentTimeMillis >= rolloverTimestamp && ROLLOVER_INTERVAL != -1){
+			for (int fh : fileHandles.keySet()){
+				try {
+					fileHandles.get(fh).close();
+					fileHandles.remove(fh);
+				} catch (IOException e) {
+					Log.e("FileOutput", "Caught IOException");
+					e.printStackTrace();
+				}
+			}
+			Log.i("ROLLOVER","Creating rollover timestamp.");
+			rolloverTimestamp = currentTimeMillis + ROLLOVER_INTERVAL;
+		}
+		
 		try {
 			if (!fileHandles.containsKey(id)){
 				final File j = new File(Environment.getExternalStorageDirectory(), OUTPUT_DIRECTORY);
@@ -115,7 +144,7 @@ public class FileOutput extends OutputPlugin{
 					}
 				}
 				//Generate file name based on the plugin it came from and the current time.
-				Date d = new Date(System.currentTimeMillis());
+				Date d = new Date(currentTimeMillis);
 				SimpleDateFormat dfm = new SimpleDateFormat(LOG_DATE_FORMAT);
 				File fh = new File(j, dfm.format(d) + getFileExtension(dp));
 				if (!fh.exists()) fh.createNewFile();
@@ -291,7 +320,7 @@ public class FileOutput extends OutputPlugin{
 	 * @override
 	 */
 	public static Preference[] getPreferences(Context c){
-		Preference[] prefs = new Preference[2];
+		Preference[] prefs = new Preference[3];
 		
 		prefs[0] = PreferenceFactory.getCheckBoxPreference(c, PLUGIN_ACTIVE_KEY,
 				R.string.fileoutput_pluginname_pref,
@@ -305,6 +334,13 @@ public class FileOutput extends OutputPlugin{
 				BUFFER_SIZE_KEY,
 				R.string.fileoutput_buffersize_pref, 
 				R.string.fileoutput_buffersize_pref_summary);
+		prefs[2] = PreferenceFactory.getListPreference(c, 
+				R.array.fileOutputPluginRolloverIntervalStrings,
+				R.array.fileOutputPluginRolloverIntervalValues, 
+				(String)c.getResources().getText(R.string.fileoutput_rolloverintervaldefault_pref),
+				ROLLOVER_INTERVAL_KEY,
+				R.string.fileoutput_rolloverinterval_pref, 
+				R.string.fileoutput_rolloverinterval_pref_summary);
 
 		return prefs;
 	}

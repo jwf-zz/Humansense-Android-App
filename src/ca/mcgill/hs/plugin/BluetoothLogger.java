@@ -127,8 +127,8 @@ public class BluetoothLogger extends InputPlugin{
 				"BluetoothLogger is on.", "BluetoothLogger is off.");
 		
 		prefs[1] = PreferenceFactory.getCheckBoxPreference(c, "forceBluetoothOn",
-				R.string.bluetoothlogger_autonable_pref_label, R.string.bluetoothlogger_autonable_pref_summary,
-				R.string.bluetoothlogger_autonable_pref_on, R.string.bluetoothlogger_autonable_pref_off);
+				R.string.bluetoothlogger_autoenable_pref_label, R.string.bluetoothlogger_autoenable_pref_summary,
+				R.string.bluetoothlogger_autoenable_pref_on, R.string.bluetoothlogger_autoenable_pref_off);
 	
 		prefs[2] = PreferenceFactory.getListPreference(c, R.array.bluetoothLoggerIntervalStrings,
 				R.array.bluetoothLoggerIntervalValues, "60000", "bluetoothLoggerTimeInterval",

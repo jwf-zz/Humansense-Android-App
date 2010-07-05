@@ -88,4 +88,20 @@
 <item>8192</item>
 <item>16384</item>
 </string-array>
+
+<string-array name="fileOutputPluginRolloverIntervalStrings">
+<item>1 Hour</item>
+<item>6 Hours</item>
+<item>12 Hours</item>
+<item>24 Hours</item>
+<item>Unlimited</item>
+</string-array>
+
+<string-array name="fileOutputPluginRolloverIntervalValues">
+<item>3600000</item>
+<item>21600000</item>
+<item>43200000</item>
+<item>86400000</item>
+<item>-1</item>
+</string-array>
 </resources>

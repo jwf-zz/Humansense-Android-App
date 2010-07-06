@@ -8,11 +8,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPOutputStream;
-import java.util.ConcurrentModificationException;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;

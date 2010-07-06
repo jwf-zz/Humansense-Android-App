@@ -5,9 +5,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import ca.mcgill.hs.plugin.*;
+import ca.mcgill.hs.util.PreferenceFactory;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
@@ -39,6 +42,13 @@ public class HSService extends Service{
 	
 	//ExecutorService
 	private static final ExecutorService tpe = Executors.newCachedThreadPool();
+	
+	// This is a BroadcastReceiver in order to signal to the plugins that a preference has changed.
+	private static final BroadcastReceiver prefReceiver = new BroadcastReceiver(){
+		public void onReceive(Context context, Intent intent) {
+			preferencesChangedIntentReceived();
+		}
+	};
 		
 	/**
 	 * Returns a boolean indicating if the service is running or not.
@@ -84,6 +94,9 @@ public class HSService extends Service{
 		super.onStart(intent, startId);
 		
 		PASSABLE_CONTEXT = getApplicationContext();
+		
+		//Register the receiver for when the preferences change.
+		getApplicationContext().registerReceiver(prefReceiver, new IntentFilter(PreferenceFactory.PREFERENCES_CHANGED_INTENT));
 		
 		//Instantiate input plugins.
 		addInputPlugins();
@@ -132,6 +145,15 @@ public class HSService extends Service{
 			op.onDataReady(dp.clone());
 			tpe.execute(op);
 		}
+	}
+	
+	/**
+	 * This method is called whenever a preference has been changed. It signals all plugins that a
+	 * preference has changed.
+	 */
+	private static void preferencesChangedIntentReceived(){
+		for (InputPlugin p : inputPluginList) p.onPreferenceChanged();
+		for (OutputPlugin p : outputPluginList) p.onPreferenceChanged();
 	}
 		
 }

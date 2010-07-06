@@ -25,7 +25,7 @@ import android.util.Log;
 public class WifiLogger extends InputPlugin {
 	
 	//Boolean ON-OFF switch *Temporary only*
-	private final boolean PLUGIN_ACTIVE;
+	private boolean PLUGIN_ACTIVE;
 	
 	//The Thread for requesting scans.
 	private Thread wifiLoggerThread;
@@ -167,6 +167,21 @@ public class WifiLogger extends InputPlugin {
 	 * @return whether or not this InputPlugin has preferences.
 	 */
 	public static boolean hasPreferences(){ return true; }
+	
+	public void onPreferenceChanged(){
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		sleepIntervalMillisecs = Integer.parseInt(prefs.getString("wifiIntervalPreference", "30000"));
+		
+		boolean new_PLUGIN_ACTIVE = prefs.getBoolean("wifiLoggerEnable", false);
+		if (PLUGIN_ACTIVE && !new_PLUGIN_ACTIVE){
+			stopPlugin();
+			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+		} else if (!PLUGIN_ACTIVE && new_PLUGIN_ACTIVE){
+			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+			startPlugin();
+		}
+	}
 	
 	// ***********************************************************************************
 	// PRIVATE INNER CLASS -- WifiLoggerReceiver

@@ -19,5 +19,10 @@ public interface Plugin {
 	 * Cleans up once the plugin execution is halted.
 	 */
 	public void stopPlugin();
+	
+	/**
+	 * Signals the plugin that preferences have changed.
+	 */
+	public void onPreferenceChanged();
 
 }

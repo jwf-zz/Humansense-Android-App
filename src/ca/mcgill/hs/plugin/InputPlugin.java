@@ -38,5 +38,11 @@ public abstract class InputPlugin implements Plugin{
 	 * @return whether or not this InputPlugin has preferences.
 	 */
 	public static boolean hasPreferences() {return false;}
+	
+	/**
+	 * Signals the plugin that preferences have changed. InputPlugin objects with preferences
+	 * should override this method if something changes at runtime when preferences change.
+	 */
+	public void onPreferenceChanged() {}
 
 }

@@ -82,4 +82,10 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	 */
 	public static boolean hasPreferences(){return false;}
 
+	/**
+	 * Signals the plugin that preferences have changed. OutputPlugin objects with preferences
+	 * should override this method if something changes at runtime when preferences change.
+	 */
+	public void onPreferenceChanged() {}
+
 }

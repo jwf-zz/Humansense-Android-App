@@ -1,8 +1,11 @@
 package ca.mcgill.hs.util;
 
 import android.content.Context;
+import android.content.Intent;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
 
 /**
  * An API allowing plugin programmers to easily generate preference objects.
@@ -11,6 +14,8 @@ import android.preference.ListPreference;
  *
  */
 public class PreferenceFactory {
+	
+	public static final String PREFERENCES_CHANGED_INTENT = "ca.mcgill.hs.HSAndroidApp.PREFERENCES_CHANGED_INTENT";
 	
 	/**
 	 * Returns a ListPreference preference specified by the parameters. This method uses resource IDs
@@ -35,6 +40,15 @@ public class PreferenceFactory {
 		result.setKey(key);
 		result.setTitle(titleResId);
 		result.setSummary(summaryResId);
+		
+		final Context context = c;
+		result.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+			public boolean onPreferenceChange(Preference preference,
+					Object newValue) {
+				broadcastIntent(context);
+				return false;
+			}
+		});
 		
 		return result;
 	}
@@ -63,6 +77,15 @@ public class PreferenceFactory {
 		result.setTitle(title);
 		result.setSummary(summary);
 		
+		final Context context = c;
+		result.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+			public boolean onPreferenceChange(Preference preference,
+					Object newValue) {
+				broadcastIntent(context);
+				return false;
+			}
+		});
+		
 		return result;
 	}
 	
@@ -87,6 +110,15 @@ public class PreferenceFactory {
 		cbp.setSummary(summaryDefResId);
 		cbp.setSummaryOn(summaryOnResId);
 		cbp.setSummaryOff(summaryOffResId);
+		
+		final Context context = c;
+		cbp.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+			public boolean onPreferenceChange(Preference preference,
+					Object newValue) {
+				broadcastIntent(context);
+				return false;
+			}
+		});
 		
 		return cbp;
 	}
@@ -113,7 +145,27 @@ public class PreferenceFactory {
 		cbp.setSummaryOn(summaryOn);
 		cbp.setSummaryOff(summaryOff);
 		
+		final Context context = c;
+		cbp.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+			public boolean onPreferenceChange(Preference preference,
+					Object newValue) {
+				broadcastIntent(context);
+				return false;
+			}
+		});
+		
 		return cbp;
+	}
+	
+	/**
+	 * Broadcasts an intent whenever a preference has changed.
+	 * 
+	 * @param c The context in which the intent will be broadcast.
+	 */
+	private static void broadcastIntent(Context c){
+		Intent i = new Intent();
+		i.setAction(PREFERENCES_CHANGED_INTENT);
+		c.sendBroadcast(i);
 	}
 
 }

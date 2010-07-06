@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
-import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.Preference.OnPreferenceChangeListener;
 
 /**
  * An API allowing plugin programmers to easily generate preference objects.
@@ -42,8 +42,9 @@ public class PreferenceFactory {
 		result.setSummary(summaryResId);
 		
 		final Context context = c;
-		result.setOnPreferenceClickListener(new OnPreferenceClickListener(){
-			public boolean onPreferenceClick(Preference preference) {
+		result.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+			public boolean onPreferenceChange(Preference preference,
+					Object newValue) {
 				broadcastIntent(context);
 				return false;
 			}
@@ -77,8 +78,9 @@ public class PreferenceFactory {
 		result.setSummary(summary);
 		
 		final Context context = c;
-		result.setOnPreferenceClickListener(new OnPreferenceClickListener(){
-			public boolean onPreferenceClick(Preference preference) {
+		result.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+			public boolean onPreferenceChange(Preference preference,
+					Object newValue) {
 				broadcastIntent(context);
 				return false;
 			}
@@ -110,8 +112,9 @@ public class PreferenceFactory {
 		cbp.setSummaryOff(summaryOffResId);
 		
 		final Context context = c;
-		cbp.setOnPreferenceClickListener(new OnPreferenceClickListener(){
-			public boolean onPreferenceClick(Preference preference) {
+		cbp.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+			public boolean onPreferenceChange(Preference preference,
+					Object newValue) {
 				broadcastIntent(context);
 				return false;
 			}
@@ -143,8 +146,9 @@ public class PreferenceFactory {
 		cbp.setSummaryOff(summaryOff);
 		
 		final Context context = c;
-		cbp.setOnPreferenceClickListener(new OnPreferenceClickListener(){
-			public boolean onPreferenceClick(Preference preference) {
+		cbp.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+			public boolean onPreferenceChange(Preference preference,
+					Object newValue) {
 				broadcastIntent(context);
 				return false;
 			}

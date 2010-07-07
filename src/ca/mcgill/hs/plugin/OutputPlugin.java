@@ -84,7 +84,9 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 
 	/**
 	 * Signals the plugin that preferences have changed. OutputPlugin objects with preferences
-	 * should override this method if something changes at runtime when preferences change.
+	 * should override this method if something changes at runtime when preferences change. If this
+	 * method is not overridden in a new plugin implementation, the preferences for that plugin
+	 * will only update the next time the service is started.
 	 */
 	public void onPreferenceChanged() {}
 

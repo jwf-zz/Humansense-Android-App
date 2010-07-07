@@ -22,7 +22,10 @@ import android.util.Log;
 public class ScreenOutput extends OutputPlugin{
 	
 	//Boolean ON-OFF switch *Temporary only*
-	private final boolean PLUGIN_ACTIVE;
+	private boolean PLUGIN_ACTIVE;
+	
+	//The Context for the preferences.
+	private final Context context;
 	
 	/**
 	 * This is the basic constructor for the ScreenOutput plugin. It has to be instantiated
@@ -31,6 +34,8 @@ public class ScreenOutput extends OutputPlugin{
 	 * @param context - the context in which this plugin is created.
 	 */
 	public ScreenOutput(Context context){
+		this.context = context;
+		
 		SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(context);
 		
@@ -134,6 +139,25 @@ public class ScreenOutput extends OutputPlugin{
 				"ScreenOutput is on.", "ScreenOutput is off.");
 		
 		return prefs;
+	}
+	
+	/**
+	 * This method gets called whenever the preferences have been changed.
+	 * 
+	 * @Override
+	 */
+	public void onPreferenceChanged(){
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		
+		boolean new_PLUGIN_ACTIVE = prefs.getBoolean("screenOutputEnable", false);
+		if (PLUGIN_ACTIVE && !new_PLUGIN_ACTIVE){
+			stopPlugin();
+			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+		} else if (!PLUGIN_ACTIVE && new_PLUGIN_ACTIVE){
+			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+			startPlugin();
+		}
 	}
 
 }

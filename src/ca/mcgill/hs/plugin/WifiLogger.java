@@ -168,6 +168,11 @@ public class WifiLogger extends InputPlugin {
 	 */
 	public static boolean hasPreferences(){ return true; }
 	
+	/**
+	 * This method gets called whenever the preferences have been changed.
+	 * 
+	 * @Override
+	 */
 	public void onPreferenceChanged(){
 		SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(context);

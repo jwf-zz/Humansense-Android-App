@@ -23,7 +23,7 @@ import android.util.Log;
 public class GPSLogger extends InputPlugin{
 	
 	//Boolean ON-OFF switch *Temporary only*
-	private final boolean PLUGIN_ACTIVE;
+	private boolean PLUGIN_ACTIVE;
 	
 	//The LocationManager used to request location updates.
 	private final LocationManager gpsm;
@@ -38,6 +38,9 @@ public class GPSLogger extends InputPlugin{
 	//for an update to be valid.
 	private int UPDATE_FREQ;
 	
+	//The Context for the preferences.
+	private final Context context;
+	
 	/**
 	 * This is the basic constructor for the GPSLogger plugin. It has to be instantiated
 	 * before it is started, and needs to be passed a reference to a LocationManager and a Context.
@@ -49,6 +52,8 @@ public class GPSLogger extends InputPlugin{
 
 		this.gpsm = gpsm;
 		gpsll = new GPSLocationListener(gpsm);
+		
+		this.context = context;
 		
 		SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(context);		
@@ -127,6 +132,33 @@ public class GPSLogger extends InputPlugin{
 	 * @return whether or not this InputPlugin has preferences.
 	 */
 	public static boolean hasPreferences(){return true;}
+	
+	/**
+	 * This method gets called whenever the preferences have been changed.
+	 * 
+	 * @Override
+	 */
+	public void onPreferenceChanged(){
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		
+		boolean new_PLUGIN_ACTIVE = prefs.getBoolean("gpsLoggerEnable", false);
+		if (PLUGIN_ACTIVE && !new_PLUGIN_ACTIVE){
+			stopPlugin();
+			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+		} else if (!PLUGIN_ACTIVE && new_PLUGIN_ACTIVE){
+			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+			startPlugin();
+		}
+		
+		gpsm.removeUpdates(gpsll);
+		MIN_DIST = Integer.parseInt(prefs.getString("gpsLoggerDistancePreference", "0"));
+		UPDATE_FREQ = Integer.parseInt(prefs.getString("gpsLoggerIntervalPreference", "30000"));
+		gpsm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
+				UPDATE_FREQ,
+				MIN_DIST, 
+				gpsll, Looper.getMainLooper());
+	}
 	
 	
 	// ***********************************************************************************

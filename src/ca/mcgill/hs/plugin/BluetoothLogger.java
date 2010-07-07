@@ -21,7 +21,7 @@ public class BluetoothLogger extends InputPlugin{
 	private final BluetoothAdapter ba;
 	
 	//Boolean ON-OFF switch *Temporary only*
-	private final boolean PLUGIN_ACTIVE;
+	private boolean PLUGIN_ACTIVE;
 	
 	//The interval of time between two subsequent scans.
 	private int timeBetweenDiscoveries;
@@ -49,7 +49,7 @@ public class BluetoothLogger extends InputPlugin{
 	private Thread exec;
 	
 	//If true, the Bluetooth adapter will be automatically enabled when the service is started.
-	private final boolean forceBluetoothActivation;
+	private boolean forceBluetoothActivation;
 	
 	/**
 	 * The default and only constructor for the BluetoothLogger InputPlugin.
@@ -187,6 +187,29 @@ public class BluetoothLogger extends InputPlugin{
 				}
 			}
 		};
+	}
+	
+	/**
+	 * This method gets called whenever the preferences have been changed.
+	 * 
+	 * @Override
+	 */
+	public void onPreferenceChanged(){
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		
+		timeBetweenDiscoveries = Integer.parseInt(prefs.getString("bluetoothLoggerTimeInterval", "60000"));
+		
+		forceBluetoothActivation = prefs.getBoolean("forceBluetoothOn", false);
+		
+		boolean new_PLUGIN_ACTIVE = prefs.getBoolean("bluetoothLoggerEnable", false);
+		if (PLUGIN_ACTIVE && !new_PLUGIN_ACTIVE){
+			stopPlugin();
+			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+		} else if (!PLUGIN_ACTIVE && new_PLUGIN_ACTIVE){
+			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+			startPlugin();
+		}
 	}
 	
 	// ***********************************************************************************

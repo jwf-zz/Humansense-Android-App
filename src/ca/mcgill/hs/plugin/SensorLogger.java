@@ -21,7 +21,7 @@ import android.util.Log;
 public class SensorLogger extends InputPlugin implements SensorEventListener{
 	
 	//Boolean ON-OFF switch *Temporary only*
-	private final boolean PLUGIN_ACTIVE;
+	private boolean PLUGIN_ACTIVE;
 	
 	//The SensorManager used to register listeners.
 	private final SensorManager sensorManager;
@@ -41,6 +41,9 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	private static boolean magfieldUpdated = false;
 	private static float[] orientation = { 0.0f, 0.0f, 0.0f };
 	
+	//The Context used for the preferences.
+	private final Context context;
+	
 	/**
 	 * This is the basic constructor for the SensorLogger plugin. It has to be instantiated
 	 * before it is started, and needs to be passed a reference to a SensorManager.
@@ -50,6 +53,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 	 */
 	public SensorLogger(SensorManager sensorManager, Context context){
 		this.sensorManager = sensorManager;
+		this.context = context;
 		
 		SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(context);
@@ -192,6 +196,25 @@ public class SensorLogger extends InputPlugin implements SensorEventListener{
 		sensorManager.unregisterListener(this, 
 				sensorManager.getDefaultSensor(Sensor.TYPE_TEMPERATURE));
 		logging = false;
+	}
+	
+	/**
+	 * This method gets called whenever the preferences have been changed.
+	 * 
+	 * @Override
+	 */
+	public void onPreferenceChanged(){
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		
+		boolean new_PLUGIN_ACTIVE = prefs.getBoolean("sensorLoggerEnable", false);
+		if (PLUGIN_ACTIVE && !new_PLUGIN_ACTIVE){
+			stopPlugin();
+			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+		} else if (!PLUGIN_ACTIVE && new_PLUGIN_ACTIVE){
+			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+			startPlugin();
+		}
 	}
 	
 	// ***********************************************************************************

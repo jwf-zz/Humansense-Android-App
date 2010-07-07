@@ -21,7 +21,7 @@ import android.util.Log;
 public class GSMLogger extends InputPlugin{
 	
 	//Boolean ON-OFF switch *Temporary only*
-	private final boolean PLUGIN_ACTIVE;
+	private boolean PLUGIN_ACTIVE;
 	
 	//A String used for logging information to the android's logcat.
 	private static final String TAG = "GSMLogger";
@@ -41,6 +41,9 @@ public class GSMLogger extends InputPlugin{
 	private static int[] lacs;
 	private static int[] rssis;
 	
+	//The Context used for the plugins.
+	private final Context context;
+	
 	/**
 	 * This is the basic constructor for the GSMLogger plugin. It has to be instantiated
 	 * before it is started, and needs to be passed a reference to a TelephonyManager and a Context.
@@ -50,6 +53,7 @@ public class GSMLogger extends InputPlugin{
 	 */
 	public GSMLogger(TelephonyManager tm, Context context) {
 		this.tm = tm;
+		this.context = context;
 		
 		SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(context);
@@ -190,6 +194,25 @@ public class GSMLogger extends InputPlugin{
 				"GSMLogger is on.", "GSMLogger is off.");
 		
 		return prefs;
+	}
+	
+	/**
+	 * This method gets called whenever the preferences have been changed.
+	 * 
+	 * @Override
+	 */
+	public void onPreferenceChanged(){
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		
+		boolean new_PLUGIN_ACTIVE = prefs.getBoolean("gsmLoggerEnable", false);
+		if (PLUGIN_ACTIVE && !new_PLUGIN_ACTIVE){
+			stopPlugin();
+			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+		} else if (!PLUGIN_ACTIVE && new_PLUGIN_ACTIVE){
+			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+			startPlugin();
+		}
 	}
 	
 	// ***********************************************************************************

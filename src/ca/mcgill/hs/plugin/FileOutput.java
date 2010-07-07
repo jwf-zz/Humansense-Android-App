@@ -52,7 +52,7 @@ public class FileOutput extends OutputPlugin{
 	private final static String ROLLOVER_INTERVAL_KEY = "fileOutputRolloverInterval";
 	
 	//Boolean ON-OFF switch *Temporary only*
-	private final boolean PLUGIN_ACTIVE;
+	private boolean PLUGIN_ACTIVE;
 	
 	//Preference key for this plugin's state
 	private final static String PLUGIN_ACTIVE_KEY = "fileOutputEnabled";
@@ -64,8 +64,13 @@ public class FileOutput extends OutputPlugin{
 	private final static String LOG_DATE_FORMAT = "yy-MM-dd-HHmmss";
 	
 	//Timestamps used for file rollover.
+	private long initialTimestamp = -1;
 	private long rolloverTimestamp = -1;
-	private final long ROLLOVER_INTERVAL;
+	private long ROLLOVER_INTERVAL;
+	private long currentTimeMillis;
+	
+	//The Context in which to use preferences.
+	private final Context context;
 	
 	/**
 	 * This is the basic constructor for the FileOutput plugin. It has to be instantiated
@@ -74,6 +79,8 @@ public class FileOutput extends OutputPlugin{
 	 * @param context - the context in which this plugin is created.
 	 */
 	public FileOutput(Context context){
+		this.context = context;
+		
 		SharedPreferences prefs = 
     		PreferenceManager.getDefaultSharedPreferences(context);
 		
@@ -94,6 +101,9 @@ public class FileOutput extends OutputPlugin{
 		closeAll();
 	}
 	
+	/**
+	 * Closes all open file handles.
+	 */
 	private void closeAll(){
 		for (int id : fileHandles.keySet()){
 			try {
@@ -121,11 +131,11 @@ public class FileOutput extends OutputPlugin{
 		int id = dp.getDataPacketId();
 		
 		//Record system time
-		long currentTimeMillis = System.currentTimeMillis();
+		currentTimeMillis = System.currentTimeMillis();
 		
 		//Check to see if files need to be rolled over
 		if (currentTimeMillis >= rolloverTimestamp && ROLLOVER_INTERVAL != -1){
-			
+			initialTimestamp = currentTimeMillis;
 			//If files need to be rolled over, close all currently open files and clear the hash map.
 			closeAll();
 			Log.i("ROLLOVER","Creating rollover timestamp.");
@@ -341,6 +351,29 @@ public class FileOutput extends OutputPlugin{
 				R.string.fileoutput_rolloverinterval_pref_summary);
 
 		return prefs;
+	}
+	
+	/**
+	 * This method gets called whenever the preferences have been changed.
+	 * 
+	 * @Override
+	 */
+	public void onPreferenceChanged(){
+		SharedPreferences prefs = 
+    		PreferenceManager.getDefaultSharedPreferences(context);
+		
+		boolean new_PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
+		if (PLUGIN_ACTIVE && !new_PLUGIN_ACTIVE){
+			stopPlugin();
+			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+		} else if (!PLUGIN_ACTIVE && new_PLUGIN_ACTIVE){
+			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+			startPlugin();
+		}
+		
+		ROLLOVER_INTERVAL = Integer.parseInt(prefs.getString(ROLLOVER_INTERVAL_KEY, 
+				(String)context.getResources().getText(R.string.fileoutput_rolloverintervaldefault_pref)));
+		rolloverTimestamp = initialTimestamp + ROLLOVER_INTERVAL;
 	}
 
 }

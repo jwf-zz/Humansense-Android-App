@@ -151,13 +151,15 @@ public class GPSLogger extends InputPlugin{
 			startPlugin();
 		}
 		
-		gpsm.removeUpdates(gpsll);
-		MIN_DIST = Integer.parseInt(prefs.getString("gpsLoggerDistancePreference", "0"));
-		UPDATE_FREQ = Integer.parseInt(prefs.getString("gpsLoggerIntervalPreference", "30000"));
-		gpsm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
-				UPDATE_FREQ,
-				MIN_DIST, 
-				gpsll, Looper.getMainLooper());
+		if (PLUGIN_ACTIVE){
+			gpsm.removeUpdates(gpsll);
+			MIN_DIST = Integer.parseInt(prefs.getString("gpsLoggerDistancePreference", "0"));
+			UPDATE_FREQ = Integer.parseInt(prefs.getString("gpsLoggerIntervalPreference", "30000"));
+			gpsm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
+					UPDATE_FREQ,
+					MIN_DIST, 
+					gpsll, Looper.getMainLooper());
+		}
 	}
 	
 	

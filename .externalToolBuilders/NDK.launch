@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.ui.externaltools.ProgramBuilderLaunchConfigurationType">
 <booleanAttribute key="org.eclipse.debug.ui.ATTR_LAUNCH_IN_BACKGROUND" value="false"/>
+<<<<<<< HEAD:.externalToolBuilders/NDK.launch
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="/home/ml/ccojoc2/applications/android-ndk-r4/ndk-build"/>
+=======
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="/home/ml/jpitre5/android/android-ndk-r4/ndk-build"/>
+>>>>>>> 13ba69a30df1013ede570ba66c4b844befb8d5da:.externalToolBuilders/NDK.launch
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_RUN_BUILD_KINDS" value="full,incremental,"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="-j4 V=1"/>
 <booleanAttribute key="org.eclipse.ui.externaltools.ATTR_TRIGGERS_CONFIGURED" value="true"/>

@@ -32,7 +32,7 @@ public class PreferenceFactory {
 	 */
 	public static ListPreference getListPreference(Context c, int entriesResId, int entryValuesResId,
 			Object defaultValue, String key, int titleResId, int summaryResId){
-		ListPreference result = new ListPreference(c);
+		final ListPreference result = new ListPreference(c);
 		
 		result.setEntries(entriesResId);
 		result.setEntryValues(entryValuesResId);
@@ -45,6 +45,7 @@ public class PreferenceFactory {
 		result.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
 			public boolean onPreferenceChange(Preference preference,
 					Object newValue) {
+				result.setValue((String)newValue);
 				broadcastIntent(context);
 				return false;
 			}
@@ -68,7 +69,7 @@ public class PreferenceFactory {
 	 */
 	public static ListPreference getListPreference(Context c, String[] entries, String[] entryValues,
 			Object defaultValue, String key, String title, String summary){
-		ListPreference result = new ListPreference(c);
+		final ListPreference result = new ListPreference(c);
 		
 		result.setEntries(entries);
 		result.setEntryValues(entryValues);
@@ -81,6 +82,7 @@ public class PreferenceFactory {
 		result.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
 			public boolean onPreferenceChange(Preference preference,
 					Object newValue) {
+				result.setValue((String)newValue);
 				broadcastIntent(context);
 				return false;
 			}
@@ -103,7 +105,7 @@ public class PreferenceFactory {
 	 */
 	public static CheckBoxPreference getCheckBoxPreference(Context c, String key, int titleResId,
 			int summaryDefResId, int summaryOnResId, int summaryOffResId){
-		CheckBoxPreference cbp = new CheckBoxPreference(c);
+		final CheckBoxPreference cbp = new CheckBoxPreference(c);
 		
 		cbp.setKey(key);
 		cbp.setTitle(titleResId);
@@ -115,6 +117,7 @@ public class PreferenceFactory {
 		cbp.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
 			public boolean onPreferenceChange(Preference preference,
 					Object newValue) {
+				cbp.setChecked((Boolean)newValue);
 				broadcastIntent(context);
 				return false;
 			}
@@ -137,7 +140,7 @@ public class PreferenceFactory {
 	 */
 	public static CheckBoxPreference getCheckBoxPreference(Context c, String key, String title,
 			String summaryDef, String summaryOn, String summaryOff){
-		CheckBoxPreference cbp = new CheckBoxPreference(c);
+		final CheckBoxPreference cbp = new CheckBoxPreference(c);
 		
 		cbp.setKey(key);
 		cbp.setTitle(title);
@@ -149,6 +152,7 @@ public class PreferenceFactory {
 		cbp.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
 			public boolean onPreferenceChange(Preference preference,
 					Object newValue) {
+				cbp.setChecked((Boolean)newValue);
 				broadcastIntent(context);
 				return false;
 			}

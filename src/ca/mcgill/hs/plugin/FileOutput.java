@@ -105,10 +105,11 @@ public class FileOutput extends OutputPlugin {
 	 * Closes all open file handles.
 	 */
 	private void closeAll(){
-		for (int id : fileHandles.keySet()){
+		for (Iterator<Integer> it = fileHandles.keySet().iterator(); it.hasNext(); ){
 			try {
+				int id = it.next();
 				fileHandles.get(id).close();
-				fileHandles.remove(id);
+				it.remove();
 			} catch (IOException e) {
 				Log.e("FileOutput", "Caught IOException");
 				e.printStackTrace();

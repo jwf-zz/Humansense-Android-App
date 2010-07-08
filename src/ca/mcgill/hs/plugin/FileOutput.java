@@ -6,10 +6,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPOutputStream;
 import java.util.Date;
-
+import java.util.HashMap;
+import java.util.Iterator;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSLoggerPacket;
@@ -31,22 +31,22 @@ import android.util.Log;
  * @author Cicerone Cojocaru, Jonathan Pitre
  *
  */
-public class FileOutput extends OutputPlugin{
+public class FileOutput extends OutputPlugin {
 	
 	//HashMap used for keeping file handles. There is one file associated with each input plugin connected.
-	private final ConcurrentHashMap<Integer, DataOutputStream> fileHandles = new ConcurrentHashMap<Integer, DataOutputStream>();
+	private static final HashMap<Integer, DataOutputStream> fileHandles = new HashMap<Integer, DataOutputStream>();
 	
 	//File Extensions to be added at the end of each file.
-	private final String WIFI_EXT = "-wifiloc.log";
-	private final String GPS_EXT = "-gpsloc.log";
-	private final String SENS_EXT = "-raw.log";
-	private final String GSM_EXT = "-gsmloc.log";
-	private final String BT_EXT = "-bt.log";
-	private final String DEF_EXT = ".log";
+	private static final String WIFI_EXT = "-wifiloc.log";
+	private static final String GPS_EXT = "-gpsloc.log";
+	private static final String SENS_EXT = "-raw.log";
+	private static final String GSM_EXT = "-gsmloc.log";
+	private static final String BT_EXT = "-bt.log";
+	private static final String DEF_EXT = ".log";
 	
 	// Size of BufferedOutputStream buffer
-	private final int BUFFER_SIZE;
-	private final static String BUFFER_SIZE_KEY = "fileOutputBufferSize";
+	private static int BUFFER_SIZE;
+	private static final String BUFFER_SIZE_KEY = "fileOutputBufferSize";
 	
 	// Rollover Interval pref key
 	private final static String ROLLOVER_INTERVAL_KEY = "fileOutputRolloverInterval";
@@ -98,17 +98,21 @@ public class FileOutput extends OutputPlugin{
 	 * @override
 	 */
 	protected void onPluginStop(){
-		closeAll();
+		Log.d("PERFORMANCE", "onPluginStop Called");
+		synchronized(fileHandles) {
+			closeAll();
+		}
 	}
 	
 	/**
 	 * Closes all open file handles.
 	 */
 	private void closeAll(){
-		for (int id : fileHandles.keySet()){
+		for (Iterator<Integer> it = fileHandles.keySet().iterator(); it.hasNext(); ){
 			try {
+				int id = it.next();
 				fileHandles.get(id).close();
-				fileHandles.remove(id);
+				it.remove();
 			} catch (IOException e) {
 				Log.e("FileOutput", "Caught IOException");
 				e.printStackTrace();
@@ -126,62 +130,62 @@ public class FileOutput extends OutputPlugin{
 	 * 
 	 * @override
 	 */
-	synchronized void onDataReceived(DataPacket dp) {
+	void onDataReceived(DataPacket dp) {
 		if (!PLUGIN_ACTIVE) return;
-		int id = dp.getDataPacketId();
-		
-		//Record system time
-		currentTimeMillis = System.currentTimeMillis();
+		int id = dp.getDataPacketId();		
 		
 		//Check to see if files need to be rolled over
-		if (currentTimeMillis >= rolloverTimestamp && ROLLOVER_INTERVAL != -1){
-			initialTimestamp = currentTimeMillis;
-			//If files need to be rolled over, close all currently open files and clear the hash map.
-			closeAll();
-			Log.i("ROLLOVER","Creating rollover timestamp.");
-			rolloverTimestamp = currentTimeMillis + ROLLOVER_INTERVAL;
-		}
-		
-		try {
-			if (!fileHandles.containsKey(id)){
-				final File j = new File(Environment.getExternalStorageDirectory(), OUTPUT_DIRECTORY);
-				if (!j.isDirectory()) {
-					if (!j.mkdirs()) {
-						Log.e("Output Dir", "Could not create output directory!");
-						return;
+		synchronized(fileHandles) {
+			//Record system time
+			currentTimeMillis = System.currentTimeMillis();
+
+			if (currentTimeMillis >= rolloverTimestamp && ROLLOVER_INTERVAL != -1){
+				initialTimestamp = currentTimeMillis;
+				//If files need to be rolled over, close all currently open files and clear the hash map.
+				closeAll();
+				Log.i("ROLLOVER","Creating rollover timestamp.");
+				rolloverTimestamp = currentTimeMillis + ROLLOVER_INTERVAL;
+			}
+			try {
+				if (!fileHandles.containsKey(id)){
+					final File j = new File(Environment.getExternalStorageDirectory(), OUTPUT_DIRECTORY);
+					if (!j.isDirectory()) {
+						if (!j.mkdirs()) {
+							Log.e("Output Dir", "Could not create output directory!");
+							return;
+						}
 					}
+					//Generate file name based on the plugin it came from and the current time.
+					Date d = new Date(currentTimeMillis);
+					SimpleDateFormat dfm = new SimpleDateFormat(LOG_DATE_FORMAT);
+					File fh = new File(j, dfm.format(d) + getFileExtension(dp));
+					if (!fh.exists()) fh.createNewFile();
+					Log.i("File Output", "File to write: "+fh.getName());
+					fileHandles.put(id, new DataOutputStream(
+							new BufferedOutputStream(new GZIPOutputStream(
+									new FileOutputStream(fh), BUFFER_SIZE
+							))));
 				}
-				//Generate file name based on the plugin it came from and the current time.
-				Date d = new Date(currentTimeMillis);
-				SimpleDateFormat dfm = new SimpleDateFormat(LOG_DATE_FORMAT);
-				File fh = new File(j, dfm.format(d) + getFileExtension(dp));
-				if (!fh.exists()) fh.createNewFile();
-				Log.i("File Output", "File to write: "+fh.getName());
-				fileHandles.put(id, new DataOutputStream(
-						new BufferedOutputStream(new GZIPOutputStream(
-								new FileOutputStream(fh), BUFFER_SIZE
-						))));
+			} catch (IOException e) {
+				Log.e("FileOutput", "Caught IOException");
+				e.printStackTrace();
 			}
+		}	
 			
-			//Choose correct dataParse method based on the format of the data received.
-			DataOutputStream dos = fileHandles.get(id);
-			if (id == SensorLoggerPacket.PLUGIN_ID){
-				dataParse((SensorLoggerPacket) dp, dos);
-			} else if (id == WifiLoggerPacket.PLUGIN_ID){
-				dataParse((WifiLoggerPacket) dp, dos);
-			} else if (id == GSMLoggerPacket.PLUGIN_ID){
-				dataParse((GSMLoggerPacket) dp, dos);
-			} else if (id == GPSLoggerPacket.PLUGIN_ID) {
-				dataParse((GPSLoggerPacket) dp, dos);
-			} else if (id == SensorLoggerPacket.PLUGIN_ID){
-				dataParse((SensorLoggerPacket) dp, dos);
-			} else if (id == BluetoothPacket.PLUGIN_ID){
-				dataParse((BluetoothPacket) dp, dos);
-			}
-			
-		} catch (IOException e) {
-			Log.e("FileOutput", "Caught IOException");
-			e.printStackTrace();
+		//Choose correct dataParse method based on the format of the data received.
+		DataOutputStream dos = fileHandles.get(id);
+		if (id == SensorLoggerPacket.PLUGIN_ID){
+			dataParse((SensorLoggerPacket) dp, dos);
+		} else if (id == WifiLoggerPacket.PLUGIN_ID){
+			dataParse((WifiLoggerPacket) dp, dos);
+		} else if (id == GSMLoggerPacket.PLUGIN_ID){
+			dataParse((GSMLoggerPacket) dp, dos);
+		} else if (id == GPSLoggerPacket.PLUGIN_ID) {
+			dataParse((GPSLoggerPacket) dp, dos);
+		} else if (id == SensorLoggerPacket.PLUGIN_ID){
+			dataParse((SensorLoggerPacket) dp, dos);
+		} else if (id == BluetoothPacket.PLUGIN_ID){
+			dataParse((BluetoothPacket) dp, dos);
 		}
 	}
 	

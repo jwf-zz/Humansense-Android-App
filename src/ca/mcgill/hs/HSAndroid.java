@@ -38,6 +38,9 @@ public class HSAndroid extends Activity{
 	public static final String HSANDROID_PREFS_NAME = "HSAndroidPrefs";
 	private static final int MENU_SETTINGS = 37043704;
 	
+
+	private final FileUploader fu = new FileUploader();
+	
     /**
      * This method is called when the activity is first created. It is the entry
      * point for the application.
@@ -81,7 +84,7 @@ public class HSAndroid extends Activity{
 		    public void onClick(DialogInterface dialog, int which) {
 		        switch (which){
 		        case DialogInterface.BUTTON_POSITIVE:
-		            Toast.makeText(c, "Unimplemented feature!", Toast.LENGTH_SHORT).show();
+		            fu.upload();
 		            break;
 
 		        case DialogInterface.BUTTON_NEGATIVE:
@@ -141,6 +144,16 @@ public class HSAndroid extends Activity{
      */
     public static void updateButton(){
     	if (button != null) button.setText((HSService.isRunning() ? R.string.stop_label : R.string.start_label));
+    }
+    
+    //**************************************************************************
+    // INNER CLASS - FILE UPLOADER
+    //**************************************************************************
+    
+    private class FileUploader{
+    	private void upload(){
+    		
+    	}
     }
     
 }

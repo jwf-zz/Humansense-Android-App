@@ -3,6 +3,9 @@
 	<!-- App Strings -->
 	<string name="top_message">Welcome to Pocket Feel!</string>
     <string name="app_name">HSAndroid</string>
+    
+    <!--  Utility Strings -->
+    <string name="data_file_path">hsandroidapp/data</string>
 	
 	<!-- Object Strings -->
 	<string name="start_label">START SERVICE</string>

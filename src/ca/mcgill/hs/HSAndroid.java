@@ -3,6 +3,8 @@
  */
 package ca.mcgill.hs;
 
+import java.net.HttpURLConnection;
+
 import ca.mcgill.hs.serv.HSService;
 
 import android.app.Activity;
@@ -38,8 +40,8 @@ public class HSAndroid extends Activity{
 	public static final String HSANDROID_PREFS_NAME = "HSAndroidPrefs";
 	private static final int MENU_SETTINGS = 37043704;
 	
-
 	private final FileUploader fu = new FileUploader();
+	private static boolean uploading = false;
 	
     /**
      * This method is called when the activity is first created. It is the entry
@@ -104,6 +106,11 @@ public class HSAndroid extends Activity{
 			}
 		});
         
+        if (uploading){ 
+        	uploadButton.setEnabled(false);
+        	uploadButton.setText("Uploading...");
+        }
+        
     }
     
     /**
@@ -149,10 +156,37 @@ public class HSAndroid extends Activity{
     //**************************************************************************
     // INNER CLASS - FILE UPLOADER
     //**************************************************************************
-    
+    //TODO: Update strings.xml with new static strings.
     private class FileUploader{
+    	
+    	private final String URL_STRING = "http://www.cs.mcgill.ca/~ccojoc2/uploader.php";
+    	private final String DIR_PATH = (String)getResources().getText(R.string.data_file_path);
+    	private HttpURLConnection conn;
+    	
+    	/**
+    	 * Uploads most recent files to the server defined in URL_STRING.
+    	 */
     	private void upload(){
+    		uploading = true;
+    		uploadButton.setEnabled(false);
+    		uploadButton.setText("Uploading...");
     		
+    		//The thread in which the files will be uploaded.
+    		new Thread(){
+    			public void run(){
+    				
+    				onUploadComplete();
+    			}
+    		}.start();
+    	}
+    	
+    	/**
+    	 * Gets called whenever the file upload is complete.
+    	 */
+    	private void onUploadComplete(){
+    		uploading = false;
+    		uploadButton.setEnabled(true);
+    		uploadButton.setText("UPLOAD");
     	}
     }
     

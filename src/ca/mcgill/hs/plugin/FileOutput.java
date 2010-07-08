@@ -57,9 +57,6 @@ public class FileOutput extends OutputPlugin {
 	//Preference key for this plugin's state
 	private final static String PLUGIN_ACTIVE_KEY = "fileOutputEnabled";
 	
-	// Location for the log files, under the external storage directory
-	private final static String OUTPUT_DIRECTORY = "hsandroidapp/data";
-	
 	// Date format used in the log file names
 	private final static String LOG_DATE_FORMAT = "yy-MM-dd-HHmmss";
 	
@@ -108,11 +105,10 @@ public class FileOutput extends OutputPlugin {
 	 * Closes all open file handles.
 	 */
 	private void closeAll(){
-		for (Iterator<Integer> it = fileHandles.keySet().iterator(); it.hasNext(); ){
+		for (int id : fileHandles.keySet()){
 			try {
-				int id = it.next();
 				fileHandles.get(id).close();
-				it.remove();
+				fileHandles.remove(id);
 			} catch (IOException e) {
 				Log.e("FileOutput", "Caught IOException");
 				e.printStackTrace();
@@ -148,7 +144,8 @@ public class FileOutput extends OutputPlugin {
 			}
 			try {
 				if (!fileHandles.containsKey(id)){
-					final File j = new File(Environment.getExternalStorageDirectory(), OUTPUT_DIRECTORY);
+					final File j = new File(Environment.getExternalStorageDirectory(),
+							(String)context.getResources().getText(R.string.data_file_path));
 					if (!j.isDirectory()) {
 						if (!j.mkdirs()) {
 							Log.e("Output Dir", "Could not create output directory!");
@@ -378,6 +375,9 @@ public class FileOutput extends OutputPlugin {
 		ROLLOVER_INTERVAL = Integer.parseInt(prefs.getString(ROLLOVER_INTERVAL_KEY, 
 				(String)context.getResources().getText(R.string.fileoutput_rolloverintervaldefault_pref)));
 		rolloverTimestamp = initialTimestamp + ROLLOVER_INTERVAL;
+		
+		BUFFER_SIZE = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY, 
+				(String)context.getResources().getText(R.string.fileoutput_buffersizedefault_pref)));
 	}
 
 }

@@ -6,6 +6,9 @@ package ca.mcgill.hs;
 import ca.mcgill.hs.serv.HSService;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -71,10 +74,30 @@ public class HSAndroid extends Activity{
 			}
 		});
         
+        //YES-NO DIALOG BOX FOR FILE UPLOAD
+        final Context c = this;
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+		    @Override
+		    public void onClick(DialogInterface dialog, int which) {
+		        switch (which){
+		        case DialogInterface.BUTTON_POSITIVE:
+		            Toast.makeText(c, "Unimplemented feature!", Toast.LENGTH_SHORT).show();
+		            break;
+
+		        case DialogInterface.BUTTON_NEGATIVE:
+		            break;
+		        }
+		    }
+		};
+
+		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage("Upload data collected to online server?")
+			.setPositiveButton("Yes", dialogClickListener).setNegativeButton("No", dialogClickListener);
+		
         uploadButton = (Button) findViewById(R.id.uploadButton);
         uploadButton.setOnClickListener( new View.OnClickListener() {
 			public void onClick(View v) {
-				Toast.makeText(uploadButton.getContext(), "UNIMPLEMENTED FEATURE!!! :(", Toast.LENGTH_SHORT).show();
+				builder.show();
 			}
 		});
         

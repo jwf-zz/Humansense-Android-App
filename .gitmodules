@@ -1,0 +1,6 @@
+[submodule "ext/bionic"]
+	path = ext/bionic
+	url = git://android.git.kernel.org/platform/bionic.git
+[submodule "ext/astl"]
+	path = ext/astl
+	url = git://android.git.kernel.org/platform/external/astl.git

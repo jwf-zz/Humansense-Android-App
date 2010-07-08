@@ -6,10 +6,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPOutputStream;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSLoggerPacket;
@@ -34,7 +34,7 @@ import android.util.Log;
 public class FileOutput extends OutputPlugin {
 	
 	//HashMap used for keeping file handles. There is one file associated with each input plugin connected.
-	private static final HashMap<Integer, DataOutputStream> fileHandles = new HashMap<Integer, DataOutputStream>();
+	private static final ConcurrentHashMap<Integer, DataOutputStream> fileHandles = new ConcurrentHashMap<Integer, DataOutputStream>();
 	
 	//File Extensions to be added at the end of each file.
 	private static final String WIFI_EXT = "-wifiloc.log";
@@ -94,7 +94,7 @@ public class FileOutput extends OutputPlugin {
 	 * 
 	 * @override
 	 */
-	protected void onPluginStop(){
+	protected synchronized void onPluginStop(){
 		Log.d("PERFORMANCE", "onPluginStop Called");
 		synchronized(fileHandles) {
 			closeAll();
@@ -126,7 +126,7 @@ public class FileOutput extends OutputPlugin {
 	 * 
 	 * @override
 	 */
-	void onDataReceived(DataPacket dp) {
+	synchronized void onDataReceived(DataPacket dp) {
 		if (!PLUGIN_ACTIVE) return;
 		int id = dp.getDataPacketId();		
 		

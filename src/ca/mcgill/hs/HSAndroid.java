@@ -40,7 +40,7 @@ public class HSAndroid extends Activity{
 	public static final String HSANDROID_PREFS_NAME = "HSAndroidPrefs";
 	private static final int MENU_SETTINGS = 37043704;
 	
-	private final FileUploader fu = new FileUploader();
+	private FileUploader fu;
 	private static boolean uploading = false;
 	
     /**
@@ -52,6 +52,9 @@ public class HSAndroid extends Activity{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        
+        //Creating the fu
+        fu = new FileUploader();
         
         //Intent
         i = new Intent(this, HSService.class);

@@ -16,6 +16,7 @@ import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 public class HSService extends Service{
 	
@@ -25,6 +26,10 @@ public class HSService extends Service{
 	//Lists of the plugins currently enabled.
 	private static final LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
 	private static final LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
+	
+	// Some variables for calculating performance metrics
+	private static long timeSpentInOnDataReady = 0L;
+	private static int numCallsToOnDataReady = 0;
 	
 	//A simple static array of the input plugin class names.
 	public static final Class<?>[] inputPluginsAvailable = {
@@ -141,9 +146,18 @@ public class HSService extends Service{
 	 * @param source the InputPlugin that created the DataPacket.
 	 */
 	public static void onDataReady(DataPacket dp, InputPlugin source){
+		long currentTime = System.currentTimeMillis();
 		for (OutputPlugin op : outputPluginList){
 			op.onDataReady(dp.clone());
 			tpe.execute(op);
+		}
+		timeSpentInOnDataReady += (System.currentTimeMillis() - currentTime);
+		numCallsToOnDataReady += 1;
+		if (numCallsToOnDataReady % 1000 == 0) {
+			float avgTime = (float)timeSpentInOnDataReady/(float)numCallsToOnDataReady;
+			Log.d("PERFORMANCE:", "Average time for onDataReady is " + avgTime + " milliseconds");
+			timeSpentInOnDataReady = 0L;
+			numCallsToOnDataReady = 0;
 		}
 	}
 	

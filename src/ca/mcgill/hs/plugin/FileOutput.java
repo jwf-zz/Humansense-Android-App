@@ -54,11 +54,11 @@ public class FileOutput extends OutputPlugin {
 
 	// Boolean representing whether or not the plugin has been signalled to
 	// stop.
-	private final Boolean pluginStopping;
+	private Boolean PLUGIN_STOPPING;
 
 	// Semaphore counter for the number of threads currently executing data
 	// read/write operations.
-	private final int threadsWriting;
+	private int THREADS_WRITING;
 
 	// Boolean ON-OFF switch *Temporary only*
 	private boolean PLUGIN_ACTIVE;
@@ -90,8 +90,8 @@ public class FileOutput extends OutputPlugin {
 	 */
 	public FileOutput(final Context context) {
 		this.context = context;
-		pluginStopping = false;
-		threadsWriting = 0;
+		PLUGIN_STOPPING = false;
+		THREADS_WRITING = 0;
 
 		final SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(context);
@@ -338,9 +338,11 @@ public class FileOutput extends OutputPlugin {
 	 */
 	@Override
 	void onDataReceived(final DataPacket dp) {
-		if (!PLUGIN_ACTIVE || pluginStopping) {
+		if (!PLUGIN_ACTIVE || PLUGIN_STOPPING) {
 			return;
 		}
+
+		THREADS_WRITING++;
 		final int id = dp.getDataPacketId();
 
 		// Record system time
@@ -356,37 +358,40 @@ public class FileOutput extends OutputPlugin {
 			Log.i("ROLLOVER", "Creating rollover timestamp.");
 			rolloverTimestamp = currentTimeMillis + ROLLOVER_INTERVAL;
 		}
-		try {
-			if (!fileHandles.containsKey(id)) {
-				final File j = new File(Environment
-						.getExternalStorageDirectory(), (String) context
-						.getResources().getText(R.string.data_file_path));
-				if (!j.isDirectory()) {
-					if (!j.mkdirs()) {
-						Log.e("Output Dir",
-								"Could not create output directory!");
-						return;
-					}
-				}
 
-				// Generate file name based on the plugin it came from and
-				// the current time.
-				final Date d = new Date(currentTimeMillis);
-				final SimpleDateFormat dfm = new SimpleDateFormat(
-						LOG_DATE_FORMAT);
-				final File fh = new File(j, dfm.format(d)
-						+ getFileExtension(dp));
-				if (!fh.exists()) {
-					fh.createNewFile();
+		synchronized (fileHandles) {
+			try {
+				if (!fileHandles.containsKey(id)) {
+					final File j = new File(Environment
+							.getExternalStorageDirectory(), (String) context
+							.getResources().getText(R.string.data_file_path));
+					if (!j.isDirectory()) {
+						if (!j.mkdirs()) {
+							Log.e("Output Dir",
+									"Could not create output directory!");
+							return;
+						}
+					}
+
+					// Generate file name based on the plugin it came from and
+					// the current time.
+					final Date d = new Date(currentTimeMillis);
+					final SimpleDateFormat dfm = new SimpleDateFormat(
+							LOG_DATE_FORMAT);
+					final File fh = new File(j, dfm.format(d)
+							+ getFileExtension(dp));
+					if (!fh.exists()) {
+						fh.createNewFile();
+					}
+					Log.i("File Output", "File to write: " + fh.getName());
+					fileHandles.put(id, new DataOutputStream(
+							new BufferedOutputStream(new GZIPOutputStream(
+									new FileOutputStream(fh), BUFFER_SIZE))));
 				}
-				Log.i("File Output", "File to write: " + fh.getName());
-				fileHandles.put(id, new DataOutputStream(
-						new BufferedOutputStream(new GZIPOutputStream(
-								new FileOutputStream(fh), BUFFER_SIZE))));
+			} catch (final IOException e) {
+				Log.e("FileOutput", "Caught IOException");
+				e.printStackTrace();
 			}
-		} catch (final IOException e) {
-			Log.e("FileOutput", "Caught IOException");
-			e.printStackTrace();
 		}
 
 		// Choose correct dataParse method based on the format of the data
@@ -405,6 +410,7 @@ public class FileOutput extends OutputPlugin {
 		} else if (id == BluetoothPacket.PLUGIN_ID) {
 			dataParse((BluetoothPacket) dp, dos);
 		}
+		THREADS_WRITING--;
 	}
 
 	/**
@@ -412,6 +418,12 @@ public class FileOutput extends OutputPlugin {
 	 */
 	@Override
 	protected void onPluginStop() {
+		PLUGIN_STOPPING = true;
+
+		// Wait until all threads have finished writing.
+		while (THREADS_WRITING != 0) {
+		}
+
 		closeAll();
 	}
 

@@ -7,7 +7,6 @@ import java.net.HttpURLConnection;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -30,9 +29,6 @@ import ca.mcgill.hs.serv.HSService;
  */
 public class HSAndroid extends Activity {
 
-	// **************************************************************************
-	// INNER CLASS - FILE UPLOADER
-	// **************************************************************************
 	// TODO: Update strings.xml with new static strings.
 	private class FileUploader {
 
@@ -144,7 +140,6 @@ public class HSAndroid extends Activity {
 		});
 
 		// YES-NO DIALOG BOX FOR FILE UPLOAD
-		final Context c = this;
 		final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(final DialogInterface dialog, final int which) {

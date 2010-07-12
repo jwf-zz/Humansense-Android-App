@@ -51,6 +51,28 @@ public class FileOutput extends OutputPlugin {
 
 	// Rollover Interval pref key
 	private final static String ROLLOVER_INTERVAL_KEY = "fileOutputRolloverInterval";
+	
+	private Boolean pluginStopping;
+
+	// Boolean ON-OFF switch *Temporary only*
+	private boolean PLUGIN_ACTIVE;
+
+	// Preference key for this plugin's state
+	private final static String PLUGIN_ACTIVE_KEY = "fileOutputEnabled";
+	// Date format used in the log file names
+	private final static String LOG_DATE_FORMAT = "yy-MM-dd-HHmmss";
+
+	// Timestamps used for file rollover.
+	private long initialTimestamp = -1;
+
+	private long rolloverTimestamp = -1;
+
+	private long ROLLOVER_INTERVAL;
+
+	private long currentTimeMillis;
+
+	// The Context in which to use preferences.
+	private final Context context;
 
 	/**
 	 * Returns the list of Preference objects for this OutputPlugin.
@@ -58,8 +80,6 @@ public class FileOutput extends OutputPlugin {
 	 * @param c
 	 *            the context for the generated Preferences.
 	 * @return an array of the Preferences of this object.
-	 * 
-	 * @override
 	 */
 	public static Preference[] getPreferences(final Context c) {
 		final Preference[] prefs = new Preference[3];
@@ -95,26 +115,6 @@ public class FileOutput extends OutputPlugin {
 	public static boolean hasPreferences() {
 		return true;
 	}
-
-	// Boolean ON-OFF switch *Temporary only*
-	private boolean PLUGIN_ACTIVE;
-
-	// Preference key for this plugin's state
-	private final static String PLUGIN_ACTIVE_KEY = "fileOutputEnabled";
-
-	// Date format used in the log file names
-	private final static String LOG_DATE_FORMAT = "yy-MM-dd-HHmmss";
-
-	// Timestamps used for file rollover.
-	private long initialTimestamp = -1;
-	private long rolloverTimestamp = -1;
-
-	private long ROLLOVER_INTERVAL;
-
-	private long currentTimeMillis;
-
-	// The Context in which to use preferences.
-	private final Context context;
 
 	/**
 	 * This is the basic constructor for the FileOutput plugin. It has to be

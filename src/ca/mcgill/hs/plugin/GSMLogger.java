@@ -85,7 +85,6 @@ public class GSMLogger extends InputPlugin {
 	private static int ns;
 	private static int[] cids;
 	private static int[] lacs;
-
 	private static int[] rssis;
 
 	/**

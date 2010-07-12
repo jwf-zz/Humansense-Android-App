@@ -95,6 +95,38 @@ public class WifiLogger extends InputPlugin {
 		}
 	}
 
+	// Boolean ON-OFF switch *Temporary only*
+	private boolean PLUGIN_ACTIVE;
+
+	// The Thread for requesting scans.
+	private Thread wifiLoggerThread;
+
+	// A boolean detailing whether or not the Thread is running.
+	private boolean threadRunning = false;
+
+	// A WifiManager used to request scans.
+	private final WifiManager wm;
+
+	// The interval of time between two subsequent scans.
+	private int sleepIntervalMillisecs;
+
+	// The WifiLoggerReceiver from which we will get the Wifi scan results.
+	private WifiLoggerReceiver wlr;
+
+	// The Context in which the WifiLoggerReceiver will be registered.
+	private final Context context;
+
+	// Variables used to write out the Wifi data received.
+	int numResults;
+
+	long timestamp;
+
+	int[] levels;
+
+	String[] SSIDs;
+
+	String[] BSSIDs;
+
 	/**
 	 * Returns the list of Preference objects for this InputPlugin.
 	 * 
@@ -127,34 +159,6 @@ public class WifiLogger extends InputPlugin {
 	public static boolean hasPreferences() {
 		return true;
 	}
-
-	// Boolean ON-OFF switch *Temporary only*
-	private boolean PLUGIN_ACTIVE;
-
-	// The Thread for requesting scans.
-	private Thread wifiLoggerThread;
-
-	// A boolean detailing whether or not the Thread is running.
-	private boolean threadRunning = false;
-
-	// A WifiManager used to request scans.
-	private final WifiManager wm;
-	// The interval of time between two subsequent scans.
-	private int sleepIntervalMillisecs;
-	// The WifiLoggerReceiver from which we will get the Wifi scan results.
-	private WifiLoggerReceiver wlr;
-	// The Context in which the WifiLoggerReceiver will be registered.
-	private final Context context;
-	// Variables used to write out the Wifi data received.
-	int numResults;
-
-	long timestamp;
-
-	int[] levels;
-
-	String[] SSIDs;
-
-	String[] BSSIDs;
 
 	/**
 	 * This is the basic constructor for the WifiLogger plugin. It has to be

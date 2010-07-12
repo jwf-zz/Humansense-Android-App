@@ -20,6 +20,29 @@ import ca.mcgill.hs.util.PreferenceFactory;
  */
 public class ScreenOutput extends OutputPlugin {
 
+	// Boolean ON-OFF switch *Temporary only*
+	private boolean PLUGIN_ACTIVE;
+
+	// The Context for the preferences.
+	private final Context context;
+
+	/**
+	 * This is the basic constructor for the ScreenOutput plugin. It has to be
+	 * instantiated before it is started, and needs to be passed a reference to
+	 * a Context.
+	 * 
+	 * @param context
+	 *            the context in which this plugin is created.
+	 */
+	public ScreenOutput(final Context context) {
+		this.context = context;
+
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(context);
+
+		PLUGIN_ACTIVE = prefs.getBoolean("screenOutputEnable", false);
+	}
+
 	/**
 	 * Returns the list of Preference objects for this OutputPlugin.
 	 * 
@@ -45,29 +68,6 @@ public class ScreenOutput extends OutputPlugin {
 	 */
 	public static boolean hasPreferences() {
 		return true;
-	}
-
-	// Boolean ON-OFF switch *Temporary only*
-	private boolean PLUGIN_ACTIVE;
-
-	// The Context for the preferences.
-	private final Context context;
-
-	/**
-	 * This is the basic constructor for the ScreenOutput plugin. It has to be
-	 * instantiated before it is started, and needs to be passed a reference to
-	 * a Context.
-	 * 
-	 * @param context
-	 *            the context in which this plugin is created.
-	 */
-	public ScreenOutput(final Context context) {
-		this.context = context;
-
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-
-		PLUGIN_ACTIVE = prefs.getBoolean("screenOutputEnable", false);
 	}
 
 	/**

@@ -51,8 +51,14 @@ public class FileOutput extends OutputPlugin {
 
 	// Rollover Interval pref key
 	private final static String ROLLOVER_INTERVAL_KEY = "fileOutputRolloverInterval";
-	
-	private Boolean pluginStopping;
+
+	// Boolean representing whether or not the plugin has been signalled to
+	// stop.
+	private Boolean PLUGIN_STOPPING;
+
+	// Semaphore counter for the number of threads currently executing data
+	// read/write operations.
+	private int THREADS_WRITING;
 
 	// Boolean ON-OFF switch *Temporary only*
 	private boolean PLUGIN_ACTIVE;
@@ -73,6 +79,32 @@ public class FileOutput extends OutputPlugin {
 
 	// The Context in which to use preferences.
 	private final Context context;
+
+	/**
+	 * This is the basic constructor for the FileOutput plugin. It has to be
+	 * instantiated before it is started, and needs to be passed a reference to
+	 * a Context.
+	 * 
+	 * @param context
+	 *            - the context in which this plugin is created.
+	 */
+	public FileOutput(final Context context) {
+		this.context = context;
+		PLUGIN_STOPPING = false;
+		THREADS_WRITING = 0;
+
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(context);
+
+		PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
+		BUFFER_SIZE = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY,
+				(String) context.getResources().getText(
+						R.string.fileoutput_buffersizedefault_pref)));
+
+		ROLLOVER_INTERVAL = Integer.parseInt(prefs.getString(
+				ROLLOVER_INTERVAL_KEY, (String) context.getResources().getText(
+						R.string.fileoutput_rolloverintervaldefault_pref)));
+	}
 
 	/**
 	 * Returns the list of Preference objects for this OutputPlugin.
@@ -114,30 +146,6 @@ public class FileOutput extends OutputPlugin {
 	 */
 	public static boolean hasPreferences() {
 		return true;
-	}
-
-	/**
-	 * This is the basic constructor for the FileOutput plugin. It has to be
-	 * instantiated before it is started, and needs to be passed a reference to
-	 * a Context.
-	 * 
-	 * @param context
-	 *            - the context in which this plugin is created.
-	 */
-	public FileOutput(final Context context) {
-		this.context = context;
-
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-
-		PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
-		BUFFER_SIZE = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY,
-				(String) context.getResources().getText(
-						R.string.fileoutput_buffersizedefault_pref)));
-
-		ROLLOVER_INTERVAL = Integer.parseInt(prefs.getString(
-				ROLLOVER_INTERVAL_KEY, (String) context.getResources().getText(
-						R.string.fileoutput_rolloverintervaldefault_pref)));
 	}
 
 	/**
@@ -330,9 +338,11 @@ public class FileOutput extends OutputPlugin {
 	 */
 	@Override
 	void onDataReceived(final DataPacket dp) {
-		if (!PLUGIN_ACTIVE) {
+		if (!PLUGIN_ACTIVE || PLUGIN_STOPPING) {
 			return;
 		}
+
+		THREADS_WRITING++;
 		final int id = dp.getDataPacketId();
 
 		// Record system time
@@ -341,42 +351,47 @@ public class FileOutput extends OutputPlugin {
 		// Check to see if files need to be rolled over
 		if (currentTimeMillis >= rolloverTimestamp && ROLLOVER_INTERVAL != -1) {
 			initialTimestamp = currentTimeMillis;
+
 			// If files need to be rolled over, close all currently open
 			// files and clear the hash map.
 			closeAll();
 			Log.i("ROLLOVER", "Creating rollover timestamp.");
 			rolloverTimestamp = currentTimeMillis + ROLLOVER_INTERVAL;
 		}
-		try {
-			if (!fileHandles.containsKey(id)) {
-				final File j = new File(Environment
-						.getExternalStorageDirectory(), (String) context
-						.getResources().getText(R.string.data_file_path));
-				if (!j.isDirectory()) {
-					if (!j.mkdirs()) {
-						Log.e("Output Dir",
-								"Could not create output directory!");
-						return;
+
+		synchronized (fileHandles) {
+			try {
+				if (!fileHandles.containsKey(id)) {
+					final File j = new File(Environment
+							.getExternalStorageDirectory(), (String) context
+							.getResources().getText(R.string.data_file_path));
+					if (!j.isDirectory()) {
+						if (!j.mkdirs()) {
+							Log.e("Output Dir",
+									"Could not create output directory!");
+							return;
+						}
 					}
+
+					// Generate file name based on the plugin it came from and
+					// the current time.
+					final Date d = new Date(currentTimeMillis);
+					final SimpleDateFormat dfm = new SimpleDateFormat(
+							LOG_DATE_FORMAT);
+					final File fh = new File(j, dfm.format(d)
+							+ getFileExtension(dp));
+					if (!fh.exists()) {
+						fh.createNewFile();
+					}
+					Log.i("File Output", "File to write: " + fh.getName());
+					fileHandles.put(id, new DataOutputStream(
+							new BufferedOutputStream(new GZIPOutputStream(
+									new FileOutputStream(fh), BUFFER_SIZE))));
 				}
-				// Generate file name based on the plugin it came from and
-				// the current time.
-				final Date d = new Date(currentTimeMillis);
-				final SimpleDateFormat dfm = new SimpleDateFormat(
-						LOG_DATE_FORMAT);
-				final File fh = new File(j, dfm.format(d)
-						+ getFileExtension(dp));
-				if (!fh.exists()) {
-					fh.createNewFile();
-				}
-				Log.i("File Output", "File to write: " + fh.getName());
-				fileHandles.put(id, new DataOutputStream(
-						new BufferedOutputStream(new GZIPOutputStream(
-								new FileOutputStream(fh), BUFFER_SIZE))));
+			} catch (final IOException e) {
+				Log.e("FileOutput", "Caught IOException");
+				e.printStackTrace();
 			}
-		} catch (final IOException e) {
-			Log.e("FileOutput", "Caught IOException");
-			e.printStackTrace();
 		}
 
 		// Choose correct dataParse method based on the format of the data
@@ -395,6 +410,7 @@ public class FileOutput extends OutputPlugin {
 		} else if (id == BluetoothPacket.PLUGIN_ID) {
 			dataParse((BluetoothPacket) dp, dos);
 		}
+		THREADS_WRITING--;
 	}
 
 	/**
@@ -402,6 +418,12 @@ public class FileOutput extends OutputPlugin {
 	 */
 	@Override
 	protected void onPluginStop() {
+		PLUGIN_STOPPING = true;
+
+		// Wait until all threads have finished writing.
+		while (THREADS_WRITING != 0) {
+		}
+
 		closeAll();
 	}
 

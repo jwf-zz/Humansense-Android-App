@@ -20,49 +20,48 @@ import ca.mcgill.hs.util.PreferenceFactory;
  */
 public class SensorLogger extends InputPlugin implements SensorEventListener {
 
-	public static class SensorLoggerPacket implements DataPacket {
+	// Boolean ON-OFF switch *Temporary only*
+	private boolean PLUGIN_ACTIVE;
 
-		final long time;
-		final float x;
-		final float y;
-		final float z;
-		final float m;
-		final float temperature;
-		final float[] magfield;
-		final float[] orientation;
-		final static String PLUGIN_NAME = "SensorLogger";
-		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+	// The SensorManager used to register listeners.
+	private final SensorManager sensorManager;
 
-		public SensorLoggerPacket(final long time, final float x,
-				final float y, final float z, final float m,
-				final float temperature, final float[] magfield,
-				final float[] orientation) {
-			this.time = time;
-			this.x = x;
-			this.y = y;
-			this.z = z;
-			this.m = m;
-			this.temperature = temperature;
-			this.magfield = magfield;
-			this.orientation = orientation;
-		}
+	// A boolean checking whether or not we are logging at a given moment.
+	private static boolean logging = false;
 
-		@Override
-		public DataPacket clone() {
-			return new SensorLoggerPacket(time, x, y, z, m, temperature,
-					magfield, orientation);
-		}
+	// The speed at which the accelerometer will log.
+	private static int loggingSpeed;
 
-		@Override
-		public int getDataPacketId() {
-			return SensorLoggerPacket.PLUGIN_ID;
-		}
+	// Offset for timestamps
+	private static long timestamp_offset = 0;
 
-		@Override
-		public String getInputPluginName() {
-			return SensorLoggerPacket.PLUGIN_NAME;
-		}
+	// Variables used to write out the sensor data received.
+	private static float temperature = 0.0f;
+	private static float[] magfield = { 0.0f, 0.0f, 0.0f };
+	private static boolean magfieldUpdated = false;
+	private static float[] orientation = { 0.0f, 0.0f, 0.0f };
 
+	// The Context used for the preferences.
+	private final Context context;
+
+	/**
+	 * This is the basic constructor for the SensorLogger plugin. It has to be
+	 * instantiated before it is started, and needs to be passed a reference to
+	 * a SensorManager.
+	 * 
+	 * @param gpsm
+	 * @param context
+	 */
+	public SensorLogger(final SensorManager sensorManager, final Context context) {
+		this.sensorManager = sensorManager;
+		this.context = context;
+
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		loggingSpeed = Integer.parseInt(prefs.getString(
+				"sensorIntervalPreference", "0"));
+
+		PLUGIN_ACTIVE = prefs.getBoolean("sensorLoggerEnable", false);
 	}
 
 	/**
@@ -97,50 +96,6 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	 */
 	public static boolean hasPreferences() {
 		return true;
-	}
-
-	// Boolean ON-OFF switch *Temporary only*
-	private boolean PLUGIN_ACTIVE;
-
-	// The SensorManager used to register listeners.
-	private final SensorManager sensorManager;
-
-	// A boolean checking whether or not we are logging at a given moment.
-	private static boolean logging = false;
-	// The speed at which the accelerometer will log.
-	private static int loggingSpeed;
-	// Offset for timestamps
-	private static long timestamp_offset = 0;
-	// Variables used to write out the sensor data received.
-	private static float temperature = 0.0f;
-
-	private static float[] magfield = { 0.0f, 0.0f, 0.0f };
-
-	private static boolean magfieldUpdated = false;
-
-	private static float[] orientation = { 0.0f, 0.0f, 0.0f };
-
-	// The Context used for the preferences.
-	private final Context context;
-
-	/**
-	 * This is the basic constructor for the SensorLogger plugin. It has to be
-	 * instantiated before it is started, and needs to be passed a reference to
-	 * a SensorManager.
-	 * 
-	 * @param gpsm
-	 * @param context
-	 */
-	public SensorLogger(final SensorManager sensorManager, final Context context) {
-		this.sensorManager = sensorManager;
-		this.context = context;
-
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-		loggingSpeed = Integer.parseInt(prefs.getString(
-				"sensorIntervalPreference", "0"));
-
-		PLUGIN_ACTIVE = prefs.getBoolean("sensorLoggerEnable", false);
 	}
 
 	/**
@@ -272,6 +227,51 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 		sensorManager.unregisterListener(this, sensorManager
 				.getDefaultSensor(Sensor.TYPE_TEMPERATURE));
 		logging = false;
+	}
+
+	public static class SensorLoggerPacket implements DataPacket {
+
+		final long time;
+		final float x;
+		final float y;
+		final float z;
+		final float m;
+		final float temperature;
+		final float[] magfield;
+		final float[] orientation;
+		final static String PLUGIN_NAME = "SensorLogger";
+		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+
+		public SensorLoggerPacket(final long time, final float x,
+				final float y, final float z, final float m,
+				final float temperature, final float[] magfield,
+				final float[] orientation) {
+			this.time = time;
+			this.x = x;
+			this.y = y;
+			this.z = z;
+			this.m = m;
+			this.temperature = temperature;
+			this.magfield = magfield;
+			this.orientation = orientation;
+		}
+
+		@Override
+		public DataPacket clone() {
+			return new SensorLoggerPacket(time, x, y, z, m, temperature,
+					magfield, orientation);
+		}
+
+		@Override
+		public int getDataPacketId() {
+			return SensorLoggerPacket.PLUGIN_ID;
+		}
+
+		@Override
+		public String getInputPluginName() {
+			return SensorLoggerPacket.PLUGIN_NAME;
+		}
+
 	}
 
 }

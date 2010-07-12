@@ -14,6 +14,10 @@ import android.preference.Preference;
  */
 public abstract class OutputPlugin implements Plugin, Runnable {
 
+	// Waiting list for incoming DataPackets kept in case more than one arrives
+	// before the previous one can be handled.
+	private final LinkedList<DataPacket> dpList = new LinkedList<DataPacket>();
+
 	/**
 	 * This method returns an array of Preference objects for the given
 	 * OutputPlugin. By default, this method returns null. If a specific
@@ -38,10 +42,6 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	public static boolean hasPreferences() {
 		return false;
 	}
-
-	// Waiting list for incoming DataPackets kept in case more than one arrives
-	// before the previous one can be handled.
-	private final LinkedList<DataPacket> dpList = new LinkedList<DataPacket>();
 
 	/**
 	 * Called when a DataPacket is sent from an InputPlugin. Adds the DataPacket

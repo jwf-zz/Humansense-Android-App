@@ -18,54 +18,6 @@ import ca.mcgill.hs.util.PreferenceFactory;
 
 public class GSMLogger extends InputPlugin {
 
-	public static class GSMLoggerPacket implements DataPacket {
-		final long time;
-		final int mcc;
-		final int mnc;
-		final int cid;
-		final int lac;
-		final int rssi;
-		final int neighbors;
-		final int[] cids;
-		final int[] lacs;
-		final int[] rssis;
-		final static String PLUGIN_NAME = "GSMLogger";
-		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
-
-		public GSMLoggerPacket(final long time, final int mcc, final int mnc,
-				final int cid, final int lac, final int rssi,
-				final int neighbors, final int[] cids, final int[] lacs,
-				final int[] rssis) {
-			this.time = time;
-			this.mcc = mcc;
-			this.mnc = mnc;
-			this.cid = cid;
-			this.lac = lac;
-			this.rssi = rssi;
-			this.neighbors = neighbors;
-			this.cids = cids;
-			this.lacs = lacs;
-			this.rssis = rssis;
-		}
-
-		@Override
-		public DataPacket clone() {
-			return new GSMLoggerPacket(time, mcc, mnc, cid, lac, rssi,
-					neighbors, cids, lacs, rssis);
-		}
-
-		@Override
-		public int getDataPacketId() {
-			return GSMLoggerPacket.PLUGIN_ID;
-		}
-
-		@Override
-		public String getInputPluginName() {
-			return GSMLoggerPacket.PLUGIN_NAME;
-		}
-
-	}
-
 	// Boolean ON-OFF switch *Temporary only*
 	private boolean PLUGIN_ACTIVE;
 
@@ -80,12 +32,35 @@ public class GSMLogger extends InputPlugin {
 
 	// Variables used to write out the GSM data received.
 	private static long time;
+
 	private static int cid;
 	private static int lac;
 	private static int ns;
 	private static int[] cids;
 	private static int[] lacs;
 	private static int[] rssis;
+	// The Context used for the plugins.
+	private final Context context;
+
+	/**
+	 * This is the basic constructor for the GSMLogger plugin. It has to be
+	 * instantiated before it is started, and needs to be passed a reference to
+	 * a TelephonyManager and a Context.
+	 * 
+	 * @param wm
+	 *            the WifiManager for this WifiLogger.
+	 * @param context
+	 *            the context in which this plugin is created.
+	 */
+	public GSMLogger(final TelephonyManager tm, final Context context) {
+		this.tm = tm;
+		this.context = context;
+
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(context);
+
+		PLUGIN_ACTIVE = prefs.getBoolean("gsmLoggerEnable", false);
+	}
 
 	/**
 	 * Returns the list of Preference objects for this InputPlugin.
@@ -112,29 +87,6 @@ public class GSMLogger extends InputPlugin {
 	 */
 	public static boolean hasPreferences() {
 		return true;
-	}
-
-	// The Context used for the plugins.
-	private final Context context;
-
-	/**
-	 * This is the basic constructor for the GSMLogger plugin. It has to be
-	 * instantiated before it is started, and needs to be passed a reference to
-	 * a TelephonyManager and a Context.
-	 * 
-	 * @param wm
-	 *            the WifiManager for this WifiLogger.
-	 * @param context
-	 *            the context in which this plugin is created.
-	 */
-	public GSMLogger(final TelephonyManager tm, final Context context) {
-		this.tm = tm;
-		this.context = context;
-
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-
-		PLUGIN_ACTIVE = prefs.getBoolean("gsmLoggerEnable", false);
 	}
 
 	/**
@@ -272,6 +224,54 @@ public class GSMLogger extends InputPlugin {
 		if (tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT) {
 			tm.listen(psl, PhoneStateListener.LISTEN_NONE);
 		}
+	}
+
+	public static class GSMLoggerPacket implements DataPacket {
+		final long time;
+		final int mcc;
+		final int mnc;
+		final int cid;
+		final int lac;
+		final int rssi;
+		final int neighbors;
+		final int[] cids;
+		final int[] lacs;
+		final int[] rssis;
+		final static String PLUGIN_NAME = "GSMLogger";
+		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+
+		public GSMLoggerPacket(final long time, final int mcc, final int mnc,
+				final int cid, final int lac, final int rssi,
+				final int neighbors, final int[] cids, final int[] lacs,
+				final int[] rssis) {
+			this.time = time;
+			this.mcc = mcc;
+			this.mnc = mnc;
+			this.cid = cid;
+			this.lac = lac;
+			this.rssi = rssi;
+			this.neighbors = neighbors;
+			this.cids = cids;
+			this.lacs = lacs;
+			this.rssis = rssis;
+		}
+
+		@Override
+		public DataPacket clone() {
+			return new GSMLoggerPacket(time, mcc, mnc, cid, lac, rssi,
+					neighbors, cids, lacs, rssis);
+		}
+
+		@Override
+		public int getDataPacketId() {
+			return GSMLoggerPacket.PLUGIN_ID;
+		}
+
+		@Override
+		public String getInputPluginName() {
+			return GSMLoggerPacket.PLUGIN_NAME;
+		}
+
 	}
 
 }

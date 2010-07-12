@@ -23,78 +23,6 @@ import ca.mcgill.hs.util.PreferenceFactory;
  */
 public class WifiLogger extends InputPlugin {
 
-	public static class WifiLoggerPacket implements DataPacket {
-
-		final int neighbors;
-		final long timestamp;
-		final int[] levels;
-		final String[] SSIDs;
-		final String[] BSSIDs;
-		final static String PLUGIN_NAME = "WifiLogger";
-		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
-
-		/**
-		 * Constructor for this DataPacket.
-		 * 
-		 * @param neighbors
-		 *            the number of access points detected.
-		 * @param timestamp
-		 *            the time of the scan.
-		 * @param level
-		 *            the signal strength level of each access point.
-		 * @param SSID
-		 *            the SSID of each access point.
-		 * @param BSSID
-		 *            the BSSID of each access point.
-		 */
-		public WifiLoggerPacket(final int neighbors, final long timestamp,
-				final int[] level, final String[] SSID, final String[] BSSID) {
-			this.neighbors = neighbors;
-			this.timestamp = timestamp;
-			this.levels = level;
-			this.SSIDs = SSID;
-			this.BSSIDs = BSSID;
-		}
-
-		@Override
-		public DataPacket clone() {
-			return new WifiLoggerPacket(neighbors, timestamp, levels, SSIDs,
-					BSSIDs);
-		}
-
-		@Override
-		public int getDataPacketId() {
-			return WifiLoggerPacket.PLUGIN_ID;
-		}
-
-		@Override
-		public String getInputPluginName() {
-			return WifiLoggerPacket.PLUGIN_NAME;
-		}
-	}
-
-	/**
-	 * Taken from Jordan Frank
-	 * (hsandroidv1.ca.mcgill.cs.humansense.hsandroid.service) and modified for
-	 * this plugin.
-	 */
-	private class WifiLoggerReceiver extends BroadcastReceiver {
-
-		private final WifiManager wifi;
-
-		public WifiLoggerReceiver(final WifiManager wifi) {
-			super();
-			this.wifi = wifi;
-		}
-
-		@Override
-		public void onReceive(final Context c, final Intent intent) {
-			final List<ScanResult> results = wifi.getScanResults();
-			Log.i("WifiLogger", "Received wifi results.");
-			processResults(results);
-		}
-	}
-
 	// Boolean ON-OFF switch *Temporary only*
 	private boolean PLUGIN_ACTIVE;
 
@@ -128,6 +56,28 @@ public class WifiLogger extends InputPlugin {
 	String[] BSSIDs;
 
 	/**
+	 * This is the basic constructor for the WifiLogger plugin. It has to be
+	 * instantiated before it is started, and needs to be passed a reference to
+	 * a WifiManager and a Context.
+	 * 
+	 * @param wm
+	 *            - the WifiManager for this WifiLogger.
+	 * @param context
+	 *            - the context in which this plugin is created.
+	 */
+	public WifiLogger(final WifiManager wm, final Context context) {
+		this.wm = wm;
+		this.context = context;
+
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		sleepIntervalMillisecs = Integer.parseInt(prefs.getString(
+				"wifiIntervalPreference", "30000"));
+
+		PLUGIN_ACTIVE = prefs.getBoolean("wifiLoggerEnable", false);
+	}
+
+	/**
 	 * Returns the list of Preference objects for this InputPlugin.
 	 * 
 	 * @param c
@@ -158,28 +108,6 @@ public class WifiLogger extends InputPlugin {
 	 */
 	public static boolean hasPreferences() {
 		return true;
-	}
-
-	/**
-	 * This is the basic constructor for the WifiLogger plugin. It has to be
-	 * instantiated before it is started, and needs to be passed a reference to
-	 * a WifiManager and a Context.
-	 * 
-	 * @param wm
-	 *            - the WifiManager for this WifiLogger.
-	 * @param context
-	 *            - the context in which this plugin is created.
-	 */
-	public WifiLogger(final WifiManager wm, final Context context) {
-		this.wm = wm;
-		this.context = context;
-
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-		sleepIntervalMillisecs = Integer.parseInt(prefs.getString(
-				"wifiIntervalPreference", "30000"));
-
-		PLUGIN_ACTIVE = prefs.getBoolean("wifiLoggerEnable", false);
 	}
 
 	/**
@@ -273,6 +201,78 @@ public class WifiLogger extends InputPlugin {
 			threadRunning = false;
 			context.unregisterReceiver(wlr);
 			Log.i("WifiLogger", "Unegistered receiver.");
+		}
+	}
+
+	public static class WifiLoggerPacket implements DataPacket {
+
+		final int neighbors;
+		final long timestamp;
+		final int[] levels;
+		final String[] SSIDs;
+		final String[] BSSIDs;
+		final static String PLUGIN_NAME = "WifiLogger";
+		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+
+		/**
+		 * Constructor for this DataPacket.
+		 * 
+		 * @param neighbors
+		 *            the number of access points detected.
+		 * @param timestamp
+		 *            the time of the scan.
+		 * @param level
+		 *            the signal strength level of each access point.
+		 * @param SSID
+		 *            the SSID of each access point.
+		 * @param BSSID
+		 *            the BSSID of each access point.
+		 */
+		public WifiLoggerPacket(final int neighbors, final long timestamp,
+				final int[] level, final String[] SSID, final String[] BSSID) {
+			this.neighbors = neighbors;
+			this.timestamp = timestamp;
+			this.levels = level;
+			this.SSIDs = SSID;
+			this.BSSIDs = BSSID;
+		}
+
+		@Override
+		public DataPacket clone() {
+			return new WifiLoggerPacket(neighbors, timestamp, levels, SSIDs,
+					BSSIDs);
+		}
+
+		@Override
+		public int getDataPacketId() {
+			return WifiLoggerPacket.PLUGIN_ID;
+		}
+
+		@Override
+		public String getInputPluginName() {
+			return WifiLoggerPacket.PLUGIN_NAME;
+		}
+	}
+
+	/**
+	 * Taken from Jordan Frank
+	 * (hsandroidv1.ca.mcgill.cs.humansense.hsandroid.service) and modified for
+	 * this plugin.
+	 */
+	private class WifiLoggerReceiver extends BroadcastReceiver {
+
+		private final WifiManager wifi;
+
+		public WifiLoggerReceiver(final WifiManager wifi) {
+			super();
+			this.wifi = wifi;
+		}
+
+		@Override
+		public void onReceive(final Context c, final Intent intent) {
+			final List<ScanResult> results = wifi.getScanResults();
+			Log.i("WifiLogger", "Received wifi results.");
+			processResults(results);
 		}
 	}
 }

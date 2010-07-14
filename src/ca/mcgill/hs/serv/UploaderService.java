@@ -66,11 +66,10 @@ public class UploaderService extends Service {
 		}
 	};
 
-	/*
-	 * public UploaderService() { UNUPLOADED_PATH = (String)
-	 * getBaseContext().getResources().getText( R.string.recent_file_path); }
+	/**
+	 * Goes through the recent folder and adds all the files to the list of
+	 * files to upload.
 	 */
-
 	private void addFiles() {
 		final File path = new File(Environment.getExternalStorageDirectory(),
 				UNUPLOADED_PATH);
@@ -135,7 +134,8 @@ public class UploaderService extends Service {
 	}
 
 	/**
-	 * Called automatically when onCreate() is called.
+	 * Called automatically when onCreate() is called. Contains the code for
+	 * uploading files to the server.
 	 */
 	@Override
 	public void onStart(final Intent intent, final int startId) {
@@ -162,6 +162,7 @@ public class UploaderService extends Service {
 
 						conn = (HttpURLConnection) url.openConnection();
 
+						// Make appropriate property requests
 						conn.setDoOutput(true);
 
 						conn.setRequestMethod("POST");
@@ -180,6 +181,7 @@ public class UploaderService extends Service {
 						final FileInputStream fis = new FileInputStream(
 								fileToUpload);
 
+						// Format files into form format
 						dos.writeBytes(twoHyphens + boundary + lineEnd);
 						dos
 								.writeBytes("Content-Disposition: post-data; name=uploadedfile;filename="
@@ -217,6 +219,7 @@ public class UploaderService extends Service {
 						}
 						rd.close();
 
+						// Move files to uploaded folder
 						final File dest = new File(Environment
 								.getExternalStorageDirectory(),
 								(String) getResources().getText(
@@ -260,7 +263,8 @@ public class UploaderService extends Service {
 	}
 
 	/**
-	 * Gets called whenever the file upload is complete.
+	 * Gets called whenever the file upload is complete. Checks for errors and
+	 * resets the Upload button.
 	 */
 	private void onUploadComplete() {
 		switch (ERROR_CODE) {

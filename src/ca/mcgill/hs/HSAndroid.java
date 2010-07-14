@@ -60,6 +60,8 @@ public class HSAndroid extends Activity {
 	private FileUploader fu;
 	private static boolean uploading = false;
 
+	private static final String filePath = "/sdcard/hsandroidapp/data/recent/";
+
 	/**
 	 * Updates the main starting button. This is required due to the nature of
 	 * Activities in the Android API. In order to correctly get the state of the
@@ -239,9 +241,21 @@ public class HSAndroid extends Activity {
 		};
 
 		private void addFiles() {
-			// TODO Algorithm for adding files.
-			// filesToUpload.add("/sdcard/test/test.txt");
-			// filesToUpload.add("/sdcard/test/chucknorris.txt");
+			final File path = new File(filePath);
+
+			if (!path.exists()) {
+				path.mkdir();
+			}
+
+			final String[] files = path.list();
+
+			if (files.length == 0) {
+				return;
+			} else {
+				for (final String s : files) {
+					filesToUpload.add(s);
+				}
+			}
 		}
 
 		/**

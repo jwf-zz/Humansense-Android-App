@@ -212,7 +212,7 @@ public class HSAndroid extends Activity {
 
 		// The location of the files to upload.
 		private final String DIR_PATH = (String) getResources().getText(
-				R.string.data_file_path);
+				R.string.recent_file_path);
 
 		private HttpURLConnection conn;
 
@@ -249,9 +249,7 @@ public class HSAndroid extends Activity {
 			this.context = context;
 
 			UNUPLOADED_PATH = (String) context.getResources().getText(
-					R.string.data_file_path)
-					+ (String) context.getResources().getText(
-							R.string.unuploaded_file_path);
+					R.string.recent_file_path);
 		}
 
 		private void addFiles() {
@@ -266,9 +264,6 @@ public class HSAndroid extends Activity {
 			}
 
 			final String[] files = path.list();
-			for (final String s : files) {
-				Log.e("Uploader", s);
-			}
 
 			if (files.length == 0) {
 				return;
@@ -344,8 +339,11 @@ public class HSAndroid extends Activity {
 							final DataOutputStream dos = new DataOutputStream(
 									conn.getOutputStream());
 
+							final File fileToUpload = new File(Environment
+									.getExternalStorageDirectory(), fileName);
+
 							final FileInputStream fis = new FileInputStream(
-									new File(fileName));
+									fileToUpload);
 
 							dos.writeBytes(twoHyphens + boundary + lineEnd);
 							dos
@@ -384,6 +382,25 @@ public class HSAndroid extends Activity {
 								Log.e("HSAndroid Upload", "Message: " + line);
 							}
 							rd.close();
+
+							final File dest = new File(Environment
+									.getExternalStorageDirectory(),
+									(String) context.getResources().getText(
+											R.string.uploaded_file_path));
+							if (!dest.isDirectory()) {
+								if (!dest.mkdirs()) {
+									throw new IOException(
+											"ERROR: Unable to create directory "
+													+ dest.getName());
+								}
+							}
+
+							if (!fileToUpload.renameTo(new File(dest,
+									fileToUpload.getName()))) {
+								throw new IOException(
+										"ERROR: Unable to transfer file "
+												+ fileToUpload.getName());
+							}
 
 						} catch (final MalformedURLException ex) {
 							Log.e("HSAndroid Upload", "error: "

@@ -14,7 +14,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 import ca.mcgill.hs.serv.HSService;
 import ca.mcgill.hs.serv.UploaderService;
 
@@ -22,7 +21,7 @@ import ca.mcgill.hs.serv.UploaderService;
  * This Activity is the entry point to the HSAndroid application. This Activity
  * is launched manually on the phone by the user, and is from where the
  * background services can be manually started and stopped, and where the
- * preferences and settigns can be changed.
+ * preferences and settings can be changed.
  * 
  * @author Jonathan Pitre
  * 
@@ -33,10 +32,6 @@ public class HSAndroid extends Activity {
 	public static Button uploadButton;
 
 	private Intent i;
-	// Offsets used for all toasts
-	private final int TOAST_Y_OFFSET = 100;
-
-	private final int TOAST_X_OFFSET = 0;
 
 	private boolean autoStartAppStart = false;
 	public static final String HSANDROID_PREFS_NAME = "HSAndroidPrefs";
@@ -65,21 +60,6 @@ public class HSAndroid extends Activity {
 		final SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(getBaseContext());
 		autoStartAppStart = prefs.getBoolean("autoStartAtAppStart", false);
-	}
-
-	/**
-	 * Helper method for making toasts.
-	 * 
-	 * @param message
-	 *            the text to toast.
-	 * @param duration
-	 *            the duration of the toast.
-	 */
-	private void makeToast(final String message, final int duration) {
-		final Toast slice = Toast.makeText(getBaseContext(), message, duration);
-		slice.setGravity(slice.getGravity(), slice.getXOffset()
-				+ TOAST_X_OFFSET, slice.getYOffset() + TOAST_Y_OFFSET);
-		slice.show();
 	}
 
 	/**

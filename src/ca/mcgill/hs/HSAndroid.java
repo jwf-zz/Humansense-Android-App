@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -59,8 +60,6 @@ public class HSAndroid extends Activity {
 
 	private FileUploader fu;
 	private static boolean uploading = false;
-
-	private static final String filePath = "/sdcard/hsandroidapp/data/recent/";
 
 	/**
 	 * Updates the main starting button. This is required due to the nature of
@@ -109,7 +108,7 @@ public class HSAndroid extends Activity {
 		setContentView(R.layout.main);
 
 		// Creating the fu
-		fu = new FileUploader();
+		fu = new FileUploader(this);
 
 		// Intent
 		i = new Intent(this, HSService.class);
@@ -202,8 +201,14 @@ public class HSAndroid extends Activity {
 	// TODO: Update strings.xml with new static strings.
 	private class FileUploader {
 
+		// The context used to access strings
+		private final Context context;
+
 		// The URL of the server to upload to.
 		private final String URL_STRING = "http://www.cs.mcgill.ca/~ccojoc2/uploader.php";
+
+		// Unuploaded dir path
+		private final String UNUPLOADED_PATH;
 
 		// The location of the files to upload.
 		private final String DIR_PATH = (String) getResources().getText(
@@ -240,20 +245,36 @@ public class HSAndroid extends Activity {
 			}
 		};
 
-		private void addFiles() {
-			final File path = new File(filePath);
+		private FileUploader(final Context context) {
+			this.context = context;
 
-			if (!path.exists()) {
-				path.mkdir();
+			UNUPLOADED_PATH = (String) context.getResources().getText(
+					R.string.data_file_path)
+					+ (String) context.getResources().getText(
+							R.string.unuploaded_file_path);
+		}
+
+		private void addFiles() {
+			final File path = new File(Environment
+					.getExternalStorageDirectory(), UNUPLOADED_PATH);
+
+			if (!path.isDirectory()) {
+				if (!path.mkdirs()) {
+					Log.e("Output Dir", "Could not create output directory!");
+					return;
+				}
 			}
 
 			final String[] files = path.list();
+			for (final String s : files) {
+				Log.e("Uploader", s);
+			}
 
 			if (files.length == 0) {
 				return;
 			} else {
 				for (final String s : files) {
-					filesToUpload.add(s);
+					filesToUpload.add(UNUPLOADED_PATH + s);
 				}
 			}
 		}

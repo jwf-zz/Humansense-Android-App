@@ -55,48 +55,6 @@ public class FileOutput extends OutputPlugin {
 	// Writing folder name
 	private final static String FOLDER_NAME = "live";
 
-	/**
-	 * Returns the list of Preference objects for this OutputPlugin.
-	 * 
-	 * @param c
-	 *            the context for the generated Preferences.
-	 * @return an array of the Preferences of this object.
-	 */
-	public static Preference[] getPreferences(final Context c) {
-		final Preference[] prefs = new Preference[3];
-
-		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
-				PLUGIN_ACTIVE_KEY, R.string.fileoutput_pluginname_pref,
-				R.string.fileoutput_pluginsummary_pref,
-				R.string.fileoutput_pluginenabled_pref,
-				R.string.fileoutput_plugindisabled_pref);
-		prefs[1] = PreferenceFactory.getListPreference(c,
-				R.array.fileOutputPluginBufferSizeStrings,
-				R.array.fileOutputPluginBufferSizeValues, c.getResources()
-						.getText(R.string.fileoutput_buffersizedefault_pref),
-				BUFFER_SIZE_KEY, R.string.fileoutput_buffersize_pref,
-				R.string.fileoutput_buffersize_pref_summary);
-		prefs[2] = PreferenceFactory.getListPreference(c,
-				R.array.fileOutputPluginRolloverIntervalStrings,
-				R.array.fileOutputPluginRolloverIntervalValues,
-				c.getResources().getText(
-						R.string.fileoutput_rolloverintervaldefault_pref),
-				ROLLOVER_INTERVAL_KEY,
-				R.string.fileoutput_rolloverinterval_pref,
-				R.string.fileoutput_rolloverinterval_pref_summary);
-
-		return prefs;
-	}
-
-	/**
-	 * Returns whether or not this OutputPlugin has Preferences.
-	 * 
-	 * @return whether or not this OutputPlugin has preferences.
-	 */
-	public static boolean hasPreferences() {
-		return true;
-	}
-
 	// Boolean representing whether or not the plugin has been signalled to
 	// stop.
 	private Boolean PLUGIN_STOPPING;
@@ -104,12 +62,12 @@ public class FileOutput extends OutputPlugin {
 	// Semaphore counter for the number of threads currently executing data
 	// read/write operations.
 	private int THREADS_WRITING;
+
 	// Boolean ON-OFF switch *Temporary only*
 	private boolean PLUGIN_ACTIVE;
 
 	// Preference key for this plugin's state
 	private final static String PLUGIN_ACTIVE_KEY = "fileOutputEnabled";
-
 	// Date format used in the log file names
 	private final static String LOG_DATE_FORMAT = "yy-MM-dd-HHmmss";
 
@@ -152,6 +110,48 @@ public class FileOutput extends OutputPlugin {
 	}
 
 	/**
+	 * Returns the list of Preference objects for this OutputPlugin.
+	 * 
+	 * @param c
+	 *            the context for the generated Preferences.
+	 * @return an array of the Preferences of this object.
+	 */
+	public static Preference[] getPreferences(final Context c) {
+		final Preference[] prefs = new Preference[3];
+
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
+				PLUGIN_ACTIVE_KEY, R.string.fileoutput_pluginname_pref,
+				R.string.fileoutput_pluginsummary_pref,
+				R.string.fileoutput_pluginenabled_pref,
+				R.string.fileoutput_plugindisabled_pref);
+		prefs[1] = PreferenceFactory.getListPreference(c,
+				R.array.fileOutputPluginBufferSizeStrings,
+				R.array.fileOutputPluginBufferSizeValues, c.getResources()
+						.getText(R.string.fileoutput_buffersizedefault_pref),
+				BUFFER_SIZE_KEY, R.string.fileoutput_buffersize_pref,
+				R.string.fileoutput_buffersize_pref_summary);
+		prefs[2] = PreferenceFactory.getListPreference(c,
+				R.array.fileOutputPluginRolloverIntervalStrings,
+				R.array.fileOutputPluginRolloverIntervalValues,
+				c.getResources().getText(
+						R.string.fileoutput_rolloverintervaldefault_pref),
+				ROLLOVER_INTERVAL_KEY,
+				R.string.fileoutput_rolloverinterval_pref,
+				R.string.fileoutput_rolloverinterval_pref_summary);
+
+		return prefs;
+	}
+
+	/**
+	 * Returns whether or not this OutputPlugin has Preferences.
+	 * 
+	 * @return whether or not this OutputPlugin has preferences.
+	 */
+	public static boolean hasPreferences() {
+		return true;
+	}
+
+	/**
 	 * Closes all open file handles.
 	 */
 	private void closeAll() {
@@ -170,9 +170,7 @@ public class FileOutput extends OutputPlugin {
 			// Current live directory
 			final File directory = new File(Environment
 					.getExternalStorageDirectory(), (String) context
-					.getResources().getText(R.string.data_file_path)
-					+ (String) context.getResources().getText(
-							R.string.live_file_path));
+					.getResources().getText(R.string.live_file_path));
 			if (!directory.isDirectory()) {
 				if (!directory.mkdirs()) {
 					throw new IOException("ERROR: Unable to create directory "
@@ -189,9 +187,7 @@ public class FileOutput extends OutputPlugin {
 				// Destination directory
 				final File dest = new File(Environment
 						.getExternalStorageDirectory(), (String) context
-						.getResources().getText(R.string.data_file_path)
-						+ (String) context.getResources().getText(
-								R.string.unuploaded_file_path));
+						.getResources().getText(R.string.recent_file_path));
 				if (!dest.isDirectory()) {
 					if (!dest.mkdirs()) {
 						throw new IOException(
@@ -412,9 +408,7 @@ public class FileOutput extends OutputPlugin {
 				if (!fileHandles.containsKey(id)) {
 					final File j = new File(Environment
 							.getExternalStorageDirectory(), (String) context
-							.getResources().getText(R.string.data_file_path)
-							+ (String) context.getResources().getText(
-									R.string.live_file_path));
+							.getResources().getText(R.string.live_file_path));
 					if (!j.isDirectory()) {
 						if (!j.mkdirs()) {
 							Log.e("Output Dir",

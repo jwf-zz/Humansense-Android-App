@@ -27,6 +27,7 @@
 			android:label="@string/set_output_preferences">
 		</activity>
         <service android:name="ca.mcgill.hs.serv.HSService"/>
+        <service android:name="ca.mcgill.hs.serv.UploaderService"/>
         <receiver android:name="ca.mcgill.hs.serv.HSServAutoStart" 
 			 android:enabled="true" 
 			 android:exported="false"

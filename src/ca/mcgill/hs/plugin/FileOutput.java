@@ -55,60 +55,6 @@ public class FileOutput extends OutputPlugin {
 	// Writing folder name
 	private final static String FOLDER_NAME = "live";
 
-	// Boolean representing whether or not the plugin has been signalled to
-	// stop.
-	private Boolean PLUGIN_STOPPING;
-
-	// Semaphore counter for the number of threads currently executing data
-	// read/write operations.
-	private int THREADS_WRITING;
-
-	// Boolean ON-OFF switch *Temporary only*
-	private boolean PLUGIN_ACTIVE;
-
-	// Preference key for this plugin's state
-	private final static String PLUGIN_ACTIVE_KEY = "fileOutputEnabled";
-	// Date format used in the log file names
-	private final static String LOG_DATE_FORMAT = "yy-MM-dd-HHmmss";
-
-	// Timestamps used for file rollover.
-	private long initialTimestamp = -1;
-
-	private long rolloverTimestamp = -1;
-
-	private long ROLLOVER_INTERVAL;
-
-	private long currentTimeMillis;
-
-	// The Context in which to use preferences.
-	private final Context context;
-
-	/**
-	 * This is the basic constructor for the FileOutput plugidatan. It has to be
-	 * instantiated before it is started, and needs to be passed a reference to
-	 * a Context.
-	 * 
-	 * @param context
-	 *            - the context in which this plugin is created.
-	 */
-	public FileOutput(final Context context) {
-		this.context = context;
-		PLUGIN_STOPPING = false;
-		THREADS_WRITING = 0;
-
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-
-		PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
-		BUFFER_SIZE = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY,
-				(String) context.getResources().getText(
-						R.string.fileoutput_buffersizedefault_pref)));
-
-		ROLLOVER_INTERVAL = Integer.parseInt(prefs.getString(
-				ROLLOVER_INTERVAL_KEY, (String) context.getResources().getText(
-						R.string.fileoutput_rolloverintervaldefault_pref)));
-	}
-
 	/**
 	 * Returns the list of Preference objects for this OutputPlugin.
 	 * 
@@ -151,6 +97,57 @@ public class FileOutput extends OutputPlugin {
 		return true;
 	}
 
+	// Boolean representing whether or not the plugin has been signalled to
+	// stop.
+	private Boolean PLUGIN_STOPPING;
+
+	// Semaphore counter for the number of threads currently executing data
+	// read/write operations.
+	private int THREADS_WRITING;
+	// Boolean ON-OFF switch *Temporary only*
+	private boolean PLUGIN_ACTIVE;
+
+	// Preference key for this plugin's state
+	private final static String PLUGIN_ACTIVE_KEY = "fileOutputEnabled";
+	// Date format used in the log file names
+	private final static String LOG_DATE_FORMAT = "yy-MM-dd-HHmmss";
+	// Timestamps used for file rollover.
+	private long initialTimestamp = -1;
+	private long rolloverTimestamp = -1;
+
+	private long ROLLOVER_INTERVAL;
+
+	private long currentTimeMillis;
+
+	// The Context in which to use preferences.
+	private final Context context;
+
+	/**
+	 * This is the basic constructor for the FileOutput plugidatan. It has to be
+	 * instantiated before it is started, and needs to be passed a reference to
+	 * a Context.
+	 * 
+	 * @param context
+	 *            - the context in which this plugin is created.
+	 */
+	public FileOutput(final Context context) {
+		this.context = context;
+		PLUGIN_STOPPING = false;
+		THREADS_WRITING = 0;
+
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(context);
+
+		PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
+		BUFFER_SIZE = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY,
+				(String) context.getResources().getText(
+						R.string.fileoutput_buffersizedefault_pref)));
+
+		ROLLOVER_INTERVAL = Integer.parseInt(prefs.getString(
+				ROLLOVER_INTERVAL_KEY, (String) context.getResources().getText(
+						R.string.fileoutput_rolloverintervaldefault_pref)));
+	}
+
 	/**
 	 * Closes all open file handles.
 	 */
@@ -166,6 +163,9 @@ public class FileOutput extends OutputPlugin {
 				e.printStackTrace();
 			}
 		}
+
+		// In this block, we move all files that are in live (the most recent
+		// files) into the recent directory.
 		try {
 			// Current live directory
 			final File directory = new File(Environment

@@ -6,6 +6,9 @@
     
     <!--  Utility Strings -->
     <string name="data_file_path">hsandroidapp/data</string>
+    <string name="live_file_path">/live</string>
+    <string name="unuploaded_file_path">/recent</string>
+    <string name="uploaded_file_path">/uploaded</string>
 	
 	<!-- Object Strings -->
 	<string name="start_label">START SERVICE</string>

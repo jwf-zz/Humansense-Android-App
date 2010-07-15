@@ -180,17 +180,16 @@ public class UploaderService extends Service {
 
 						final FileInputStream fis = new FileInputStream(
 								fileToUpload);
-						/*
-						 * dos.writeBytes(twoHyphens + boundary + lineEnd); dos
-						 * .writeBytes(
-						 * "Content-Disposition: post-data; type=\"text\";name=\"phoneid\";value=\"fail\""
-						 * + lineEnd); dos.writeBytes(lineEnd);
-						 */
+
 						// Format files into form format
 						dos.writeBytes(twoHyphens + boundary + lineEnd);
 						dos
 								.writeBytes("Content-Disposition: post-data; name=uploadedfile;filename="
 										+ fileName + "" + lineEnd);
+						dos
+								.writeBytes("Content-Disposition: post-data; type=\"text\";name=\"phoneid\";value=\"fail\""
+										+ lineEnd);
+
 						dos.writeBytes(lineEnd);
 
 						int bytesAvailable = fis.available();

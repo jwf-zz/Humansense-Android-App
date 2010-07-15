@@ -187,13 +187,13 @@ public class UploaderService extends Service {
 								fileToUpload);
 
 						// Format files into form format
+
 						dos.writeBytes(twoHyphens + boundary + lineEnd);
+
 						dos
-								.writeBytes("Content-Disposition: post-data; name=uploadedfile;filename="
+								.writeBytes("Content-Disposition: form-data; name=uploadedfile;filename="
 										+ fileName + "" + lineEnd);
-						dos
-								.writeBytes("Content-Disposition: post-data; type=\"text\";name=\"phoneid\";value=\"fail\""
-										+ lineEnd);
+
 						dos.writeBytes(lineEnd);
 
 						int bytesAvailable = fis.available();

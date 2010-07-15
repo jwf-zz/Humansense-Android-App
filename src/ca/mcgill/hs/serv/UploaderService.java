@@ -1,9 +1,7 @@
 package ca.mcgill.hs.serv;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -25,6 +23,7 @@ import android.util.Log;
 import android.widget.Toast;
 import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
+import ca.mcgill.hs.util.ClientHttpRequest;
 
 public class UploaderService extends Service {
 
@@ -167,58 +166,16 @@ public class UploaderService extends Service {
 
 						conn = (HttpURLConnection) url.openConnection();
 
-						// Make appropriate property requests
-						conn.setDoOutput(true);
+						final ClientHttpRequest chr = new ClientHttpRequest(
+								conn);
 
-						conn.setRequestMethod("POST");
+						chr.setParameter("uploadedfile", new File(Environment
+								.getExternalStorageDirectory(), fileName));
 
-						conn.setRequestProperty("Connection", "Keep-Alive");
+						chr.setParameter("action", "fail");
 
-						conn.setRequestProperty("Content-Type",
-								"multipart/form-data;boundary=" + boundary);
-
-						final DataOutputStream dos = new DataOutputStream(conn
-								.getOutputStream());
-
-						final File fileToUpload = new File(Environment
-								.getExternalStorageDirectory(), fileName);
-
-						final FileInputStream fis = new FileInputStream(
-								fileToUpload);
-
-						// Format files into form format
-						dos.writeBytes(twoHyphens + boundary + lineEnd);
-						dos
-								.writeBytes("Content-Disposition: post-data; name=uploadedfile;filename="
-										+ fileName + "" + lineEnd);
-						dos
-								.writeBytes("Content-Disposition: post-data; type=\"text\";name=\"phoneid\";value=\"fail\""
-										+ lineEnd);
-						dos.writeBytes(lineEnd);
-
-						int bytesAvailable = fis.available();
-
-						final byte[] buffer = new byte[bytesAvailable];
-
-						int bytesRead = fis.read(buffer, 0, bytesAvailable);
-
-						while (bytesRead > 0) {
-							dos.write(buffer, 0, bytesAvailable);
-							bytesAvailable = fis.available();
-							bytesRead = fis.read(buffer, 0, bytesAvailable);
-						}
-
-						dos.writeBytes(lineEnd);
-						dos.writeBytes(twoHyphens + boundary + twoHyphens
-								+ lineEnd);
-
-						fis.close();
-						dos.flush();
-						dos.close();
-
-						// Check server response
 						final BufferedReader rd = new BufferedReader(
-								new InputStreamReader(conn.getInputStream()));
+								new InputStreamReader(chr.post()));
 						String line;
 						while ((line = rd.readLine()) != null) {
 							Log.i("Server Response", line);
@@ -228,25 +185,69 @@ public class UploaderService extends Service {
 						}
 						rd.close();
 
-						// Move files to uploaded folder
-						final File dest = new File(Environment
-								.getExternalStorageDirectory(),
-								(String) getResources().getText(
-										R.string.uploaded_file_path));
-						if (!dest.isDirectory()) {
-							if (!dest.mkdirs()) {
-								throw new IOException(
-										"ERROR: Unable to create directory "
-												+ dest.getName());
-							}
-						}
-
-						if (!fileToUpload.renameTo(new File(dest, fileToUpload
-								.getName()))) {
-							throw new IOException(
-									"ERROR: Unable to transfer file "
-											+ fileToUpload.getName());
-						}
+						/*
+						 * // Make appropriate property requests
+						 * conn.setDoOutput(true);
+						 * 
+						 * conn.setRequestMethod("POST");
+						 * 
+						 * conn.setRequestProperty("Connection", "Keep-Alive");
+						 * 
+						 * conn.setRequestProperty("Content-Type",
+						 * "multipart/form-data;boundary=" + boundary);
+						 * 
+						 * final DataOutputStream dos = new
+						 * DataOutputStream(conn .getOutputStream());
+						 * 
+						 * final File fileToUpload = new File(Environment
+						 * .getExternalStorageDirectory(), fileName);
+						 * 
+						 * final FileInputStream fis = new FileInputStream(
+						 * fileToUpload);
+						 * 
+						 * // Format files into form format
+						 * dos.writeBytes(twoHyphens + boundary + lineEnd); dos
+						 * .writeBytes(
+						 * "Content-Disposition: form-data; name=uploadedfile;filename="
+						 * + fileName + "" + lineEnd); dos.writeBytes(lineEnd);
+						 * 
+						 * int bytesAvailable = fis.available();
+						 * 
+						 * final byte[] buffer = new byte[bytesAvailable];
+						 * 
+						 * int bytesRead = fis.read(buffer, 0, bytesAvailable);
+						 * 
+						 * while (bytesRead > 0) { dos.write(buffer, 0,
+						 * bytesAvailable); bytesAvailable = fis.available();
+						 * bytesRead = fis.read(buffer, 0, bytesAvailable); }
+						 * 
+						 * dos.writeBytes(lineEnd); dos.writeBytes(twoHyphens +
+						 * boundary + twoHyphens + lineEnd);
+						 * 
+						 * fis.close(); dos.flush(); dos.close();
+						 * 
+						 * // Check server response final BufferedReader rd =
+						 * new BufferedReader( new
+						 * InputStreamReader(conn.getInputStream())); String
+						 * line; while ((line = rd.readLine()) != null) {
+						 * Log.i("Server Response", line); if
+						 * (!line.endsWith("has been uploaded")) { ERROR_CODE =
+						 * UPLOAD_FAILED_ERROR_CODE; } } rd.close();
+						 * 
+						 * // Move files to uploaded folder if successful if
+						 * (ERROR_CODE == NO_ERROR_CODE) { final File dest = new
+						 * File(Environment .getExternalStorageDirectory(),
+						 * (String) getResources().getText(
+						 * R.string.uploaded_file_path)); if
+						 * (!dest.isDirectory()) { if (!dest.mkdirs()) { throw
+						 * new IOException( "ERROR: Unable to create directory "
+						 * + dest.getName()); } }
+						 * 
+						 * if (!fileToUpload.renameTo(new File(dest,
+						 * fileToUpload.getName()))) { throw new IOException(
+						 * "ERROR: Unable to transfer file " +
+						 * fileToUpload.getName()); } }
+						 */
 
 					} catch (final MalformedURLException ex) {
 						Log.e("HSAndroid Upload", "error: " + ex.getMessage(),

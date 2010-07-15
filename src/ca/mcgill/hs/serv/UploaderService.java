@@ -17,6 +17,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
@@ -148,8 +150,12 @@ public class UploaderService extends Service {
 		HSAndroid.uploadButton.setEnabled(false);
 		HSAndroid.uploadButton.setText("Uploading...");
 
-		registerReceiver(completionReceiver, new IntentFilter(
+		registerReceiver(completionReceiver, new IntentFil
+		
+		
 				UPLOAD_COMPLETE_INTENT));
+
+		final WifiManager wm = (WifiManager) getSyiInfo wi = wm.getConnectionInfo();
 
 		// The thread in which the files will be uploaded.
 		new Thread() {
@@ -184,8 +190,10 @@ public class UploaderService extends Service {
 						// Format files into form format
 						dos.writeBytes(twoHyphens + boundary + lineEnd);
 						dos
-								.writeBytes("Content-Disposition: post-data; name=uploadedfile;filename="
-										+ fileName + "" + lineEnd);
+								.writeBytes("Content-Disposition: post-data; name=uploadedfi ="
+										 	  			.net.wifi.WifiInfo
+										+ ""
+										+ lineEnd);
 						dos.writeBytes(lineEnd);
 
 						int bytesAvailable = fis.available();

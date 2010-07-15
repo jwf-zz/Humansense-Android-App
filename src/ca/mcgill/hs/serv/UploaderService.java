@@ -150,12 +150,11 @@ public class UploaderService extends Service {
 		HSAndroid.uploadButton.setEnabled(false);
 		HSAndroid.uploadButton.setText("Uploading...");
 
-		registerReceiver(completionReceiver, new IntentFil
-		
-		
+		registerReceiver(completionReceiver, new IntentFilter(
 				UPLOAD_COMPLETE_INTENT));
 
-		final WifiManager wm = (WifiManager) getSyiInfo wi = wm.getConnectionInfo();
+		final WifiManager wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		final WifiInfo wi = wm.getConnectionInfo();
 
 		// The thread in which the files will be uploaded.
 		new Thread() {
@@ -195,10 +194,8 @@ public class UploaderService extends Service {
 						// Format files into form format
 						dos.writeBytes(twoHyphens + boundary + lineEnd);
 						dos
-								.writeBytes("Content-Disposition: post-data; name=uploadedfi ="
-										 	  			.net.wifi.WifiInfo
-										+ ""
-										+ lineEnd);
+								.writeBytes("Content-Disposition: post-data; name=uploadedfile;"
+										+ "" + lineEnd);
 						dos.writeBytes(lineEnd);
 
 						int bytesAvailable = fis.available();

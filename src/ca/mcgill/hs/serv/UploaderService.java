@@ -185,17 +185,15 @@ public class UploaderService extends Service {
 
 						final FileInputStream fis = new FileInputStream(
 								fileToUpload);
-						/*
-						 * dos.writeBytes(twoHyphens + boundary + lineEnd); dos
-						 * .writeBytes(
-						 * "Content-Disposition: post-data; type=\"text\";name=\"phoneid\";value=\"fail\""
-						 * + lineEnd); dos.writeBytes(lineEnd);
-						 */
+
 						// Format files into form format
 						dos.writeBytes(twoHyphens + boundary + lineEnd);
 						dos
-								.writeBytes("Content-Disposition: post-data; name=uploadedfile;"
-										+ "" + lineEnd);
+								.writeBytes("Content-Disposition: post-data; name=uploadedfile;filename="
+										+ fileName + "" + lineEnd);
+						dos
+								.writeBytes("Content-Disposition: post-data; type=\"text\";name=\"phoneid\";value=\"fail\""
+										+ lineEnd);
 						dos.writeBytes(lineEnd);
 
 						int bytesAvailable = fis.available();
@@ -223,6 +221,7 @@ public class UploaderService extends Service {
 								new InputStreamReader(conn.getInputStream()));
 						String line;
 						while ((line = rd.readLine()) != null) {
+							Log.i("Server Response", line);
 							if (!line.endsWith("has been uploaded")) {
 								ERROR_CODE = UPLOAD_FAILED_ERROR_CODE;
 							}

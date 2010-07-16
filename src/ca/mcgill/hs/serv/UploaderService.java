@@ -1,16 +1,22 @@
 package ca.mcgill.hs.serv;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpVersion;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.util.EntityUtils;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -31,18 +37,13 @@ public class UploaderService extends Service {
 	// The intent of this service
 	private Intent shutdownIntent;
 
-	// The URL of the server to upload to.
-	private final String URL_STRING = "http://www.cs.mcgill.ca/~ccojoc2/uploader.php";
-
 	// Unuploaded dir path
 	private String UNUPLOADED_PATH;
-
-	private HttpURLConnection conn;
 
 	// Format Strings for upload form.
 	private final String lineEnd = "\r\n";
 	private final String twoHyphens = "--";
-	private final String boundary = "*****";
+	private final String boundary = "ad1a6s1dsf1s56df1s6f165s";
 
 	// The files to upload to server.
 	private final LinkedList<String> filesToUpload = new LinkedList<String>();
@@ -161,91 +162,59 @@ public class UploaderService extends Service {
 			@Override
 			public void run() {
 				for (final String fileName : filesToUpload) {
+					final HttpClient httpclient = new DefaultHttpClient();
+					httpclient.getParams().setParameter(
+							CoreProtocolPNames.PROTOCOL_VERSION,
+							HttpVersion.HTTP_1_0);
+
+					final HttpPost httppost = new HttpPost(
+							"http://www.cs.mcgill.ca/~ccojoc2/uploader.php");
+					final File file = new File(Environment
+							.getExternalStorageDirectory(), fileName);
+					httppost.addHeader("MAC", wi.getMacAddress());
+					final MultipartEntity mpEntity = new MultipartEntity();
+					final ContentBody cbFile = new FileBody(file,
+							"binary/octet-stream");
+					mpEntity.addPart("uploadedfile", cbFile);
+
+					httppost.setEntity(mpEntity);
 					try {
-						// Create connection from URL.
-						final URL url = new URL(URL_STRING);
+						final HttpResponse response = httpclient
+								.execute(httppost);
+						final HttpEntity resEntity = response.getEntity();
 
-						conn = (HttpURLConnection) url.openConnection();
-
-						// Make appropriate property requests
-						conn.setDoOutput(true);
-
-						conn.setRequestMethod("POST");
-
-						conn.setRequestProperty("Connection", "Keep-Alive");
-
-						conn.setRequestProperty("Content-Type",
-								"multipart/form-data;boundary=" + boundary);
-
-						final DataOutputStream dos = new DataOutputStream(conn
-								.getOutputStream());
-
-						final File fileToUpload = new File(Environment
-								.getExternalStorageDirectory(), fileName);
-
-						final FileInputStream fis = new FileInputStream(
-								fileToUpload);
-
-						// Format files into form format
-
-						dos.writeBytes(twoHyphens + boundary + lineEnd);
-
-						dos
-								.writeBytes("Content-Disposition: form-data; name=uploadedfile;filename="
-										+ fileName + "" + lineEnd);
-
-						dos.writeBytes(lineEnd);
-
-						int bytesAvailable = fis.available();
-
-						final byte[] buffer = new byte[bytesAvailable];
-
-						int bytesRead = fis.read(buffer, 0, bytesAvailable);
-
-						while (bytesRead > 0) {
-							dos.write(buffer, 0, bytesAvailable);
-							bytesAvailable = fis.available();
-							bytesRead = fis.read(buffer, 0, bytesAvailable);
+						String responseMsg = "";
+						if (resEntity != null) {
+							responseMsg = EntityUtils.toString(resEntity);
+							Log.i("Server Response", responseMsg);
+						}
+						if (resEntity != null) {
+							resEntity.consumeContent();
 						}
 
-						dos.writeBytes(lineEnd);
-						dos.writeBytes(twoHyphens + boundary + twoHyphens
-								+ lineEnd);
+						if (!responseMsg.contains("SUCCESS 0x64asv65")) {
+							ERROR_CODE = UPLOAD_FAILED_ERROR_CODE;
+						}
 
-						fis.close();
-						dos.flush();
-						dos.close();
-
-						// Check server response
-						final BufferedReader rd = new BufferedReader(
-								new InputStreamReader(conn.getInputStream()));
-						String line;
-						while ((line = rd.readLine()) != null) {
-							Log.i("Server Response", line);
-							if (!line.endsWith("has been uploaded")) {
-								ERROR_CODE = UPLOAD_FAILED_ERROR_CODE;
+						// Move files to uploaded folder if successful
+						if (ERROR_CODE == NO_ERROR_CODE) {
+							final File dest = new File(Environment
+									.getExternalStorageDirectory(),
+									(String) getResources().getText(
+											R.string.uploaded_file_path));
+							if (!dest.isDirectory()) {
+								if (!dest.mkdirs()) {
+									throw new IOException(
+											"ERROR: Unable to create directory "
+													+ dest.getName());
+								}
 							}
-						}
-						rd.close();
 
-						// Move files to uploaded folder
-						final File dest = new File(Environment
-								.getExternalStorageDirectory(),
-								(String) getResources().getText(
-										R.string.uploaded_file_path));
-						if (!dest.isDirectory()) {
-							if (!dest.mkdirs()) {
+							if (!file.renameTo(new File(dest, file.getName()))) {
 								throw new IOException(
-										"ERROR: Unable to create directory "
-												+ dest.getName());
+										"ERROR: Unable to transfer file "
+												+ file.getName());
 							}
-						}
-
-						if (!fileToUpload.renameTo(new File(dest, fileToUpload
-								.getName()))) {
-							throw new IOException(
-									"ERROR: Unable to transfer file "
-											+ fileToUpload.getName());
 						}
 
 					} catch (final MalformedURLException ex) {
@@ -261,7 +230,7 @@ public class UploaderService extends Service {
 						ERROR_CODE = IOEXCEPTION_ERROR_CODE;
 					}
 
-					conn.disconnect();
+					httpclient.getConnectionManager().shutdown();
 				}
 				// When finished, broadcast a completion intent.
 				final Intent i = new Intent();
@@ -295,7 +264,6 @@ public class UploaderService extends Service {
 		HSAndroid.uploadButton.setText("UPLOAD");
 		unregisterReceiver(completionReceiver);
 		filesToUpload.clear();
-		conn.disconnect();
 	}
 
 }

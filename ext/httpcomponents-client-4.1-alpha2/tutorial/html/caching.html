@@ -1,0 +1,102 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>Chapter&nbsp;6.&nbsp;HTTP Caching</title><link rel="stylesheet" href="css/hc-tutorial.css" type="text/css"><meta name="generator" content="DocBook XSL-NS Stylesheets V1.73.2"><link rel="start" href="index.html" title="HttpClient Tutorial"><link rel="up" href="index.html" title="HttpClient Tutorial"><link rel="prev" href="httpagent.html" title="Chapter&nbsp;5.&nbsp;HTTP client service"><link rel="next" href="advanced.html" title="Chapter&nbsp;7.&nbsp;Advanced topics"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div xmlns:fo="http://www.w3.org/1999/XSL/Format" class="banner"><a class="bannerLeft" href="http://www.apache.org/" title="Apache Software Foundation"><img style="border:none;" src="images/asf_logo_wide.gif"></a><a class="bannerRight" href="http://hc.apache.org/httpcomponents-core/" title="Apache HttpComponents Core"><img style="border:none;" src="images/hc_logo.png"></a><div class="clear"></div></div><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter&nbsp;6.&nbsp;HTTP Caching</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="httpagent.html">Prev</a>&nbsp;</td><th width="60%" align="center">&nbsp;</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="advanced.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="caching"></a>Chapter&nbsp;6.&nbsp;HTTP Caching</h2></div></div></div>
+  
+
+  <div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="generalconcepts"></a>6.1.&nbsp;General Concepts</h2></div></div></div>
+    
+
+    <p>HttpClient Cache provides an HTTP 1.1 compliant caching layer to be
+    used with HttpClient. It is implemented as a decorator of HttpClient. It
+    provides basic HTTP 1.1 caching capability. You can specify a limit on the
+    maximum cacheable object size to have some control over the size of your
+    cache.</p>
+
+    <p>When CachingHttpClient executes a request, it goes through the
+    following flow:</p>
+
+    <div class="orderedlist"><ol type="1"><li>
+        <p>Check the request for basic compliance with the HTTP 1.1
+        protocol and attempt to correct the request.</p>
+      </li><li>
+        <p>Flush any cache entries which would be invalidated by this
+        request.</p>
+      </li><li>
+        <p>Determine if the current request would be servable from cache.
+        If not, directly pass through the request to the origin server and
+        return the response, after caching it if appropriate.</p>
+      </li><li>
+        <p>If it was a a cache-servable request, it will attempt to read it
+        from the cache. If it is not in the cache, call the origin server and
+        cache the response, if appropriate.</p>
+      </li><li>
+        <p>If the cached response is suitable to be served as a response,
+        construct a BasicHttpResponse containing a ByteArrayEntity and return
+        it. Otherwise, attempt to revalidate the cache entry against the
+        origin server.</p>
+      </li><li>
+        <p>In the case of a cached response which cannot be revalidated,
+        call the origin server and cache the response, if appropriate.</p>
+      </li></ol></div>
+
+    <p>When CachingHttpClient receives a response, it goes through the
+    following flow:</p>
+
+    <div class="orderedlist"><ol type="1"><li>
+        <p>Examing the response for protocol compliance</p>
+      </li><li>
+        <p>Determine whether the response is cacheable</p>
+      </li><li>
+        <p>If it is cacheable, attempt to read up to the maximum size
+        allowed in the configuration and store it in the cache.</p>
+      </li><li>
+        <p>If the response is too large for the cache, reconstruct the
+        partially consumed response and return it directly without caching
+        it.</p>
+      </li></ol></div>
+
+    <p>It is important to note that CachingHttpClient is not, itself, an
+    implementation of HttpClient, but that it decorates an instance of an
+    HttpClient implementation. If you do not provide an implementation, it
+    will use DefaultHttpClient internally by default.</p>
+  </div>
+
+  <div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="rfc2616compliance"></a>6.2.&nbsp;RFC-2616 Compliance</h2></div></div></div>
+    
+
+    <p>HttpClient Cache makes an effort to be at least conditionally
+    compliant with <a class="ulink" href="http://www.ietf.org/rfc/rfc2616.txt" target="_top">RFC-2616</a>. That is,
+    wherever the specification indicates MUST or MUST NOT for HTTP caches, the
+    caching layer attempts to behave in a way that satisfies those
+    requirements.</p>
+  </div>
+
+  <div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="d4e1264"></a>6.3.&nbsp;Cache Implementation</h2></div></div></div>
+    
+
+    <p>The provided implementation for an HttpCache&lt;T&gt; is called
+    BasicHttpCache. It uses an in-memory LinkedHashMap to provide basic
+    least-recently-used (LRU) functionality. Because we provide the
+    HttpCache&lt;T&gt; interface, other implementations of caching may be
+    used, e.g. EHCache, memcached, etc.</p>
+  </div>
+
+  <div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="d4e1267"></a>6.4.&nbsp;Example Usage</h2></div></div></div>
+    
+
+    <p>This is a simple example of how to set up a basic CachingHttpClient.
+    As configured, it will store a maximum of 1000 cached objects, each of
+    which may have a maximum body size of 8192 bytes. The numbers selected
+    here are for example only and not intended to be prescriptive or
+    considered as recommendations.</p>
+
+    <pre class="programlisting">
+HttpClient client = new DefaultHttpClient();
+int maxCacheEntries = 1000;
+int maxCacheEntrySizeBytes = 8192;
+HttpCache&lt;CacheEntry&gt; cache = new
+BasicHttpCache(maxCacheEntries);
+HttpClient cachingClient = new CachingHttpClient(client, cache, maxCacheEntrySizeBytes);
+</pre>
+  </div>
+</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="httpagent.html">Prev</a>&nbsp;</td><td width="20%" align="center">&nbsp;</td><td width="40%" align="right">&nbsp;<a accesskey="n" href="advanced.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter&nbsp;5.&nbsp;HTTP client service&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;Chapter&nbsp;7.&nbsp;Advanced topics</td></tr></table></div></body></html>

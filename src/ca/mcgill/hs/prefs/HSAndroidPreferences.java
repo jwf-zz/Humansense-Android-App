@@ -84,6 +84,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 		bytes = getFilesUploadedBytes();
 
 		final Preference manualClearData = findPreference("manualClearData");
+
 		manualClearData
 				.setSummary(getResources().getString(
 						R.string.uploader_clear_data_desc)

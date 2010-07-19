@@ -255,7 +255,7 @@ public class UploaderService extends Service {
 		}
 		HSAndroid.uploading = false;
 		HSAndroid.uploadButton.setEnabled(true);
-		HSAndroid.uploadButton.setText("UPLOAD");
+		HSAndroid.uploadButton.setText(R.string.upload_label);
 		unregisterReceiver(completionReceiver);
 		filesToUpload.clear();
 	}

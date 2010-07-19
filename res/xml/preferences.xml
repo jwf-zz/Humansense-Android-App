@@ -2,36 +2,46 @@
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
 	
-	<PreferenceCategory android:title="Startup Options">
+	<PreferenceCategory android:title="@string/startup_options_cat">
 	
 		<CheckBoxPreference
-		android:title="Auto-Start at App Start"
+		android:title="@string/auto_start_at_app_start_pref_title"
 		android:defaultValue="false"
 		android:key="autoStartAtAppStart"
-		android:summary="Automatically start logging when application starts."
+		android:summary="@string/auto_start_at_app_start_pref"
 		/>
 		<CheckBoxPreference
-		android:title="Auto-Start at Phone Boot"
+		android:title="@string/auto_start_at_phone_boot_pref_title"
 		android:defaultValue="false"
 		android:key="autoStartAtPhoneBoot"
-		android:summary="Automatically start logging when phone starts."
+		android:summary="@string/auto_start_at_phone_boot_pref"
 		/>
 		
 	</PreferenceCategory>
 	
 	
-	<PreferenceCategory android:title="Plugin Options">
+	<PreferenceCategory android:title="@string/plugin_options_cat">
 	
 		<Preference 
-		android:title="Input Plugins"
+		android:title="@string/input_plugin_pref_title"
 		android:key="inputPluginPrefs"
-		android:summary="Shows options for all input plugins installed with defined preferences."
+		android:summary="@string/input_plugin_pref_description"
 		/>
 		
 		<Preference 
-		android:title="Output Plugins"
+		android:title="@string/output_plugin_pref_title"
 		android:key="outputPluginPrefs"
-		android:summary="Shows options for all output plugins installed with defined preferences."
+		android:summary="@string/output_plugin_pref_description"
+		/>
+	
+	</PreferenceCategory>
+	
+	<PreferenceCategory android:title="@string/uploader_options_cat">
+	
+		<Preference 
+		android:title="Clear Data"
+		android:key="manualClearData"
+		android:summary="@string/uploader_clear_data_desc"
 		/>
 	
 	</PreferenceCategory>

@@ -45,13 +45,13 @@ public class UploaderService extends Service {
 
 	// Upload finished intent.
 	public static final String UPLOAD_COMPLETE_INTENT = "ca.mcgill.hs.HSAndroidApp.UPLOAD_COMPLETE_INTENT";
-
 	// ERROR CODES
 	private final int NO_ERROR_CODE = 0x0;
 	private final int MALFORMEDURLEXCEPTION_ERROR_CODE = 0x1;
 	private final int UNKNOWNHOSTEXCEPTION_ERROR_CODE = 0x2;
 	private final int IOEXCEPTION_ERROR_CODE = 0x3;
 	private final int UPLOAD_FAILED_ERROR_CODE = 0x4;
+
 	private int ERROR_CODE = NO_ERROR_CODE;
 
 	// Upload complete BroadcastReceiver

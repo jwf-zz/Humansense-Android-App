@@ -3,8 +3,14 @@
  */
 package ca.mcgill.hs.prefs;
 
+import java.io.File;
+
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -19,6 +25,25 @@ import ca.mcgill.hs.R;
  * 
  */
 public class HSAndroidPreferences extends PreferenceActivity {
+
+	private final File path = new File(Environment
+			.getExternalStorageDirectory(), "hsandroidapp/data/uploaded/");
+
+	private int getFilesUploaded() {
+		if (path.isDirectory()) {
+			return path.listFiles().length;
+		} else {
+			return 0;
+		}
+	}
+
+	private long getFilesUploadedBytes() {
+		long size = 0;
+		for (final File f : path.listFiles()) {
+			size += f.length();
+		}
+		return size;
+	}
 
 	/**
 	 * This is called when the PreferenceActivity is requested and created. This
@@ -48,6 +73,54 @@ public class HSAndroidPreferences extends PreferenceActivity {
 								getBaseContext(),
 								ca.mcgill.hs.prefs.OutputPluginPreferences.class);
 						startActivity(i);
+						return true;
+					}
+				});
+
+		final Preference manualClearData = findPreference("manualClearData");
+		final int filesToDelete = getFilesUploaded();
+		final long bytes = getFilesUploadedBytes();
+		manualClearData.setSummary(getResources().getString(
+				R.string.uploader_clear_data_desc)
+				+ " ("
+				+ ((bytes % 1024) < 1 ? (bytes + " bytes")
+						: (bytes % 1024 + " Kb")) + ")");
+
+		// YES-NO DIALOG BOX FOR FILE CLEAR
+		final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(final DialogInterface dialog, final int which) {
+				switch (which) {
+				case DialogInterface.BUTTON_POSITIVE:
+					for (final File f : path.listFiles()) {
+						f.delete();
+					}
+					manualClearData.setSummary(getResources().getString(
+							R.string.uploader_clear_data_desc)
+							+ " (0 bytes)");
+					break;
+
+				case DialogInterface.BUTTON_NEGATIVE:
+					break;
+				}
+			}
+		};
+
+		final Context context = this;
+
+		final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		builder.setMessage(
+				"Delete " + filesToDelete + " uploaded "
+						+ (filesToDelete == 1 ? "file" : "files") + "?")
+				.setPositiveButton("Yes", dialogClickListener)
+				.setNegativeButton("No", dialogClickListener);
+
+		manualClearData
+				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+					public boolean onPreferenceClick(final Preference preference) {
+						if (filesToDelete > 0) {
+							builder.show();
+						}
 						return true;
 					}
 				});

@@ -15,11 +15,27 @@
     <string name="upload_label">UPLOAD</string>
 	
 	<!-- Preferences Strings -->
+	<string name="startup_options_cat">Startup Options</string>
+	<string name="auto_start_at_app_start_pref">Automatically start logging when application starts.</string>
+	<string name="auto_start_at_app_start_pref_title">Auto-Start at App Start</string>
+	<string name="auto_start_at_phone_boot_pref">Automatically start logging when phone starts.</string>
+	<string name="auto_start_at_phone_boot_pref_title">Auto-Start at Phone Boot</string>
 	<string name="settingString">Settings</string>
     <string name="start_phone_boot_label">Start at phone boot.</string>
     <string name="no_start_phone_boot_label">Do not start at phone boot.</string>
     <string name="start_app_start_label">Start at application start.</string>
     <string name="no_start_app_start_label">Do not start at application start.</string>
+    
+    <string name="plugin_options_cat">Plugin Options</string>
+    <string name="input_plugin_pref_title">Input Plugins</string>
+    <string name="input_plugin_pref_description">Shows options for all input plugins installed with defined preferences.</string>
+    <string name="output_plugin_pref_title">Output Plugins</string>
+    <string name="output_plugin_pref_description">Shows options for all output plugins installed with defined preferences.</string>
+    
+    <string name="uploader_options_cat">Uploader Options</string>
+    <string name="uploader_clear_data_title">Clear Data</string>
+    <string name="uploader_clear_data_desc">Clears data already uploaded to the server.</string>
+    
     <string name="set_preferences">Preferences</string>
     <string name="set_input_preferences">Input Plugin Preferences</string>
     <string name="set_output_preferences">Output Plugin Preferences</string>

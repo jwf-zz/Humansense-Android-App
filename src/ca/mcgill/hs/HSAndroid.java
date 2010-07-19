@@ -130,7 +130,7 @@ public class HSAndroid extends Activity {
 
 		if (uploading) {
 			uploadButton.setEnabled(false);
-			uploadButton.setText("Uploading...");
+			uploadButton.setText(R.string.stop_label);
 		}
 
 	}

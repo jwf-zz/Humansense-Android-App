@@ -139,7 +139,8 @@ public class UploaderService extends Service {
 	public void onStart(final Intent intent, final int startId) {
 		addFiles();
 		if (filesToUpload.size() == 0) {
-			makeToast("No new files to upload.", Toast.LENGTH_SHORT);
+			makeToast(getResources().getString(R.string.uploader_no_new_files),
+					Toast.LENGTH_SHORT);
 			return;
 		}
 		HSAndroid.uploading = true;
@@ -241,14 +242,26 @@ public class UploaderService extends Service {
 	private void onUploadComplete() {
 		switch (ERROR_CODE) {
 		case NO_ERROR_CODE:
-			makeToast(filesToUpload.size() + " files uploaded to server.",
-					Toast.LENGTH_SHORT);
+			final int fileCount = filesToUpload.size();
+			if (fileCount == 1) {
+				makeToast(getResources().getString(
+						R.string.uploader_no_errors_one_file),
+						Toast.LENGTH_SHORT);
+			} else {
+				makeToast(fileCount
+						+ " "
+						+ getResources().getString(
+								R.string.uploader_no_errors_multiple_files),
+						Toast.LENGTH_SHORT);
+			}
 			break;
 		case UNKNOWNHOSTEXCEPTION_ERROR_CODE:
-			makeToast("Unable to connect to server.", Toast.LENGTH_SHORT);
+			makeToast(getResources().getString(
+					R.string.uploader_unable_to_connect), Toast.LENGTH_SHORT);
 			break;
 		case UPLOAD_FAILED_ERROR_CODE:
-			makeToast("One or more files have failed to upload.",
+			makeToast(
+					getResources().getString(R.string.uploader_upload_failed),
 					Toast.LENGTH_SHORT);
 		default:
 			break;

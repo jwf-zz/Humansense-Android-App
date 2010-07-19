@@ -11,6 +11,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
@@ -54,7 +57,7 @@ public class UploaderService extends Service {
 	private final int UNKNOWNHOSTEXCEPTION_ERROR_CODE = 0x2;
 	private final int IOEXCEPTION_ERROR_CODE = 0x3;
 	private final int UPLOAD_FAILED_ERROR_CODE = 0x4;
-	private final int ERROR_CODE = NO_ERROR_CODE;
+	private int ERROR_CODE = NO_ERROR_CODE;
 
 	// Upload complete BroadcastReceiver
 	private final BroadcastReceiver completionReceiver = new BroadcastReceiver() {

@@ -190,7 +190,6 @@ public class UploaderService extends Service {
 						if (!responseMsg.contains("SUCCESS 0x64asv65")) {
 							ERROR_CODE = UPLOAD_FAILED_ERROR_CODE;
 						}
-
 						// Move files to uploaded folder if successful
 						if (ERROR_CODE == NO_ERROR_CODE) {
 							final File dest = new File(Environment

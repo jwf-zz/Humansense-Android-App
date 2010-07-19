@@ -144,7 +144,7 @@ public class UploaderService extends Service {
 		}
 		HSAndroid.uploading = true;
 		HSAndroid.uploadButton.setEnabled(false);
-		HSAndroid.uploadButton.setText("Uploading...");
+		HSAndroid.uploadButton.setText(R.string.uploading_label);
 
 		registerReceiver(completionReceiver, new IntentFilter(
 				UPLOAD_COMPLETE_INTENT));

@@ -29,6 +29,9 @@ public class HSAndroidPreferences extends PreferenceActivity {
 	private final File path = new File(Environment
 			.getExternalStorageDirectory(), "hsandroidapp/data/uploaded/");
 
+	private int filesToDelete;
+	private long bytes;
+
 	private int getFilesUploaded() {
 		if (path.isDirectory()) {
 			return path.listFiles().length;
@@ -77,14 +80,18 @@ public class HSAndroidPreferences extends PreferenceActivity {
 					}
 				});
 
+		filesToDelete = getFilesUploaded();
+		bytes = getFilesUploadedBytes();
+
 		final Preference manualClearData = findPreference("manualClearData");
-		final int filesToDelete = getFilesUploaded();
-		final long bytes = getFilesUploadedBytes();
-		manualClearData.setSummary(getResources().getString(
-				R.string.uploader_clear_data_desc)
-				+ "("
-				+ ((bytes % 1024) < 1 ? (bytes + " Bytes")
-						: (bytes % 1024 + " KB")) + ")");
+		manualClearData
+				.setSummary(getResources().getString(
+						R.string.uploader_clear_data_desc)
+						+ "("
+						+ ((bytes / 1024) < 0 ? (bytes + " Bytes")
+								: (((bytes / 1024) % 1024) < 0 ? ((bytes / 1024) + " KB")
+										: (((bytes / 1024) / 1024) + " MB")))
+						+ ")");
 
 		// YES-NO DIALOG BOX FOR FILE CLEAR
 		final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -98,6 +105,9 @@ public class HSAndroidPreferences extends PreferenceActivity {
 					manualClearData.setSummary(getResources().getString(
 							R.string.uploader_clear_data_desc)
 							+ "(0 Bytes)");
+
+					filesToDelete = getFilesUploaded();
+					bytes = getFilesUploadedBytes();
 					break;
 
 				case DialogInterface.BUTTON_NEGATIVE:

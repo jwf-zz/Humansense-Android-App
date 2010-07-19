@@ -40,11 +40,6 @@ public class UploaderService extends Service {
 	// Unuploaded dir path
 	private String UNUPLOADED_PATH;
 
-	// Format Strings for upload form.
-	private final String lineEnd = "\r\n";
-	private final String twoHyphens = "--";
-	private final String boundary = "ad1a6s1dsf1s56df1s6f165s";
-
 	// The files to upload to server.
 	private final LinkedList<String> filesToUpload = new LinkedList<String>();
 

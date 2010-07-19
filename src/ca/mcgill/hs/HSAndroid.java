@@ -117,9 +117,9 @@ public class HSAndroid extends Activity {
 		};
 
 		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage("Upload data collected to online server?")
-				.setPositiveButton("Yes", dialogClickListener)
-				.setNegativeButton("No", dialogClickListener);
+		builder.setMessage(R.string.upload_query).setPositiveButton(
+				R.string.yes, dialogClickListener).setNegativeButton(
+				R.string.no, dialogClickListener);
 
 		uploadButton = (Button) findViewById(R.id.uploadButton);
 		uploadButton.setOnClickListener(new View.OnClickListener() {

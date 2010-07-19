@@ -14,6 +14,9 @@
     <string name="stop_label">STOP SERVICE</string>
     <string name="upload_label">UPLOAD</string>
     <string name="uploading_label">UPLOADING...</string>
+    <string name="upload_query">Upload data collected to online server?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
     
 	<!-- Preferences Strings -->
 	<string name="startup_options_cat">Startup Options</string>

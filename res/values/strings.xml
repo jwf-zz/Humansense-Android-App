@@ -38,7 +38,7 @@
     
     <string name="uploader_options_cat">Uploader Options</string>
     <string name="uploader_clear_data_title">Clear Data</string>
-    <string name="uploader_clear_data_desc">Clears data already uploaded to the server.</string>
+    <string name="uploader_clear_data_desc">Clears data already uploaded to the server.\n</string>
     
     <string name="set_preferences">Preferences</string>
     <string name="set_input_preferences">Input Plugin Preferences</string>

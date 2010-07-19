@@ -82,9 +82,9 @@ public class HSAndroidPreferences extends PreferenceActivity {
 		final long bytes = getFilesUploadedBytes();
 		manualClearData.setSummary(getResources().getString(
 				R.string.uploader_clear_data_desc)
-				+ " ("
-				+ ((bytes % 1024) < 1 ? (bytes + " bytes")
-						: (bytes % 1024 + " Kb")) + ")");
+				+ "("
+				+ ((bytes % 1024) < 1 ? (bytes + " Bytes")
+						: (bytes % 1024 + " KB")) + ")");
 
 		// YES-NO DIALOG BOX FOR FILE CLEAR
 		final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -97,7 +97,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 					}
 					manualClearData.setSummary(getResources().getString(
 							R.string.uploader_clear_data_desc)
-							+ " (0 bytes)");
+							+ "(0 Bytes)");
 					break;
 
 				case DialogInterface.BUTTON_NEGATIVE:

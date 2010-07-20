@@ -28,6 +28,7 @@
 		</activity>
         <service android:name="ca.mcgill.hs.serv.HSService"/>
         <service android:name="ca.mcgill.hs.serv.UploaderService"/>
+        <service android:name="ca.mcgill.hs.graph.NotificationLauncher"/>
         <receiver android:name="ca.mcgill.hs.serv.HSServAutoStart" 
 			 android:enabled="true" 
 			 android:exported="false"

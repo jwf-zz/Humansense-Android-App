@@ -4,6 +4,11 @@
 	<string name="top_message">Welcome to Pocket Feel!</string>
     <string name="app_name">HSAndroid</string>
     
+    <!--  Notification Strings -->
+    <string name="notification_ticker">Bob</string>
+    <string name="notification_text">Fail</string>
+    <string name="notification_title">Win</string>
+    
     <!--  Utility Strings -->
     <string name="live_file_path">hsandroidapp/data/live/</string>
     <string name="recent_file_path">hsandroidapp/data/recent/</string>

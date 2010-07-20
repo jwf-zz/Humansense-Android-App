@@ -23,6 +23,111 @@ import ca.mcgill.hs.util.PreferenceFactory;
  */
 public class WifiLogger extends InputPlugin {
 
+	public static class WifiLoggerPacket implements DataPacket {
+
+		final int neighbors;
+		final long timestamp;
+		final int[] levels;
+		final String[] SSIDs;
+		final String[] BSSIDs;
+		final static String PLUGIN_NAME = "WifiLogger";
+		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+
+		/**
+		 * Constructor for this DataPacket.
+		 * 
+		 * @param neighbors
+		 *            the number of access points detected.
+		 * @param timestamp
+		 *            the time of the scan.
+		 * @param level
+		 *            the signal strength level of each access point.
+		 * @param SSID
+		 *            the SSID of each access point.
+		 * @param BSSID
+		 *            the BSSID of each access point.
+		 */
+		public WifiLoggerPacket(final int neighbors, final long timestamp,
+				final int[] level, final String[] SSID, final String[] BSSID) {
+			this.neighbors = neighbors;
+			this.timestamp = timestamp;
+			this.levels = level;
+			this.SSIDs = SSID;
+			this.BSSIDs = BSSID;
+		}
+
+		@Override
+		public DataPacket clone() {
+			return new WifiLoggerPacket(neighbors, timestamp, levels, SSIDs,
+					BSSIDs);
+		}
+
+		@Override
+		public int getDataPacketId() {
+			return WifiLoggerPacket.PLUGIN_ID;
+		}
+
+		@Override
+		public String getInputPluginName() {
+			return WifiLoggerPacket.PLUGIN_NAME;
+		}
+	}
+
+	/**
+	 * Taken from Jordan Frank
+	 * (hsandroidv1.ca.mcgill.cs.humansense.hsandroid.service) and modified for
+	 * this plugin.
+	 */
+	private class WifiLoggerReceiver extends BroadcastReceiver {
+
+		private final WifiManager wifi;
+
+		public WifiLoggerReceiver(final WifiManager wifi) {
+			super();
+			this.wifi = wifi;
+		}
+
+		@Override
+		public void onReceive(final Context c, final Intent intent) {
+			final List<ScanResult> results = wifi.getScanResults();
+			Log.i("WifiLogger", "Received wifi results.");
+			processResults(results);
+		}
+	}
+
+	/**
+	 * Returns the list of Preference objects for this InputPlugin.
+	 * 
+	 * @param c
+	 *            the context for the generated Preferences.
+	 * @return an array of the Preferences of this object.
+	 */
+	public static Preference[] getPreferences(final Context c) {
+		final Preference[] prefs = new Preference[2];
+
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
+				"wifiLoggerEnable", "Wifi Plugin",
+				"Enables or disables this plugin.", "WifiLogger is on.",
+				"WifiLogger is off.");
+
+		prefs[1] = PreferenceFactory.getListPreference(c,
+				R.array.wifiLoggerIntervalStrings,
+				R.array.wifiLoggerIntervalValues, "30000",
+				"wifiIntervalPreference", R.string.wifilogger_interval_pref,
+				R.string.wifilogger_interval_pref_summary);
+
+		return prefs;
+	}
+
+	/**
+	 * Returns whether or not this InputPlugin has Preferences.
+	 * 
+	 * @return whether or not this InputPlugin has preferences.
+	 */
+	public static boolean hasPreferences() {
+		return true;
+	}
+
 	// Boolean ON-OFF switch *Temporary only*
 	private boolean PLUGIN_ACTIVE;
 
@@ -75,39 +180,6 @@ public class WifiLogger extends InputPlugin {
 				"wifiIntervalPreference", "30000"));
 
 		PLUGIN_ACTIVE = prefs.getBoolean("wifiLoggerEnable", false);
-	}
-
-	/**
-	 * Returns the list of Preference objects for this InputPlugin.
-	 * 
-	 * @param c
-	 *            the context for the generated Preferences.
-	 * @return an array of the Preferences of this object.
-	 */
-	public static Preference[] getPreferences(final Context c) {
-		final Preference[] prefs = new Preference[2];
-
-		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
-				"wifiLoggerEnable", "Wifi Plugin",
-				"Enables or disables this plugin.", "WifiLogger is on.",
-				"WifiLogger is off.");
-
-		prefs[1] = PreferenceFactory.getListPreference(c,
-				R.array.wifiLoggerIntervalStrings,
-				R.array.wifiLoggerIntervalValues, "30000",
-				"wifiIntervalPreference", R.string.wifilogger_interval_pref,
-				R.string.wifilogger_interval_pref_summary);
-
-		return prefs;
-	}
-
-	/**
-	 * Returns whether or not this InputPlugin has Preferences.
-	 * 
-	 * @return whether or not this InputPlugin has preferences.
-	 */
-	public static boolean hasPreferences() {
-		return true;
 	}
 
 	/**
@@ -201,78 +273,6 @@ public class WifiLogger extends InputPlugin {
 			threadRunning = false;
 			context.unregisterReceiver(wlr);
 			Log.i("WifiLogger", "Unegistered receiver.");
-		}
-	}
-
-	public static class WifiLoggerPacket implements DataPacket {
-
-		final int neighbors;
-		final long timestamp;
-		final int[] levels;
-		final String[] SSIDs;
-		final String[] BSSIDs;
-		final static String PLUGIN_NAME = "WifiLogger";
-		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
-
-		/**
-		 * Constructor for this DataPacket.
-		 * 
-		 * @param neighbors
-		 *            the number of access points detected.
-		 * @param timestamp
-		 *            the time of the scan.
-		 * @param level
-		 *            the signal strength level of each access point.
-		 * @param SSID
-		 *            the SSID of each access point.
-		 * @param BSSID
-		 *            the BSSID of each access point.
-		 */
-		public WifiLoggerPacket(final int neighbors, final long timestamp,
-				final int[] level, final String[] SSID, final String[] BSSID) {
-			this.neighbors = neighbors;
-			this.timestamp = timestamp;
-			this.levels = level;
-			this.SSIDs = SSID;
-			this.BSSIDs = BSSID;
-		}
-
-		@Override
-		public DataPacket clone() {
-			return new WifiLoggerPacket(neighbors, timestamp, levels, SSIDs,
-					BSSIDs);
-		}
-
-		@Override
-		public int getDataPacketId() {
-			return WifiLoggerPacket.PLUGIN_ID;
-		}
-
-		@Override
-		public String getInputPluginName() {
-			return WifiLoggerPacket.PLUGIN_NAME;
-		}
-	}
-
-	/**
-	 * Taken from Jordan Frank
-	 * (hsandroidv1.ca.mcgill.cs.humansense.hsandroid.service) and modified for
-	 * this plugin.
-	 */
-	private class WifiLoggerReceiver extends BroadcastReceiver {
-
-		private final WifiManager wifi;
-
-		public WifiLoggerReceiver(final WifiManager wifi) {
-			super();
-			this.wifi = wifi;
-		}
-
-		@Override
-		public void onReceive(final Context c, final Intent intent) {
-			final List<ScanResult> results = wifi.getScanResults();
-			Log.i("WifiLogger", "Received wifi results.");
-			processResults(results);
 		}
 	}
 }

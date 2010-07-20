@@ -17,71 +17,78 @@ import ca.mcgill.hs.util.PreferenceFactory;
 
 public class BluetoothLogger extends InputPlugin {
 
-	// The BluetoothAdapter used to start and stop discovery of devices.
-	private final BluetoothAdapter ba;
+	private class BluetoothDiscoveryListener extends BroadcastReceiver {
 
-	// Boolean ON-OFF switch *Temporary only*
-	private boolean PLUGIN_ACTIVE;
-
-	// The interval of time between two subsequent scans.
-	private int timeBetweenDiscoveries;
-
-	// The Context in which the BluetoothLoggerReceiver will be registered.
-	private final Context context;
-
-	// The BluetoothLoggerReceiver from which we will get the bluetooth scan
-	// results.
-	private BluetoothLoggerReceiver blr;
-
-	// The BluetoothDiscoveryListener used to know when the discovery of
-	// bluetooth devices is completed.
-	private BluetoothDiscoveryListener bdl;
-
-	// Lists holding results.
-	private final LinkedList<String> names;
-
-	private final LinkedList<String> addresses;
-
-	// Was the Bluetooth enable when the plugin was started
-	private boolean wasEnabled = false;
-
-	// If this is true, the BluetoothThread is interrupted and an expected
-	// InterruptedException is caught.
-	private boolean expectedInterrupt = false;
-
-	// The main BluetoothThread for this plugin.
-	private Thread exec;
-
-	// If true, the Bluetooth adapter will be automatically enabled when the
-	// service is started.
-	private boolean forceBluetoothActivation;
-
-	/**
-	 * The default and only constructor for the BluetoothLogger InputPlugin.
-	 * 
-	 * @param context
-	 *            the required context to register the BluetoothLoggerReceiver.
-	 */
-	public BluetoothLogger(final Context context) {
-		this.ba = BluetoothAdapter.getDefaultAdapter();
-		if (ba != null) {
-			if (ba.isEnabled()) {
-				wasEnabled = true;
-			}
+		public BluetoothDiscoveryListener() {
+			super();
 		}
-		this.context = context;
-		names = new LinkedList<String>();
-		addresses = new LinkedList<String>();
 
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
+		@Override
+		public void onReceive(final Context c, final Intent intent) {
+			c.unregisterReceiver(this);
+			if (names.size() > 0 && addresses.size() > 0) {
+				write(new BluetoothPacket(System.currentTimeMillis(), names
+						.size(), names, addresses));
+				names.clear();
+				addresses.clear();
+			}
+			exec = getExecutionThread();
+			exec.start();
+			c.registerReceiver(this, new IntentFilter(
+					BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
+		}
+	}
 
-		forceBluetoothActivation = prefs.getBoolean("forceBluetoothOn", false);
+	private class BluetoothLoggerReceiver extends BroadcastReceiver {
 
-		timeBetweenDiscoveries = Integer.parseInt(prefs.getString(
-				"bluetoothLoggerTimeInterval", "60000"));
+		public BluetoothLoggerReceiver() {
+			super();
+		}
 
-		PLUGIN_ACTIVE = prefs.getBoolean("bluetoothLoggerEnable", false);
+		@Override
+		public void onReceive(final Context c, final Intent intent) {
+			final BluetoothDevice device = intent
+					.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+			onDeviceFound(device);
+		}
+	}
+
+	public static class BluetoothPacket implements DataPacket {
+
+		final long time;
+		final int neighbours;
+		final LinkedList<String> names;
+		final LinkedList<String> addresses;
+		final static String PLUGIN_NAME = "BluetoothLogger";
+		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+
+		public BluetoothPacket(final long time, final int neighbours,
+				final LinkedList<String> names,
+				final LinkedList<String> addresses) {
+			this.time = time;
+			this.neighbours = neighbours;
+			this.names = names;
+			this.addresses = addresses;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public DataPacket clone() {
+			return new BluetoothPacket(time, neighbours,
+					(LinkedList<String>) names.clone(),
+					(LinkedList<String>) addresses.clone());
+		}
+
+		@Override
+		public int getDataPacketId() {
+			return BluetoothPacket.PLUGIN_ID;
+		}
+
+		@Override
+		public String getInputPluginName() {
+			return BluetoothPacket.PLUGIN_NAME;
+		}
+
 	}
 
 	/**
@@ -126,6 +133,77 @@ public class BluetoothLogger extends InputPlugin {
 		return true;
 	}
 
+	// The BluetoothAdapter used to start and stop discovery of devices.
+	private final BluetoothAdapter ba;
+
+	// Boolean ON-OFF switch *Temporary only*
+	private boolean PLUGIN_ACTIVE;
+
+	// The interval of time between two subsequent scans.
+	private int timeBetweenDiscoveries;
+
+	// The Context in which the BluetoothLoggerReceiver will be registered.
+	private final Context context;
+
+	// The BluetoothLoggerReceiver from which we will get the bluetooth scan
+	// results.
+	private BluetoothLoggerReceiver blr;
+
+	// The BluetoothDiscoveryListener used to know when the discovery of
+	// bluetooth devices is completed.
+	private BluetoothDiscoveryListener bdl;
+
+	// Lists holding results.
+	private final LinkedList<String> names;
+
+	private final LinkedList<String> addresses;
+
+	// Was the Bluetooth enable when the plugin was started
+	private boolean wasEnabled = false;
+
+	// If this is true, the BluetoothThread is interrupted and an expected
+	// InterruptedException is caught.
+	private boolean expectedInterrupt = false;
+
+	// The main BluetoothThread for this plugin.
+	private Thread exec;
+
+	// If true, the Bluetooth adapter will be automatically enabled when the
+	// service is started.
+	private boolean forceBluetoothActivation;
+
+	// A boolean flag. If this is true, then the bluetooth adaptor is is the
+	// process of being enabled.
+	private boolean isEnabling = false;
+
+	/**
+	 * The default and only constructor for the BluetoothLogger InputPlugin.
+	 * 
+	 * @param context
+	 *            the required context to register the BluetoothLoggerReceiver.
+	 */
+	public BluetoothLogger(final Context context) {
+		this.ba = BluetoothAdapter.getDefaultAdapter();
+		if (ba != null) {
+			if (ba.isEnabled()) {
+				wasEnabled = true;
+			}
+		}
+		this.context = context;
+		names = new LinkedList<String>();
+		addresses = new LinkedList<String>();
+
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(context);
+
+		forceBluetoothActivation = prefs.getBoolean("forceBluetoothOn", false);
+
+		timeBetweenDiscoveries = Integer.parseInt(prefs.getString(
+				"bluetoothLoggerTimeInterval", "60000"));
+
+		PLUGIN_ACTIVE = prefs.getBoolean("bluetoothLoggerEnable", false);
+	}
+
 	/**
 	 * Returns a new thread that will serve as the execution thread for this
 	 * plugin.
@@ -143,11 +221,13 @@ public class BluetoothLogger extends InputPlugin {
 						if (!ba.isEnabled()) {
 							if (forceBluetoothActivation) {
 								ba.enable();
+								isEnabling = true;
 								Log.i("BluetoothThread",
 										"Enabling Bluetooth Adapter");
 							}
 							while (!ba.isEnabled()) {
 							}
+							isEnabling = false;
 						}
 						Log.i("BluetoothThread", "Starting discovery");
 						ba.startDiscovery();
@@ -253,81 +333,22 @@ public class BluetoothLogger extends InputPlugin {
 		ba.cancelDiscovery();
 
 		if (!wasEnabled) {
-			ba.disable();
-		}
-	}
-
-	private class BluetoothDiscoveryListener extends BroadcastReceiver {
-
-		public BluetoothDiscoveryListener() {
-			super();
-		}
-
-		@Override
-		public void onReceive(final Context c, final Intent intent) {
-			c.unregisterReceiver(this);
-			if (names.size() > 0 && addresses.size() > 0) {
-				write(new BluetoothPacket(System.currentTimeMillis(), names
-						.size(), names, addresses));
-				names.clear();
-				addresses.clear();
+			if (isEnabling) {
+				final BroadcastReceiver disabler = new BroadcastReceiver() {
+					@Override
+					public void onReceive(final Context context,
+							final Intent intent) {
+						if (intent.getAction().equals(
+								BluetoothAdapter.ACTION_STATE_CHANGED)) {
+							ba.disable();
+						}
+					}
+				};
+				context.registerReceiver(disabler, new IntentFilter(
+						BluetoothAdapter.ACTION_STATE_CHANGED));
+			} else {
+				ba.disable();
 			}
-			exec = getExecutionThread();
-			exec.start();
-			c.registerReceiver(this, new IntentFilter(
-					BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 		}
-	}
-
-	private class BluetoothLoggerReceiver extends BroadcastReceiver {
-
-		public BluetoothLoggerReceiver() {
-			super();
-		}
-
-		@Override
-		public void onReceive(final Context c, final Intent intent) {
-			final BluetoothDevice device = intent
-					.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-			onDeviceFound(device);
-		}
-	}
-
-	public static class BluetoothPacket implements DataPacket {
-
-		final long time;
-		final int neighbours;
-		final LinkedList<String> names;
-		final LinkedList<String> addresses;
-		final static String PLUGIN_NAME = "BluetoothLogger";
-		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
-
-		public BluetoothPacket(final long time, final int neighbours,
-				final LinkedList<String> names,
-				final LinkedList<String> addresses) {
-			this.time = time;
-			this.neighbours = neighbours;
-			this.names = names;
-			this.addresses = addresses;
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public DataPacket clone() {
-			return new BluetoothPacket(time, neighbours,
-					(LinkedList<String>) names.clone(),
-					(LinkedList<String>) addresses.clone());
-		}
-
-		@Override
-		public int getDataPacketId() {
-			return BluetoothPacket.PLUGIN_ID;
-		}
-
-		@Override
-		public String getInputPluginName() {
-			return BluetoothPacket.PLUGIN_NAME;
-		}
-
 	}
 }

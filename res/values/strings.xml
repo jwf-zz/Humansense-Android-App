@@ -17,7 +17,7 @@
     <string name="upload_query">Upload data collected to online server?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-     <string name="uploader_no_errors_one_file">1 file was uploaded to server.</string>
+    <string name="uploader_no_errors_one_file">1 file was uploaded to server.</string>
     <string name="uploader_no_errors_multiple_files">files were uploaded to server.</string>
     <string name="uploader_unable_to_connect">Unable to connect to server.</string>
     <string name="uploader_upload_failed">One or more files have failed to upload.</string>

@@ -89,8 +89,8 @@ public class HSAndroidPreferences extends PreferenceActivity {
 				.setSummary(getResources().getString(
 						R.string.uploader_clear_data_desc)
 						+ "("
-						+ ((bytes / 1024) < 0 ? (bytes + " Bytes")
-								: (((bytes / 1024) % 1024) < 0 ? ((bytes / 1024) + " KB")
+						+ ((bytes / 1024) < 1 ? (bytes + " Bytes")
+								: (((bytes / 1024) / 1024) < 1 ? ((bytes / 1024) + " kB")
 										: (((bytes / 1024) / 1024) + " MB")))
 						+ ")");
 

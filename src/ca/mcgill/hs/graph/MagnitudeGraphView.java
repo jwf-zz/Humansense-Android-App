@@ -95,7 +95,7 @@ public class MagnitudeGraphView extends View {
 			} else {
 				verticalRatio = netGraphHeight / (max - min);
 			}
-			paint.setColor(Color.WHITE);
+			paint.setColor(Color.CYAN);
 			for (int i = 0; i < trimmedValuesLength - 1; i++) {
 				canvas.drawLine(horizontalEdge + i, verticalEdge
 						+ trimmedValues[i] * verticalRatio, horizontalEdge + i

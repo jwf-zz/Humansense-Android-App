@@ -98,10 +98,9 @@ public class MagnitudeGraphView extends View {
 			paint.setColor(Color.CYAN);
 			for (int i = 0; i < trimmedValuesLength - 1; i++) {
 				canvas.drawLine(horizontalEdge + i, height - verticalEdge
-						- (trimmedValues[i]) * verticalRatio - range / 2,
-						horizontalEdge + i + 1, height - verticalEdge
-								- (trimmedValues[i + 1]) * verticalRatio
-								- range / 2, paint);
+						- (trimmedValues[i]) * verticalRatio, horizontalEdge
+						+ i + 1, height - verticalEdge - (trimmedValues[i + 1])
+						* verticalRatio, paint);
 			}
 
 			Log.i("Graph", "" + values.length);

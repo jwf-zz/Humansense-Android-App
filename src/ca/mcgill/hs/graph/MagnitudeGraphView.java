@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
-import android.util.Log;
 import android.view.View;
 
 public class MagnitudeGraphView extends View {
@@ -27,12 +26,36 @@ public class MagnitudeGraphView extends View {
 
 	@Override
 	protected void onDraw(final Canvas canvas) {
+		// Get screen dimensions for this phone
 		final int height = getHeight();
 		final int width = getWidth();
+
+		// Calculate graph edge locations
 		final int horizontalEdge = width / 10;
 		final int verticalEdge = height / 10;
+
+		// The net dimensions of the graph on screen
 		final int netGraphWidth = width - 2 * horizontalEdge;
 		final int netGraphHeight = height - 2 * verticalEdge;
+
+		// Padding inside the graph to keep curve from touching top/bottom
+		final int padding = netGraphHeight / 20;
+
+		// Jump factor for how many points should be skipped if all don't fit on
+		// screen
+		float jumpFactor = 1;
+		final int valuesLength = values.length;
+
+		// Trimmed array with only points that were not skipped
+		final float[] trimmedValues = new float[netGraphWidth];
+		final float trimmedValuesLength = trimmedValues.length;
+
+		// Data point that has maximum magnitude
+		final float maxSpike;
+
+		// Value by which points should be scaled in order to fit the graph
+		// nicely
+		final float verticalScale;
 
 		// Draw title
 		paint.setTextAlign(Align.CENTER);
@@ -71,14 +94,11 @@ public class MagnitudeGraphView extends View {
 					/ 4, width - horizontalEdge, verticalEdge + i
 					* netGraphHeight / 4, paint);
 		}
+
 		// If there are more values than pixels, crunch them to fit on the
 		// screen
-		float jumpFactor = 1;
-		final int valuesLength = values.length;
 		if (valuesLength > netGraphWidth) {
 			jumpFactor = (float) valuesLength / (float) netGraphWidth;
-			final float[] trimmedValues = new float[netGraphWidth];
-			final float trimmedValuesLength = trimmedValues.length;
 			int j = 0;
 			for (float i = 0; j < trimmedValuesLength; i += jumpFactor, j++) {
 				trimmedValues[j] = values[(int) i];
@@ -88,23 +108,20 @@ public class MagnitudeGraphView extends View {
 					min = trimmedValues[j];
 				}
 			}
-			final float maxSpike = (Math.abs(max) > Math.abs(min) ? Math
-					.abs(max) : Math.abs(min));
-			final float verticalScale = (netGraphHeight / 2) / maxSpike;
-			paint.setColor(Color.WHITE);
+
+			// Calculate scaling coefficients
+			maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max) : Math
+					.abs(min));
+			verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
+
+			// Draw the graph
+			paint.setColor(Color.rgb(255, 128, 0));
 			for (int i = 0; i < trimmedValuesLength - 1; i++) {
 				canvas.drawLine(horizontalEdge + i, height / 2
 						- trimmedValues[i] * verticalScale, horizontalEdge + i
 						+ 1, height / 2 - trimmedValues[i + 1] * verticalScale,
 						paint);
 			}
-
-			Log.i("Graph", "" + values.length);
-			Log.i("Graph", "" + trimmedValues.length);
-			Log.i("Graph", "MIN = " + min);
-			Log.i("Graph", "MAX = " + max);
-			Log.i("Graph", "" + trimmedValues[0]);
-			Log.i("Graph", "" + trimmedValues[trimmedValues.length - 1]);
 		}
 
 	}

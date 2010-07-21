@@ -81,7 +81,7 @@ public class MagnitudeGraph extends Activity {
 		}
 
 		mgv = new MagnitudeGraphView(this,
-				"Please label your activities in this time period", magValues);
+				"Please label your activities in this time period:", magValues);
 
 		setContentView(mgv);
 	}

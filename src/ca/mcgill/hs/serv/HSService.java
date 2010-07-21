@@ -24,6 +24,7 @@ import ca.mcgill.hs.plugin.InputPlugin;
 import ca.mcgill.hs.plugin.OutputPlugin;
 import ca.mcgill.hs.plugin.ScreenOutput;
 import ca.mcgill.hs.plugin.SensorLogger;
+import ca.mcgill.hs.plugin.TestMagOutputPlugin;
 import ca.mcgill.hs.plugin.WifiLogger;
 import ca.mcgill.hs.util.PreferenceFactory;
 
@@ -47,7 +48,7 @@ public class HSService extends Service {
 
 	// A simple static array of the output plugin class names.
 	public static final Class<?>[] outputPluginsAvailable = { FileOutput.class,
-			ScreenOutput.class };
+			ScreenOutput.class, TestMagOutputPlugin.class };
 
 	// ExecutorService
 	private static final ExecutorService tpe = Executors.newCachedThreadPool();
@@ -134,6 +135,7 @@ public class HSService extends Service {
 	private void addOutputPlugins() {
 		outputPluginList.add(new ScreenOutput(PASSABLE_CONTEXT));
 		outputPluginList.add(new FileOutput(PASSABLE_CONTEXT));
+		outputPluginList.add(new TestMagOutputPlugin(PASSABLE_CONTEXT, 1000));
 	}
 
 	@Override

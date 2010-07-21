@@ -5,9 +5,9 @@
     <string name="app_name">HSAndroid</string>
     
     <!--  Notification Strings -->
-    <string name="notification_ticker">Bob</string>
-    <string name="notification_text">Fail</string>
-    <string name="notification_title">Win</string>
+    <string name="notification_ticker">HSAndroid</string>
+    <string name="notification_text">New activities have been detected.</string>
+    <string name="notification_title">HSAndroid Activity Recognition</string>
     
     <!--  Utility Strings -->
     <string name="live_file_path">hsandroidapp/data/live/</string>
@@ -27,6 +27,7 @@
     <string name="uploader_unable_to_connect">Unable to connect to server.</string>
     <string name="uploader_upload_failed">One or more files have failed to upload.</string>
     <string name="uploader_no_new_files">No new files to upload.</string>
+    <string name="activity_magnitude_graph_label">Activity Recognition Graph</string>
     
 	<!-- Preferences Strings -->
 	<string name="startup_options_cat">Startup Options</string>

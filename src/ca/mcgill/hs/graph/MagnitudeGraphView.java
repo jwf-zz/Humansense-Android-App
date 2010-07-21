@@ -88,23 +88,19 @@ public class MagnitudeGraphView extends View {
 					min = trimmedValues[j];
 				}
 			}
-			final float range = max - min;
-			float verticalRatio;
-			if (range == 0) {
-				verticalRatio = 1;
-			} else {
-				verticalRatio = netGraphHeight / (range);
-			}
+			final float verticalScale = netGraphHeight / 32;
 			paint.setColor(Color.CYAN);
 			for (int i = 0; i < trimmedValuesLength - 1; i++) {
-				canvas.drawLine(horizontalEdge + i, height - verticalEdge
-						- (trimmedValues[i]) * verticalRatio, horizontalEdge
-						+ i + 1, height - verticalEdge - (trimmedValues[i + 1])
-						* verticalRatio, paint);
+				canvas.drawLine(horizontalEdge + i, height / 2
+						- trimmedValues[i] * verticalScale, horizontalEdge + i
+						+ 1, height / 2 - trimmedValues[i + 1] * verticalScale,
+						paint);
 			}
 
 			Log.i("Graph", "" + values.length);
 			Log.i("Graph", "" + trimmedValues.length);
+			Log.i("Graph", "MIN = " + min);
+			Log.i("Graph", "MAX = " + max);
 			Log.i("Graph", "" + trimmedValues[0]);
 			Log.i("Graph", "" + trimmedValues[trimmedValues.length - 1]);
 		}

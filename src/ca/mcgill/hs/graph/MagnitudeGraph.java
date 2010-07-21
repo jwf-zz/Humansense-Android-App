@@ -15,6 +15,9 @@ public class MagnitudeGraph extends Activity {
 	// This is the second timestamp, the END
 	private static long end = -1;
 
+	// MagnitudeGraphView
+	private MagnitudeGraphView mgv;
+
 	/**
 	 * This method sets the END timestamp. Both the START and END timestamps
 	 * have to be set for this activity to start properly.
@@ -49,9 +52,6 @@ public class MagnitudeGraph extends Activity {
 		magValues = values;
 	}
 
-	// MagnitudeGraphView
-	private MagnitudeGraphView mgv;
-
 	/**
 	 * This method is called when the activity is first created. This method is
 	 * only called when data points are available.
@@ -80,7 +80,8 @@ public class MagnitudeGraph extends Activity {
 			onDestroy();
 		}
 
-		mgv = new MagnitudeGraphView(this, "Test", magValues);
+		mgv = new MagnitudeGraphView(this,
+				"Please label your activities in this time period", magValues);
 
 		setContentView(mgv);
 	}

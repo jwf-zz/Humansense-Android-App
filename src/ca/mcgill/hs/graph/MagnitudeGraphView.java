@@ -36,15 +36,14 @@ public class MagnitudeGraphView extends View {
 
 		// Draw title
 		paint.setTextAlign(Align.CENTER);
-		paint.setTextSize(16);
+		paint.setTextSize(24);
 		paint.setColor(Color.GREEN);
 		canvas.drawText(title, width / 2, verticalEdge - 5, paint);
 
 		// Draw X-axis label
-		paint.setTextSize(12);
+		paint.setTextSize(18);
 		paint.setTextAlign(Align.CENTER);
-		canvas.drawText("Time" + netGraphWidth + "-" + netGraphHeight,
-				width / 2, height - 5, paint);
+		canvas.drawText("Time", width / 2, height - 5, paint);
 
 		// Draw Y-axis label
 		paint.setTextAlign(Align.LEFT);
@@ -89,18 +88,20 @@ public class MagnitudeGraphView extends View {
 					min = trimmedValues[j];
 				}
 			}
+			final float range = max - min;
 			float verticalRatio;
-			if (max - min == 0) {
+			if (range == 0) {
 				verticalRatio = 1;
 			} else {
-				verticalRatio = netGraphHeight / (max - min);
+				verticalRatio = netGraphHeight / (range);
 			}
 			paint.setColor(Color.CYAN);
 			for (int i = 0; i < trimmedValuesLength - 1; i++) {
-				canvas.drawLine(horizontalEdge + i, verticalEdge
-						+ trimmedValues[i] * verticalRatio, horizontalEdge + i
-						+ 1, verticalEdge + trimmedValues[i + 1]
-						* verticalRatio, paint);
+				canvas.drawLine(horizontalEdge + i, height - verticalEdge
+						- (trimmedValues[i]) * verticalRatio - range / 2,
+						horizontalEdge + i + 1, height - verticalEdge
+								- (trimmedValues[i + 1]) * verticalRatio
+								- range / 2, paint);
 			}
 
 			Log.i("Graph", "" + values.length);

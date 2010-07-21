@@ -3,6 +3,7 @@ package ca.mcgill.hs.graph;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import ca.mcgill.hs.R;
 
 public class MagnitudeGraph extends Activity {
 
@@ -80,8 +81,8 @@ public class MagnitudeGraph extends Activity {
 			onDestroy();
 		}
 
-		mgv = new MagnitudeGraphView(this,
-				"Please label your activities in this time period:", magValues);
+		mgv = new MagnitudeGraphView(this, getResources().getString(
+				R.string.mag_graph_title), magValues);
 
 		setContentView(mgv);
 	}

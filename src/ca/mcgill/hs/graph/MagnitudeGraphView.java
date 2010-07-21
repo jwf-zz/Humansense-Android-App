@@ -50,8 +50,7 @@ public class MagnitudeGraphView extends View {
 		final float[] trimmedValues = new float[netGraphWidth];
 		final float trimmedValuesLength = trimmedValues.length;
 
-		// Data point that has maximum magnitude
-		final float maxSpike;
+		float maxSpike;
 
 		// Value by which points should be scaled in order to fit the graph
 		// nicely
@@ -121,6 +120,38 @@ public class MagnitudeGraphView extends View {
 						- trimmedValues[i] * verticalScale, horizontalEdge + i
 						+ 1, height / 2 - trimmedValues[i + 1] * verticalScale,
 						paint);
+			}
+		} else {
+			for (final float value : values) {
+				if (value > max) {
+					max = value;
+				} else if (value < min) {
+					min = value;
+				}
+			}
+
+			final float spacing = netGraphWidth / (values.length - 1);
+
+			if (spacing % 1 != 0) {
+
+			}
+
+			maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max) : Math
+					.abs(min));
+			verticalScale = (netGraphHeight / 2) / maxSpike;
+			paint.setColor(Color.rgb(255, 128, 0));
+			for (int i = 0; i < values.length - 1; i++) {
+				if (i % 2 == 0) {
+					canvas.drawLine(horizontalEdge
+							+ (i * (int) Math.ceil(spacing)), height / 2
+							- values[i] * verticalScale, horizontalEdge
+							+ ((i + 1) * (int) Math.ceil(spacing)), height / 2
+							- values[i + 1] * verticalScale, paint);
+				}
+				canvas.drawLine(horizontalEdge + (i * spacing), height / 2
+						- values[i] * verticalScale, horizontalEdge
+						+ ((i + 1) * spacing), height / 2 - values[i + 1]
+						* verticalScale, paint);
 			}
 		}
 

@@ -13,6 +13,9 @@
     <string name="live_file_path">hsandroidapp/data/live/</string>
     <string name="recent_file_path">hsandroidapp/data/recent/</string>
     <string name="uploaded_file_path">hsandroidapp/data/uploaded/</string>
+    
+    <!-- Magnitude Graph Strings -->
+    <string name="mag_graph_title">Please label your activities in this time period:</string>
 	
 	<!-- Object Strings -->
 	<string name="start_label">START SERVICE</string>

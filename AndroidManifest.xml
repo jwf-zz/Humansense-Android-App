@@ -26,6 +26,11 @@
 			android:name=".prefs.OutputPluginPreferences"
 			android:label="@string/set_output_preferences">
 		</activity>
+		<activity
+			android:name=".graph.MagnitudeGraph"
+			android:label="@string/activity_magnitude_graph_label"
+			android:screenOrientation="landscape">
+		</activity>
         <service android:name="ca.mcgill.hs.serv.HSService"/>
         <service android:name="ca.mcgill.hs.serv.UploaderService"/>
         <service android:name="ca.mcgill.hs.graph.NotificationLauncher"/>

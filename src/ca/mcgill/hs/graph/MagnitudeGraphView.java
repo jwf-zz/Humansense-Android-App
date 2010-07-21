@@ -116,10 +116,6 @@ public class MagnitudeGraphView extends View {
 
 			final float spacing = netGraphWidth / (values.length - 1);
 
-			if (spacing % 1 != 0) {
-
-			}
-
 			final float maxSpike = (Math.abs(max) > Math.abs(min) ? Math
 					.abs(max) : Math.abs(min));
 			final float verticalScale = (netGraphHeight / 2) / maxSpike;
@@ -127,9 +123,9 @@ public class MagnitudeGraphView extends View {
 			for (int i = 0; i < values.length - 1; i++) {
 				if (i % 2 == 0) {
 					canvas.drawLine(horizontalEdge
-							+ (i * (int) Math.ceil(spacing)), height / 2
+							+ (i * (int) (spacing + 0.5)), height / 2
 							- values[i] * verticalScale, horizontalEdge
-							+ ((i + 1) * (int) Math.ceil(spacing)), height / 2
+							+ ((i + 1) * (int) (spacing + 0.5)), height / 2
 							- values[i + 1] * verticalScale, paint);
 				}
 				canvas.drawLine(horizontalEdge + (i * spacing), height / 2

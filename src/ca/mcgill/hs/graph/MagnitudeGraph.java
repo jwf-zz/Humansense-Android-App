@@ -3,6 +3,7 @@ package ca.mcgill.hs.graph;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import ca.mcgill.hs.R;
 
 public class MagnitudeGraph extends Activity {
 
@@ -14,9 +15,6 @@ public class MagnitudeGraph extends Activity {
 
 	// This is the second timestamp, the END
 	private static long end = -1;
-
-	// MagnitudeGraphView
-	private MagnitudeGraphView mgv;
 
 	/**
 	 * This method sets the END timestamp. Both the START and END timestamps
@@ -52,6 +50,9 @@ public class MagnitudeGraph extends Activity {
 		magValues = values;
 	}
 
+	// MagnitudeGraphView
+	private MagnitudeGraphView mgv;
+
 	/**
 	 * This method is called when the activity is first created. This method is
 	 * only called when data points are available.
@@ -80,8 +81,8 @@ public class MagnitudeGraph extends Activity {
 			onDestroy();
 		}
 
-		mgv = new MagnitudeGraphView(this,
-				"Please label your activities in this time period", magValues);
+		mgv = new MagnitudeGraphView(this, getResources().getString(
+				R.string.mag_graph_title), magValues);
 
 		setContentView(mgv);
 	}

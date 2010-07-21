@@ -135,7 +135,7 @@ public class HSService extends Service {
 	private void addOutputPlugins() {
 		outputPluginList.add(new ScreenOutput(PASSABLE_CONTEXT));
 		outputPluginList.add(new FileOutput(PASSABLE_CONTEXT));
-		outputPluginList.add(new TestMagOutputPlugin(PASSABLE_CONTEXT, 650));
+		outputPluginList.add(new TestMagOutputPlugin(PASSABLE_CONTEXT, 100));
 	}
 
 	@Override

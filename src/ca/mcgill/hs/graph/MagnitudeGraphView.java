@@ -91,7 +91,7 @@ public class MagnitudeGraphView extends View {
 			final float maxSpike = (Math.abs(max) > Math.abs(min) ? Math
 					.abs(max) : Math.abs(min));
 			final float verticalScale = (netGraphHeight / 2) / maxSpike;
-			paint.setColor(Color.CYAN);
+			paint.setColor(Color.rgb(255, 128, 0));
 			for (int i = 0; i < trimmedValuesLength - 1; i++) {
 				canvas.drawLine(horizontalEdge + i, height / 2
 						- trimmedValues[i] * verticalScale, horizontalEdge + i
@@ -105,6 +105,42 @@ public class MagnitudeGraphView extends View {
 			Log.i("Graph", "MAX = " + max);
 			Log.i("Graph", "" + trimmedValues[0]);
 			Log.i("Graph", "" + trimmedValues[trimmedValues.length - 1]);
+		} else {
+			for (final float value : values) {
+				if (value > max) {
+					max = value;
+				} else if (value < min) {
+					min = value;
+				}
+			}
+
+			final float spacing = netGraphWidth / (values.length - 1);
+
+			if (spacing % 1 != 0) {
+
+			}
+
+			final float maxSpike = (Math.abs(max) > Math.abs(min) ? Math
+					.abs(max) : Math.abs(min));
+			final float verticalScale = (netGraphHeight / 2) / maxSpike;
+			paint.setColor(Color.rgb(255, 128, 0));
+			for (int i = 0; i < values.length - 1; i++) {
+				if (i % 2 == 0) {
+					canvas.drawLine(horizontalEdge
+							+ (i * (int) Math.ceil(spacing)), height / 2
+							- values[i] * verticalScale, horizontalEdge
+							+ ((i + 1) * (int) Math.ceil(spacing)), height / 2
+							- values[i + 1] * verticalScale, paint);
+				}
+				canvas.drawLine(horizontalEdge + (i * spacing), height / 2
+						- values[i] * verticalScale, horizontalEdge
+						+ ((i + 1) * spacing), height / 2 - values[i + 1]
+						* verticalScale, paint);
+			}
+
+			Log.i("Graph", "" + values.length);
+			Log.i("Graph", "MIN = " + min);
+			Log.i("Graph", "MAX = " + max);
 		}
 
 	}

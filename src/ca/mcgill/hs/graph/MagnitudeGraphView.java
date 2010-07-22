@@ -223,12 +223,16 @@ public class MagnitudeGraphView extends View {
 		final int leftLimit = horizontalEdge + 1;
 		final int rightLimit = width - horizontalEdge - 1;
 		if (action == MotionEvent.ACTION_DOWN) {
-			if (x <= leftLimit || x >= rightLimit) {
-				return true;
-			}
 			rectStart = x;
 			tempRect = new Rect((int) x, height - verticalEdge, (int) x,
 					verticalEdge);
+			if (x <= leftLimit) {
+				tempRect.left = leftLimit;
+				tempRect.right = tempRect.left;
+			} else if (x >= rightLimit) {
+				tempRect.left = rightLimit;
+				tempRect.right = tempRect.left;
+			}
 		} else if (action == MotionEvent.ACTION_MOVE) {
 			if (tempRect != null) {
 				if (x <= leftLimit) {
@@ -247,6 +251,9 @@ public class MagnitudeGraphView extends View {
 				} else if (x >= rightLimit) {
 					rectEnd = rightLimit;
 					tempRect.right = rightLimit;
+				} else if (x == tempRect.left) {
+					tempRect = null;
+					return true;
 				} else {
 					rectEnd = x;
 					tempRect.right = (int) x;

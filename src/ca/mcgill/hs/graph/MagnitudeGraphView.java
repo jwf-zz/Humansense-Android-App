@@ -10,7 +10,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Paint.Align;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import ca.mcgill.hs.R;
@@ -56,7 +55,6 @@ public class MagnitudeGraphView extends View {
 
 	@Override
 	protected void onDraw(final Canvas canvas) {
-		Log.i("GRAPH", "onDraw()");
 
 		// Set correct dimensions.
 		height = getHeight();

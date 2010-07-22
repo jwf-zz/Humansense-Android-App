@@ -83,11 +83,11 @@ public class MagnitudeGraphView extends View {
 		final float maxSpike;
 
 		// Draw Rectangles
-		paint.setColor(Color.CYAN);
+		paint.setColor(Color.rgb(99, 184, 255));
 		if (tempRect != null) {
 			canvas.drawRect(tempRect, paint);
 		}
-		paint.setColor(Color.LTGRAY);
+		paint.setColor(Color.rgb(99, 184, 255));
 		for (final Rect r : rectList) {
 			canvas.drawRect(r, paint);
 		}

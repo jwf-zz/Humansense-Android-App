@@ -6,8 +6,8 @@
     
     <!--  Notification Strings -->
     <string name="notification_ticker">HSAndroid</string>
-    <string name="notification_text">New activities have been detected.</string>
-    <string name="notification_title">HSAndroid Activity Recognition</string>
+    <string name="notification_text">Select to provide more information.</string>
+    <string name="notification_title">HSAndroid Unknown Activity</string>
     
     <!--  Utility Strings -->
     <string name="live_file_path">hsandroidapp/data/live/</string>

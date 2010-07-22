@@ -35,17 +35,7 @@
 		/>
 	
 	</PreferenceCategory>
-	
-	<PreferenceCategory android:title="@string/uploader_options_cat">
-	
-		<Preference 
-		android:title="Clear Data"
-		android:key="manualClearData"
-		android:summary="@string/uploader_clear_data_desc"
-		/>
-	
-	</PreferenceCategory>
-	
+		
 	<PreferenceCategory android:title="@string/notification_prefs_cat">
 	
 		<CheckBoxPreference
@@ -65,6 +55,16 @@
 		android:defaultValue="true"
 		android:key="notificationVibratePref"
 		android:summary="@string/notification_vibrate_summary"
+		/>
+	
+	</PreferenceCategory>
+	
+	<PreferenceCategory android:title="@string/uploader_options_cat">
+	
+		<Preference 
+		android:title="Clear Data"
+		android:key="manualClearData"
+		android:summary="@string/uploader_clear_data_desc"
 		/>
 	
 	</PreferenceCategory>

@@ -85,10 +85,10 @@
     <string name="fileoutput_rolloverinterval_pref_summary">How often should new log files be started.</string>
     <string name="notification_prefs_cat">Notification Settings</string>
     <string name="notification_enable_title">Notifications</string>
-    <string name="notification_enable_summary">Enables or disables notifications.\nWARNING: Disabling notifications will seriously hinder the effectiveness of this app.</string>
+    <string name="notification_enable_summary">Enables or disables notifications.\n(WARNING: Disabling notifications will reduce the effectiveness of activity recognition.)</string>
     <string name="notification_sounds_title">Notification Sounds</string>
-    <string name="notification_sounds_summary">Enables or disables sounds when notifications are sent.</string>
+    <string name="notification_sounds_summary">Enables or disables sounds when notifications are pushed.</string>
     <string name="notification_vibrate_title">Notification Vibration</string>
-    <string name="notification_vibrate_summary">Enables or disables vibration when notifications are sent.</string>
+    <string name="notification_vibrate_summary">Enables or disables vibration when notifications are pushed.</string>
     
 </resources>

@@ -45,4 +45,27 @@
 		/>
 	
 	</PreferenceCategory>
+	
+	<PreferenceCategory android:title="@string/notification_prefs_cat">
+	
+		<CheckBoxPreference
+		android:title="@string/notification_enable_title"
+		android:defaultValue="true"
+		android:key="notificationEnablePref"
+		android:summary="@string/notification_enable_summary"
+		/>
+		<CheckBoxPreference
+		android:title="@string/notification_sounds_title"
+		android:defaultValue="true"
+		android:key="notificationSoundPref"
+		android:summary="@string/notification_sounds_summary"
+		/>
+		<CheckBoxPreference
+		android:title="@string/notification_vibrate_title"
+		android:defaultValue="true"
+		android:key="notificationVibratePref"
+		android:summary="@string/notification_vibrate_summary"
+		/>
+	
+	</PreferenceCategory>
 </PreferenceScreen>

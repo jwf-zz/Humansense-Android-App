@@ -6,7 +6,6 @@ package ca.mcgill.hs.prefs;
 import java.io.File;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -80,6 +79,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 					}
 				});
 
+		// CLEAR UPLOADED DATA
 		filesToDelete = getFilesUploaded();
 		bytes = getFilesUploadedBytes();
 
@@ -117,9 +117,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 			}
 		};
 
-		final Context context = this;
-
-		final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setMessage(
 				"Delete " + filesToDelete + " uploaded "
 						+ (filesToDelete == 1 ? "file" : "files") + "?")

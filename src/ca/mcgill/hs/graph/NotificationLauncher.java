@@ -6,7 +6,9 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import ca.mcgill.hs.R;
 
@@ -92,7 +94,10 @@ public class NotificationLauncher extends Service {
 	 */
 	@Override
 	public void onStart(final Intent intent, final int startId) {
-		if (start == -1 || end == -1 || start == end || magValues == null) {
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		if (start == -1 || end == -1 || start == end || magValues == null
+				|| !prefs.getBoolean("notificationEnablePref", true)) {
 			Log
 					.e(
 							"NotificationLauncher",
@@ -131,8 +136,14 @@ public class NotificationLauncher extends Service {
 			// Instantiate the notification
 			final Notification n = new Notification(icon, tickerText, System
 					.currentTimeMillis());
-			n.defaults |= Notification.DEFAULT_SOUND;
-			n.defaults |= Notification.DEFAULT_VIBRATE;
+
+			// Set preferences
+			if (prefs.getBoolean("notificationSoundPref", true)) {
+				n.defaults |= Notification.DEFAULT_SOUND;
+			}
+			if (prefs.getBoolean("notificationVibratePref", true)) {
+				n.defaults |= Notification.DEFAULT_VIBRATE;
+			}
 			n.flags |= Notification.FLAG_AUTO_CANCEL;
 
 			// Define expanded message and intent

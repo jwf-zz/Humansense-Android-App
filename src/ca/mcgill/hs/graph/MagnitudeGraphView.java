@@ -1,6 +1,7 @@
 package ca.mcgill.hs.graph;
 
 import java.util.Date;
+import java.util.LinkedList;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -23,10 +24,10 @@ public class MagnitudeGraphView extends View {
 	private final Paint paint;
 	private float max;
 	private float min;
-	private final int MINIMUM_RECTANGLE_WIDTH = 50;
 	private float rectStart;
 	private float rectEnd;
-	private Canvas canvas;
+	private Rect tempRect;
+	private final LinkedList<Rect> rectList = new LinkedList<Rect>();
 
 	public MagnitudeGraphView(final Context context, final String title,
 			final float[] values, final long start, final long end) {
@@ -42,21 +43,9 @@ public class MagnitudeGraphView extends View {
 		this.min = values[0];
 	}
 
-	private void drawSelection(final float start, final float end) {
-		paint.setColor(Color.CYAN);
-		paint.setAlpha(255);
-		Log.i("RECT", "Drawing rectangle: (" + (int) start + ", "
-				+ (getHeight() - getHeight() / 10) + ", " + (int) end + ", "
-				+ getHeight() + ")");
-		final Rect r = new Rect((int) start, (getHeight() - getHeight() / 10),
-				(int) end, getHeight() / 10);
-		canvas.drawRect(r, paint);
-		invalidate();
-	}
-
 	@Override
 	protected void onDraw(final Canvas canvas) {
-		this.canvas = canvas;
+		Log.i("GRAPH", "onDraw()");
 		// Get screen dimensions for this phone
 		final int height = getHeight();
 		final int width = getWidth();
@@ -89,6 +78,16 @@ public class MagnitudeGraphView extends View {
 		// nicely
 		final float verticalScale;
 		final float maxSpike;
+
+		// Draw Rectangles
+		paint.setColor(Color.CYAN);
+		if (tempRect != null) {
+			canvas.drawRect(tempRect, paint);
+		}
+		paint.setColor(Color.LTGRAY);
+		for (final Rect r : rectList) {
+			canvas.drawRect(r, paint);
+		}
 
 		// Draw title
 		paint.setTextAlign(Align.CENTER);
@@ -211,16 +210,25 @@ public class MagnitudeGraphView extends View {
 	@Override
 	public boolean onTouchEvent(final MotionEvent event) {
 		final int action = event.getAction();
-
 		if (action == MotionEvent.ACTION_DOWN) {
-			Log.i("RECT", "FINGER DOWN");
-			rectStart = event.getX();
+			final float x = event.getX();
+			rectStart = x;
+			tempRect = new Rect((int) x, getHeight() - getHeight() / 9,
+					(int) x, getHeight() / 9);
+		} else if (action == MotionEvent.ACTION_MOVE) {
+			if (tempRect != null) {
+				tempRect.right = (int) event.getX();
+			}
 		} else if (action == MotionEvent.ACTION_UP) {
-			Log.i("RECT", "FINGER UP");
-			rectEnd = event.getX();
-			drawSelection(rectStart, rectEnd);
+			if (tempRect != null) {
+				final float x = event.getX();
+				rectEnd = x;
+				tempRect.right = (int) x;
+				rectList.add(tempRect);
+				tempRect = null;
+			}
 		}
-
+		invalidate();
 		return true;
 	}
 }

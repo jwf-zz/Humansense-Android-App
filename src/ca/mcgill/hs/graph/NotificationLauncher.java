@@ -132,6 +132,7 @@ public class NotificationLauncher extends Service {
 			final Notification n = new Notification(icon, tickerText, System
 					.currentTimeMillis());
 			n.defaults |= Notification.DEFAULT_SOUND;
+			n.defaults |= Notification.DEFAULT_VIBRATE;
 			n.flags |= Notification.FLAG_AUTO_CANCEL;
 
 			// Define expanded message and intent

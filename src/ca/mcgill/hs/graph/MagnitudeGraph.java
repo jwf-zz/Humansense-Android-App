@@ -16,6 +16,9 @@ public class MagnitudeGraph extends Activity {
 	// This is the second timestamp, the END
 	private static long end = -1;
 
+	// MagnitudeGraphView
+	private MagnitudeGraphView mgv;
+
 	/**
 	 * This method sets the END timestamp. Both the START and END timestamps
 	 * have to be set for this activity to start properly.
@@ -49,9 +52,6 @@ public class MagnitudeGraph extends Activity {
 	protected static void setValues(final float[] values) {
 		magValues = values;
 	}
-
-	// MagnitudeGraphView
-	private MagnitudeGraphView mgv;
 
 	/**
 	 * This method is called when the activity is first created. This method is

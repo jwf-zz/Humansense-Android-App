@@ -31,6 +31,14 @@ public class MagnitudeGraphView extends View {
 	private Rect tempRect;
 	private final LinkedList<Rect> rectList = new LinkedList<Rect>();
 
+	// Get screen dimensions for this phone
+	int height;
+	int width;
+
+	// Calculate graph edge locations
+	int horizontalEdge;
+	int verticalEdge;
+
 	public MagnitudeGraphView(final Context context, final String title,
 			final float[] values, final long start, final long end) {
 		super(context);
@@ -49,13 +57,14 @@ public class MagnitudeGraphView extends View {
 	@Override
 	protected void onDraw(final Canvas canvas) {
 		Log.i("GRAPH", "onDraw()");
-		// Get screen dimensions for this phone
-		final int height = getHeight();
-		final int width = getWidth();
+
+		// Set correct dimensions.
+		height = getHeight();
+		width = getWidth();
 
 		// Calculate graph edge locations
-		final int horizontalEdge = width / 10;
-		final int verticalEdge = height / 9;
+		horizontalEdge = width / 10;
+		verticalEdge = height / 9;
 
 		// The net dimensions of the graph on screen
 		final int netGraphWidth = width - 2 * horizontalEdge;
@@ -210,20 +219,38 @@ public class MagnitudeGraphView extends View {
 	@Override
 	public boolean onTouchEvent(final MotionEvent event) {
 		final int action = event.getAction();
+		final float x = event.getX();
+		final int leftLimit = horizontalEdge + 1;
+		final int rightLimit = width - horizontalEdge - 1;
 		if (action == MotionEvent.ACTION_DOWN) {
-			final float x = event.getX();
+			if (x <= leftLimit || x >= rightLimit) {
+				return true;
+			}
 			rectStart = x;
-			tempRect = new Rect((int) x, getHeight() - getHeight() / 9,
-					(int) x, getHeight() / 9);
+			tempRect = new Rect((int) x, height - verticalEdge, (int) x,
+					verticalEdge);
 		} else if (action == MotionEvent.ACTION_MOVE) {
 			if (tempRect != null) {
-				tempRect.right = (int) event.getX();
+				if (x <= leftLimit) {
+					tempRect.right = leftLimit;
+				} else if (x >= rightLimit) {
+					tempRect.right = rightLimit;
+				} else {
+					tempRect.right = (int) event.getX();
+				}
 			}
 		} else if (action == MotionEvent.ACTION_UP) {
 			if (tempRect != null) {
-				final float x = event.getX();
-				rectEnd = x;
-				tempRect.right = (int) x;
+				if (x <= leftLimit) {
+					rectEnd = leftLimit;
+					tempRect.right = leftLimit;
+				} else if (x >= rightLimit) {
+					rectEnd = rightLimit;
+					tempRect.right = rightLimit;
+				} else {
+					rectEnd = x;
+					tempRect.right = (int) x;
+				}
 				rectList.add(tempRect);
 				tempRect = null;
 			}

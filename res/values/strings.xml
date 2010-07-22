@@ -16,6 +16,8 @@
     
     <!-- Magnitude Graph Strings -->
     <string name="mag_graph_title">Please label your activities in this time period:</string>
+    <string name="mag_graph_time_label">Time</string>
+    <string name="mag_graph_magnitude_label">Activity</string>
 	
 	<!-- Object Strings -->
 	<string name="start_label">START SERVICE</string>

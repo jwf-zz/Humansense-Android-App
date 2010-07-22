@@ -1,5 +1,7 @@
 package ca.mcgill.hs.graph;
 
+import java.util.Date;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -9,10 +11,15 @@ import android.graphics.Paint.Align;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import ca.mcgill.hs.R;
 
 public class MagnitudeGraphView extends View {
 	private final String title;
 	private final float[] values;
+	private final long start;
+	private final long end;
+	private final Date startTime;
+	private final Date endTime;
 	private final Paint paint;
 	private float max;
 	private float min;
@@ -22,10 +29,14 @@ public class MagnitudeGraphView extends View {
 	private Canvas canvas;
 
 	public MagnitudeGraphView(final Context context, final String title,
-			final float[] values) {
+			final float[] values, final long start, final long end) {
 		super(context);
 		this.title = title;
 		this.values = values;
+		this.start = start;
+		this.end = end;
+		this.startTime = new Date(this.start);
+		this.endTime = new Date(this.end);
 		this.paint = new Paint();
 		this.max = values[0];
 		this.min = values[0];
@@ -52,7 +63,7 @@ public class MagnitudeGraphView extends View {
 
 		// Calculate graph edge locations
 		final int horizontalEdge = width / 10;
-		final int verticalEdge = height / 10;
+		final int verticalEdge = height / 9;
 
 		// The net dimensions of the graph on screen
 		final int netGraphWidth = width - 2 * horizontalEdge;
@@ -60,6 +71,10 @@ public class MagnitudeGraphView extends View {
 
 		// Padding inside the graph to keep curve from touching top/bottom
 		final int padding = netGraphHeight / 20;
+
+		final int titleSize = width / 32;
+		final int axisTitleSize = width / 40;
+		final int axisValueSize = height / 25;
 
 		// Jump factor for how many points should be skipped if all don't fit on
 		// screen
@@ -70,26 +85,52 @@ public class MagnitudeGraphView extends View {
 		final float[] trimmedValues = new float[netGraphWidth];
 		final float trimmedValuesLength = trimmedValues.length;
 
-		float maxSpike;
-
 		// Value by which points should be scaled in order to fit the graph
 		// nicely
 		final float verticalScale;
+		final float maxSpike;
 
 		// Draw title
 		paint.setTextAlign(Align.CENTER);
-		paint.setTextSize(24);
 		paint.setColor(Color.GREEN);
-		canvas.drawText(title, width / 2, verticalEdge - 5, paint);
+		paint.setTextSize(titleSize);
+		canvas.drawText(title, width / 2, verticalEdge - titleSize / 2, paint);
 
-		// Draw X-axis label
-		paint.setTextSize(18);
+		// Draw X-axis title
 		paint.setTextAlign(Align.CENTER);
-		canvas.drawText("Time", width / 2, height - 5, paint);
+		paint.setTextSize(axisTitleSize);
+		canvas.drawText(
+				getResources().getString(R.string.mag_graph_time_label),
+				width / 2, height - height / 80, paint);
 
-		// Draw Y-axis label
+		// Draw Y-axis title
 		paint.setTextAlign(Align.LEFT);
-		canvas.drawText("Activity", 5, height / 2, paint);
+		paint.setColor(Color.GREEN);
+		canvas.drawText(getResources().getString(
+				R.string.mag_graph_magnitude_label), width / 160, height / 2,
+				paint);
+
+		// Draw X-axis tick values
+		paint.setTextAlign(Align.CENTER);
+		paint.setColor(Color.LTGRAY);
+		paint.setTextSize(axisValueSize);
+		canvas.drawText(startTime.getHours() + ":" + startTime.getMinutes()
+				+ ":" + startTime.getSeconds(), horizontalEdge, height
+				- verticalEdge + height / 20, paint);
+		canvas.drawText(endTime.getHours() + ":" + endTime.getMinutes() + ":"
+				+ endTime.getSeconds(), width - horizontalEdge, height
+				- verticalEdge + height / 20, paint);
+		final Date axisValueTime = new Date();
+		for (int i = 1; i < 5; i++) {
+			axisValueTime.setTime(start + i * (end - start) / 5);
+			canvas.drawText(axisValueTime.getHours() + ":"
+					+ axisValueTime.getMinutes() + ":"
+					+ axisValueTime.getSeconds(), (horizontalEdge + i
+					* netGraphWidth / 5), height - verticalEdge + height / 20,
+					paint);
+		}
+
+		// Draw the outline of the graph
 		paint.setColor(Color.LTGRAY);
 		canvas.drawLine(horizontalEdge, verticalEdge, width - horizontalEdge,
 				verticalEdge, paint);
@@ -107,7 +148,6 @@ public class MagnitudeGraphView extends View {
 					verticalEdge, horizontalEdge + i * netGraphWidth / 5,
 					height - verticalEdge, paint);
 		}
-
 		for (int i = 1; i < 4; i++) {
 			canvas.drawLine(horizontalEdge, verticalEdge + i * netGraphHeight
 					/ 4, width - horizontalEdge, verticalEdge + i
@@ -155,14 +195,14 @@ public class MagnitudeGraphView extends View {
 
 			maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max) : Math
 					.abs(min));
-			verticalScale = (netGraphHeight / 2) / maxSpike;
+			verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
 
 			paint.setColor(Color.rgb(255, 128, 0));
 			for (int i = 0; i < values.length - 1; i++) {
 				canvas.drawLine(horizontalEdge + (i * spacing), height / 2
-						- values[i] * verticalScale, horizontalEdge
-						+ ((i + 1) * spacing), height / 2 - values[i + 1]
-						* verticalScale, paint);
+						- values[i] * verticalScale, horizontalEdge + (i + 1)
+						* spacing, height / 2 - values[i + 1] * verticalScale,
+						paint);
 			}
 		}
 

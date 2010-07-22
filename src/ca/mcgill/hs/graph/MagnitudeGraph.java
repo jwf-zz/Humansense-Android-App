@@ -82,7 +82,7 @@ public class MagnitudeGraph extends Activity {
 		}
 
 		mgv = new MagnitudeGraphView(this, getResources().getString(
-				R.string.mag_graph_title), magValues);
+				R.string.mag_graph_title), magValues, start, end);
 
 		setContentView(mgv);
 	}

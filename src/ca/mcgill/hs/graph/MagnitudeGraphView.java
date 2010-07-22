@@ -1,5 +1,6 @@
 package ca.mcgill.hs.graph;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 
@@ -21,6 +22,7 @@ public class MagnitudeGraphView extends View {
 	private final long end;
 	private final Date startTime;
 	private final Date endTime;
+	private final SimpleDateFormat sdf;
 	private final Paint paint;
 	private float max;
 	private float min;
@@ -38,6 +40,7 @@ public class MagnitudeGraphView extends View {
 		this.end = end;
 		this.startTime = new Date(this.start);
 		this.endTime = new Date(this.end);
+		this.sdf = new SimpleDateFormat("HH:mm:ss");
 		this.paint = new Paint();
 		this.max = values[0];
 		this.min = values[0];
@@ -113,18 +116,15 @@ public class MagnitudeGraphView extends View {
 		paint.setTextAlign(Align.CENTER);
 		paint.setColor(Color.LTGRAY);
 		paint.setTextSize(axisValueSize);
-		canvas.drawText(startTime.getHours() + ":" + startTime.getMinutes()
-				+ ":" + startTime.getSeconds(), horizontalEdge, height
+
+		canvas.drawText(sdf.format(startTime), horizontalEdge, height
 				- verticalEdge + height / 20, paint);
-		canvas.drawText(endTime.getHours() + ":" + endTime.getMinutes() + ":"
-				+ endTime.getSeconds(), width - horizontalEdge, height
+		canvas.drawText(sdf.format(endTime), width - horizontalEdge, height
 				- verticalEdge + height / 20, paint);
 		final Date axisValueTime = new Date();
 		for (int i = 1; i < 5; i++) {
 			axisValueTime.setTime(start + i * (end - start) / 5);
-			canvas.drawText(axisValueTime.getHours() + ":"
-					+ axisValueTime.getMinutes() + ":"
-					+ axisValueTime.getSeconds(), (horizontalEdge + i
+			canvas.drawText(sdf.format(axisValueTime), (horizontalEdge + i
 					* netGraphWidth / 5), height - verticalEdge + height / 20,
 					paint);
 		}

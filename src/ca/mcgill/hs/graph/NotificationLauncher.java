@@ -31,6 +31,18 @@ public class NotificationLauncher extends Service {
 	// Notification ID, randomly chosen
 	public static final int NOTIFICATION_ID = 455925;
 
+	// Icon used for the notification.
+	private int icon;
+
+	// String used for the notification ticker.
+	private String tickerText;
+
+	// String used for the notification title.
+	private String contentTitle;
+
+	// String used for the notification text.
+	private String contentText;
+
 	/**
 	 * This method sets the END timestamp. Both the START and END timestamps
 	 * have to be set for this service to start properly.
@@ -62,18 +74,6 @@ public class NotificationLauncher extends Service {
 	public static void setStartTimestamp(final long timestamp) {
 		start = timestamp;
 	}
-
-	// Icon used for the notification.
-	private int icon;
-
-	// String used for the notification ticker.
-	private String tickerText;
-
-	// String used for the notification title.
-	private String contentTitle;
-
-	// String used for the notification text.
-	private String contentText;
 
 	@Override
 	// Unused

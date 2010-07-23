@@ -4,14 +4,19 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Paint.Align;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
 import ca.mcgill.hs.R;
 
 public class MagnitudeGraphView extends View {
@@ -29,6 +34,7 @@ public class MagnitudeGraphView extends View {
 	private float rectEnd;
 	private Rect tempRect;
 	private final LinkedList<Rect> rectList = new LinkedList<Rect>();
+	private final LinkedList<String> labels = new LinkedList<String>();
 
 	// Get screen dimensions for this phone
 	int height;
@@ -47,8 +53,9 @@ public class MagnitudeGraphView extends View {
 		this.end = end;
 		this.startTime = new Date(this.start);
 		this.endTime = new Date(this.end);
-		this.sdf = new SimpleDateFormat("HH:mm:ss");
+		this.sdf = new SimpleDateFormat("H:mm:ss");
 		this.paint = new Paint();
+		paint.setAntiAlias(true);
 		this.max = values[0];
 		this.min = values[0];
 	}
@@ -56,7 +63,7 @@ public class MagnitudeGraphView extends View {
 	@Override
 	protected void onDraw(final Canvas canvas) {
 
-		// Set correct dimensions.
+		// Get screen dimensions.
 		height = getHeight();
 		width = getWidth();
 
@@ -71,6 +78,7 @@ public class MagnitudeGraphView extends View {
 		// Padding inside the graph to keep curve from touching top/bottom
 		final int padding = netGraphHeight / 20;
 
+		// Calculate optimal font sizes
 		final int titleSize = width / 32;
 		final int axisTitleSize = width / 40;
 		final int axisValueSize = height / 25;
@@ -87,14 +95,16 @@ public class MagnitudeGraphView extends View {
 		// Value by which points should be scaled in order to fit the graph
 		// nicely
 		final float verticalScale;
+
+		// Point of maximum amplitude, either positive or negative
 		final float maxSpike;
 
 		// Draw Rectangles
-		paint.setColor(Color.rgb(0, 125, 0));
+		paint.setColor(Color.rgb(0, 0, 125));
 		if (tempRect != null) {
 			canvas.drawRect(tempRect, paint);
 		}
-		paint.setColor(Color.rgb(0, 75, 0));
+		paint.setColor(Color.rgb(0, 0, 75));
 		for (final Rect r : rectList) {
 			canvas.drawRect(r, paint);
 		}
@@ -160,6 +170,10 @@ public class MagnitudeGraphView extends View {
 					* netGraphHeight / 4, paint);
 		}
 
+		// Set color and stroke width for graph curve
+		paint.setColor(Color.rgb(255, 128, 0));
+		paint.setStrokeWidth(2);
+
 		// If there are more values than pixels, crunch them to fit on the
 		// screen
 		if (valuesLength > netGraphWidth) {
@@ -180,7 +194,6 @@ public class MagnitudeGraphView extends View {
 			verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
 
 			// Draw the graph
-			paint.setColor(Color.rgb(255, 128, 0));
 			for (int i = 0; i < trimmedValuesLength - 1; i++) {
 				canvas.drawLine(horizontalEdge + i, height / 2
 						- trimmedValues[i] * verticalScale, horizontalEdge + i
@@ -188,6 +201,7 @@ public class MagnitudeGraphView extends View {
 						paint);
 			}
 		} else {
+			// If fewer datapoints than pixels of width, use the values array
 			for (final float value : values) {
 				if (value > max) {
 					max = value;
@@ -196,6 +210,8 @@ public class MagnitudeGraphView extends View {
 				}
 			}
 
+			// Calculate spacing of points based on ratio of graph width to
+			// number of values
 			final float spacing = (float) netGraphWidth
 					/ (float) (values.length - 1);
 
@@ -203,7 +219,7 @@ public class MagnitudeGraphView extends View {
 					.abs(min));
 			verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
 
-			paint.setColor(Color.rgb(255, 128, 0));
+			// Draw the graph
 			for (int i = 0; i < values.length - 1; i++) {
 				canvas.drawLine(horizontalEdge + (i * spacing), height / 2
 						- values[i] * verticalScale, horizontalEdge + (i + 1)
@@ -256,8 +272,54 @@ public class MagnitudeGraphView extends View {
 					rectEnd = x;
 					tempRect.right = (int) x;
 				}
-				rectList.add(tempRect);
-				tempRect = null;
+				// Check that the rectangle is actually big enough to mean
+				// anything. If not, ignore it because it may have been an
+				// accidental touch. Width/40 is the threshold for minimum
+				// rectangle size
+				if (Math.abs(rectEnd - rectStart) > (width / 40)) {
+					AlertDialog.Builder builder;
+					final LayoutInflater inflater = LayoutInflater.from(this
+							.getContext());
+					final View layout = inflater.inflate(
+							R.layout.log_name_dialog,
+							(ViewGroup) findViewById(R.id.layout_root));
+					layout.setPadding(10, 10, 10, 10);
+					final EditText text = (EditText) layout
+							.findViewById(R.id.log_name_text);
+					text.setHint(R.string.mag_graph_label_hint);
+					builder = new AlertDialog.Builder(this.getContext());
+					builder.setView(layout).setMessage(
+							R.string.mag_graph_label_query)
+							.setCancelable(false).setPositiveButton(
+									R.string.OK,
+									new DialogInterface.OnClickListener() {
+										public void onClick(
+												final DialogInterface dialog,
+												final int id) {
+
+											final String label = text.getText()
+													.toString();
+											rectList.add(tempRect);
+											labels.add(label);
+											tempRect = null;
+											invalidate();
+											dialog.dismiss();
+										}
+									}).setNegativeButton(R.string.cancel,
+									new DialogInterface.OnClickListener() {
+										public void onClick(
+												final DialogInterface dialog,
+												final int id) {
+											tempRect = null;
+											invalidate();
+											dialog.cancel();
+										}
+									});
+					builder.show();
+				} else {
+					tempRect = null;
+					invalidate();
+				}
 			}
 		}
 		invalidate();

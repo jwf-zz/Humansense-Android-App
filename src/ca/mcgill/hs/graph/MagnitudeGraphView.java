@@ -20,8 +20,26 @@ import android.widget.EditText;
 import ca.mcgill.hs.R;
 
 public class MagnitudeGraphView extends View {
-	private final String title;
+	/**
+	 * Node class used only for storing labels and timestamps from this graph.
+	 * 
+	 * @author Cicerone Cojocaru
+	 * 
+	 */
+	public class Node {
+		public final String label;
+		public final long startTime;
+		public final long endTime;
 
+		private Node(final String label, final long startTime,
+				final long endTime) {
+			this.label = label;
+			this.startTime = startTime;
+			this.endTime = endTime;
+		}
+	}
+
+	private final String title;
 	private final float[] values;
 	private final long start;
 	private final long end;
@@ -34,26 +52,27 @@ public class MagnitudeGraphView extends View {
 	private Rect tempRect;
 	private String label;
 	private final LinkedList<Rect> rectList = new LinkedList<Rect>();
-	private final LinkedList<Node> labels = new LinkedList<Node>();
 
+	private final LinkedList<Node> labels = new LinkedList<Node>();
 	// Get screen dimensions for this phone
 	private int height;
-	private int width;
 
+	private int width;
 	// Calculate graph edge locations
 	private int horizontalEdge;
-	private int verticalEdge;
 
+	private int verticalEdge;
 	// The net dimensions of the graph on screen
 	private int netGraphWidth;
+
 	private int netGraphHeight;
 
 	// The vertical padding inside the graph
 	private int padding;
-
 	// Font sizes
 	private int titleSize;
 	private int axisTitleSize;
+
 	private int axisValueSize;
 
 	// X-axis jump factor, used if more data points than pixels
@@ -61,9 +80,9 @@ public class MagnitudeGraphView extends View {
 
 	// Number of data points
 	private int valuesLength;
-
 	// Trimmed array of data points, compressed from values using the jumpFactor
 	private float[] trimmedValues;
+
 	private int trimmedValuesLength;
 
 	// Largest amplitude point
@@ -335,8 +354,10 @@ public class MagnitudeGraphView extends View {
 			if (tempRect != null) {
 				if (x <= leftLimit) {
 					tempRect.right = leftLimit;
+					adjustRect();
 				} else if (x >= rightLimit) {
 					tempRect.right = rightLimit;
+					adjustRect();
 				} else {
 					tempRect.right = (int) event.getX();
 					adjustRect();
@@ -424,24 +445,5 @@ public class MagnitudeGraphView extends View {
 							}
 						});
 		builder.show();
-	}
-
-	/**
-	 * Node class used only for storing labels and timestamps from this graph.
-	 * 
-	 * @author Cicerone Cojocaru
-	 * 
-	 */
-	public class Node {
-		public final String label;
-		public final long startTime;
-		public final long endTime;
-
-		private Node(final String label, final long startTime,
-				final long endTime) {
-			this.label = label;
-			this.startTime = startTime;
-			this.endTime = endTime;
-		}
 	}
 }

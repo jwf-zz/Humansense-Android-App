@@ -20,6 +20,25 @@ import android.widget.EditText;
 import ca.mcgill.hs.R;
 
 public class MagnitudeGraphView extends View {
+	/**
+	 * Node class used only for storing labels and timestamps from this graph.
+	 * 
+	 * @author Cicerone Cojocaru
+	 * 
+	 */
+	public class Node {
+		public final String label;
+		public final long startTime;
+		public final long endTime;
+
+		private Node(final String label, final long startTime,
+				final long endTime) {
+			this.label = label;
+			this.startTime = startTime;
+			this.endTime = endTime;
+		}
+	}
+
 	private final String title;
 	private final float[] values;
 	private final long start;
@@ -33,26 +52,27 @@ public class MagnitudeGraphView extends View {
 	private Rect tempRect;
 	private String label;
 	private final LinkedList<Rect> rectList = new LinkedList<Rect>();
-	private final LinkedList<Node> labels = new LinkedList<Node>();
 
+	private final LinkedList<Node> labels = new LinkedList<Node>();
 	// Get screen dimensions for this phone
 	private int height;
-	private int width;
 
+	private int width;
 	// Calculate graph edge locations
 	private int horizontalEdge;
-	private int verticalEdge;
 
+	private int verticalEdge;
 	// The net dimensions of the graph on screen
 	private int netGraphWidth;
+
 	private int netGraphHeight;
 
 	// The vertical padding inside the graph
 	private int padding;
-
 	// Font sizes
 	private int titleSize;
 	private int axisTitleSize;
+
 	private int axisValueSize;
 
 	// X-axis jump factor, used if more data points than pixels
@@ -60,9 +80,9 @@ public class MagnitudeGraphView extends View {
 
 	// Number of data points
 	private int valuesLength;
-
 	// Trimmed array of data points, compressed from values using the jumpFactor
 	private float[] trimmedValues;
+
 	private int trimmedValuesLength;
 
 	// Largest amplitude point
@@ -95,8 +115,14 @@ public class MagnitudeGraphView extends View {
 		instantiated = false;
 	}
 
-	private Boolean checkLabel() {
+	private boolean checkLabel() {
 		if (label.length() > 0) {
+			for (int i = 0; i < label.length(); i++) {
+				final char c = label.charAt(i);
+				if (!(Character.isDigit(c) || Character.isLetter(c) || c == '-' || c == '\'')) {
+					return false;
+				}
+			}
 			return true;
 		} else {
 			return false;
@@ -179,13 +205,20 @@ public class MagnitudeGraphView extends View {
 		}
 
 		// Draw Rectangles
-		paint.setColor(Color.rgb(0, 0, 125));
 		if (tempRect != null) {
+			paint
+					.setColor(Math.abs(tempRect.right - tempRect.left) > (width / 40) ? Color
+							.rgb(0, 0, 125)
+							: Color.rgb(125, 0, 0));
 			canvas.drawRect(tempRect, paint);
 		}
-		paint.setColor(Color.rgb(0, 0, 75));
 		for (final Rect r : rectList) {
+			paint.setColor(Color.rgb(0, 0, 75));
 			canvas.drawRect(r, paint);
+			paint.setColor(Color.rgb(255, 255, 255));
+			paint.setStrokeWidth(0);
+			canvas.drawLine(r.right, r.top, r.right, r.bottom, paint);
+			canvas.drawLine(r.left, r.bottom, r.left, r.top, paint);
 		}
 
 		// Draw title
@@ -331,7 +364,7 @@ public class MagnitudeGraphView extends View {
 
 	private void showDialog() {
 		label = "";
-		AlertDialog.Builder builder;
+		final AlertDialog.Builder builder;
 		final LayoutInflater inflater = LayoutInflater.from(this.getContext());
 
 		final View layout = inflater.inflate(R.layout.log_name_dialog,
@@ -351,6 +384,10 @@ public class MagnitudeGraphView extends View {
 								// If OK is pressed, save rectangle
 								// and label to linked lists
 								label = text.getText().toString();
+								if (!checkLabel()) {
+									showDialog();
+									return;
+								}
 								rectList.add(tempRect);
 								long rectStart;
 								long rectEnd;
@@ -368,7 +405,6 @@ public class MagnitudeGraphView extends View {
 								labels.add(new Node(label, rectStart, rectEnd));
 								tempRect = null;
 								invalidate();
-								dialog.dismiss();
 							}
 						}).setNegativeButton(R.string.cancel,
 						new DialogInterface.OnClickListener() {
@@ -376,28 +412,8 @@ public class MagnitudeGraphView extends View {
 									final int id) {
 								tempRect = null;
 								invalidate();
-								dialog.cancel();
 							}
 						});
 		builder.show();
-	}
-
-	/**
-	 * Node class used only for storing labels and timestamps from this graph.
-	 * 
-	 * @author Cicerone Cojocaru
-	 * 
-	 */
-	public class Node {
-		public final String label;
-		public final long startTime;
-		public final long endTime;
-
-		private Node(final String label, final long startTime,
-				final long endTime) {
-			this.label = label;
-			this.startTime = startTime;
-			this.endTime = endTime;
-		}
 	}
 }

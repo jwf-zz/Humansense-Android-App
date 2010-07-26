@@ -115,7 +115,44 @@ public class MagnitudeGraphView extends View {
 		instantiated = false;
 	}
 
-	private boolean checkLabel() {
+	private void adjustRect() {
+		int rectStart;
+		int rectEnd;
+		if (tempRect.left < tempRect.right) {
+			rectStart = tempRect.left;
+			rectEnd = tempRect.right;
+		} else {
+			rectStart = tempRect.right;
+			rectEnd = tempRect.left;
+		}
+		if (rectEnd > rectStart) {
+			for (final Rect r : rectList) {
+				if (rectStart < r.left) {
+					if (rectEnd >= r.left) {
+						rectEnd = r.left - 1;
+					}
+				} else if (rectStart < r.right) {
+					rectStart = r.right + 1;
+				}
+			}
+			tempRect.left = rectStart;
+			tempRect.right = rectEnd;
+		} else {
+			for (final Rect r : rectList) {
+				if (rectStart > r.right) {
+					if (rectEnd < r.right) {
+						rectEnd = r.right + 1;
+					}
+				} else if (rectStart >= r.left) {
+					rectStart = r.left - 1;
+				}
+			}
+			tempRect.left = rectEnd;
+			tempRect.right = rectStart;
+		}
+	}
+
+	private Boolean checkLabel() {
 		if (label.length() > 0) {
 			for (int i = 0; i < label.length(); i++) {
 				final char c = label.charAt(i);
@@ -200,6 +237,8 @@ public class MagnitudeGraphView extends View {
 
 	@Override
 	protected void onDraw(final Canvas canvas) {
+		// Must instantiate here because height and width of the canvas are
+		// unavailable until onDraw is called.
 		if (!instantiated) {
 			instantiate();
 		}
@@ -332,6 +371,7 @@ public class MagnitudeGraphView extends View {
 					tempRect.right = rightLimit;
 				} else {
 					tempRect.right = (int) event.getX();
+					adjustRect();
 				}
 			}
 		} else if (action == MotionEvent.ACTION_UP) {
@@ -346,6 +386,7 @@ public class MagnitudeGraphView extends View {
 				} else {
 					tempRect.right = (int) x;
 				}
+				adjustRect();
 				// Check that the rectangle is actually big enough to mean
 				// anything. If not, ignore it because it may have been an
 				// accidental touch. Width/40 is the threshold for minimum

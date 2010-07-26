@@ -20,26 +20,8 @@ import android.widget.EditText;
 import ca.mcgill.hs.R;
 
 public class MagnitudeGraphView extends View {
-	/**
-	 * Node class used only for storing labels and timestamps from this graph.
-	 * 
-	 * @author Cicerone Cojocaru
-	 * 
-	 */
-	public class Node {
-		public final String label;
-		public final long startTime;
-		public final long endTime;
-
-		private Node(final String label, final long startTime,
-				final long endTime) {
-			this.label = label;
-			this.startTime = startTime;
-			this.endTime = endTime;
-		}
-	}
-
 	private final String title;
+
 	private final float[] values;
 	private final long start;
 	private final long end;
@@ -52,27 +34,26 @@ public class MagnitudeGraphView extends View {
 	private Rect tempRect;
 	private String label;
 	private final LinkedList<Rect> rectList = new LinkedList<Rect>();
-
 	private final LinkedList<Node> labels = new LinkedList<Node>();
+
 	// Get screen dimensions for this phone
 	private int height;
-
 	private int width;
+
 	// Calculate graph edge locations
 	private int horizontalEdge;
-
 	private int verticalEdge;
+
 	// The net dimensions of the graph on screen
 	private int netGraphWidth;
-
 	private int netGraphHeight;
 
 	// The vertical padding inside the graph
 	private int padding;
+
 	// Font sizes
 	private int titleSize;
 	private int axisTitleSize;
-
 	private int axisValueSize;
 
 	// X-axis jump factor, used if more data points than pixels
@@ -80,9 +61,9 @@ public class MagnitudeGraphView extends View {
 
 	// Number of data points
 	private int valuesLength;
+
 	// Trimmed array of data points, compressed from values using the jumpFactor
 	private float[] trimmedValues;
-
 	private int trimmedValuesLength;
 
 	// Largest amplitude point
@@ -116,39 +97,26 @@ public class MagnitudeGraphView extends View {
 	}
 
 	private void adjustRect() {
-		int rectStart;
-		int rectEnd;
 		if (tempRect.left < tempRect.right) {
-			rectStart = tempRect.left;
-			rectEnd = tempRect.right;
-		} else {
-			rectStart = tempRect.right;
-			rectEnd = tempRect.left;
-		}
-		if (rectEnd > rectStart) {
 			for (final Rect r : rectList) {
-				if (rectStart < r.left) {
-					if (rectEnd >= r.left) {
-						rectEnd = r.left - 1;
+				if (tempRect.left < r.left) {
+					if (tempRect.right >= r.left) {
+						tempRect.right = r.left - 1;
 					}
-				} else if (rectStart < r.right) {
-					rectStart = r.right + 1;
+				} else if (tempRect.left < r.right) {
+					tempRect.left = r.right + 1;
 				}
 			}
-			tempRect.left = rectStart;
-			tempRect.right = rectEnd;
 		} else {
 			for (final Rect r : rectList) {
-				if (rectStart > r.right) {
-					if (rectEnd < r.right) {
-						rectEnd = r.right + 1;
+				if (tempRect.left > r.right) {
+					if (tempRect.right < r.right) {
+						tempRect.right = r.right + 1;
 					}
-				} else if (rectStart >= r.left) {
-					rectStart = r.left - 1;
+				} else if (tempRect.left >= r.left) {
+					tempRect.left = r.left - 1;
 				}
 			}
-			tempRect.left = rectEnd;
-			tempRect.right = rectStart;
 		}
 	}
 
@@ -456,5 +424,24 @@ public class MagnitudeGraphView extends View {
 							}
 						});
 		builder.show();
+	}
+
+	/**
+	 * Node class used only for storing labels and timestamps from this graph.
+	 * 
+	 * @author Cicerone Cojocaru
+	 * 
+	 */
+	public class Node {
+		public final String label;
+		public final long startTime;
+		public final long endTime;
+
+		private Node(final String label, final long startTime,
+				final long endTime) {
+			this.label = label;
+			this.startTime = startTime;
+			this.endTime = endTime;
+		}
 	}
 }

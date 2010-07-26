@@ -4,14 +4,19 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Paint.Align;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
 import ca.mcgill.hs.R;
 
 public class MagnitudeGraphView extends View {
@@ -25,18 +30,53 @@ public class MagnitudeGraphView extends View {
 	private final Paint paint;
 	private float max;
 	private float min;
-	private float rectStart;
-	private float rectEnd;
 	private Rect tempRect;
+	private String label;
 	private final LinkedList<Rect> rectList = new LinkedList<Rect>();
+	private final LinkedList<Node> labels = new LinkedList<Node>();
 
 	// Get screen dimensions for this phone
-	int height;
-	int width;
+	private int height;
+	private int width;
 
 	// Calculate graph edge locations
-	int horizontalEdge;
-	int verticalEdge;
+	private int horizontalEdge;
+	private int verticalEdge;
+
+	// The net dimensions of the graph on screen
+	private int netGraphWidth;
+	private int netGraphHeight;
+
+	// The vertical padding inside the graph
+	private int padding;
+
+	// Font sizes
+	private int titleSize;
+	private int axisTitleSize;
+	private int axisValueSize;
+
+	// X-axis jump factor, used if more data points than pixels
+	private int jumpFactor;
+
+	// Number of data points
+	private int valuesLength;
+
+	// Trimmed array of data points, compressed from values using the jumpFactor
+	private float[] trimmedValues;
+	private int trimmedValuesLength;
+
+	// Largest amplitude point
+	private float maxSpike;
+
+	// Amount to scale the curve by so it fits nicely in the graph window
+	private float verticalScale;
+
+	// The spacing of points on the graph, used only if fewer points than pixels
+	private float spacing;
+
+	// Boolean check if all vars are instantiated, prevents repeated calls of
+	// calculations during onDraw()
+	private boolean instantiated;
 
 	public MagnitudeGraphView(final Context context, final String title,
 			final float[] values, final long start, final long end) {
@@ -47,16 +87,24 @@ public class MagnitudeGraphView extends View {
 		this.end = end;
 		this.startTime = new Date(this.start);
 		this.endTime = new Date(this.end);
-		this.sdf = new SimpleDateFormat("HH:mm:ss");
+		this.sdf = new SimpleDateFormat("H:mm:ss");
 		this.paint = new Paint();
+		paint.setAntiAlias(true);
 		this.max = values[0];
 		this.min = values[0];
+		instantiated = false;
 	}
 
-	@Override
-	protected void onDraw(final Canvas canvas) {
+	private Boolean checkLabel() {
+		if (label.length() > 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-		// Set correct dimensions.
+	private void instantiate() {
+		// Get screen dimensions.
 		height = getHeight();
 		width = getWidth();
 
@@ -65,36 +113,77 @@ public class MagnitudeGraphView extends View {
 		verticalEdge = height / 9;
 
 		// The net dimensions of the graph on screen
-		final int netGraphWidth = width - 2 * horizontalEdge;
-		final int netGraphHeight = height - 2 * verticalEdge;
+		netGraphWidth = width - 2 * horizontalEdge;
+		netGraphHeight = height - 2 * verticalEdge;
 
 		// Padding inside the graph to keep curve from touching top/bottom
-		final int padding = netGraphHeight / 20;
+		padding = netGraphHeight / 20;
 
-		final int titleSize = width / 32;
-		final int axisTitleSize = width / 40;
-		final int axisValueSize = height / 25;
+		// Calculate optimal font sizes
+		titleSize = width / 32;
+		axisTitleSize = width / 40;
+		axisValueSize = height / 25;
 
-		// Jump factor for how many points should be skipped if all don't fit on
+		// Jump factor for how many points should be skipped if all don't
+		// fit on
 		// screen
-		float jumpFactor = 1;
-		final int valuesLength = values.length;
+		jumpFactor = 1;
+		valuesLength = values.length;
 
 		// Trimmed array with only points that were not skipped
-		final float[] trimmedValues = new float[netGraphWidth];
-		final float trimmedValuesLength = trimmedValues.length;
+		trimmedValues = new float[netGraphWidth];
+		trimmedValuesLength = trimmedValues.length;
 
-		// Value by which points should be scaled in order to fit the graph
-		// nicely
-		final float verticalScale;
-		final float maxSpike;
+		if (valuesLength > netGraphWidth) {
+			jumpFactor = (int) ((float) valuesLength / (float) netGraphWidth);
+			int j = 0;
+			for (float i = 0; j < trimmedValuesLength; i += jumpFactor, j++) {
+				trimmedValues[j] = values[(int) i];
+				if (trimmedValues[j] > max) {
+					max = trimmedValues[j];
+				} else if (trimmedValues[j] < min) {
+					min = trimmedValues[j];
+				}
+			}
+
+			// Calculate scaling coefficients
+			maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max) : Math
+					.abs(min));
+			verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
+		} else {
+			// If fewer datapoints than pixels of width, use the values
+			// array
+			for (final float value : values) {
+				if (value > max) {
+					max = value;
+				} else if (value < min) {
+					min = value;
+				}
+			}
+
+			// Calculate spacing of points based on ratio of graph width to
+			// number of values
+			spacing = (float) netGraphWidth / (float) (values.length - 1);
+
+			maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max) : Math
+					.abs(min));
+			verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
+		}
+		instantiated = true;
+	}
+
+	@Override
+	protected void onDraw(final Canvas canvas) {
+		if (!instantiated) {
+			instantiate();
+		}
 
 		// Draw Rectangles
-		paint.setColor(Color.rgb(0, 125, 0));
+		paint.setColor(Color.rgb(0, 0, 125));
 		if (tempRect != null) {
 			canvas.drawRect(tempRect, paint);
 		}
-		paint.setColor(Color.rgb(0, 75, 0));
+		paint.setColor(Color.rgb(0, 0, 75));
 		for (final Rect r : rectList) {
 			canvas.drawRect(r, paint);
 		}
@@ -160,27 +249,13 @@ public class MagnitudeGraphView extends View {
 					* netGraphHeight / 4, paint);
 		}
 
-		// If there are more values than pixels, crunch them to fit on the
-		// screen
+		// Set color and stroke width for graph curve
+		paint.setColor(Color.rgb(255, 128, 0));
+		paint.setStrokeWidth(2);
+
+		// Draw a different graph depending on the size of values compared to
+		// netGraphWidth
 		if (valuesLength > netGraphWidth) {
-			jumpFactor = (float) valuesLength / (float) netGraphWidth;
-			int j = 0;
-			for (float i = 0; j < trimmedValuesLength; i += jumpFactor, j++) {
-				trimmedValues[j] = values[(int) i];
-				if (trimmedValues[j] > max) {
-					max = trimmedValues[j];
-				} else if (trimmedValues[j] < min) {
-					min = trimmedValues[j];
-				}
-			}
-
-			// Calculate scaling coefficients
-			maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max) : Math
-					.abs(min));
-			verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
-
-			// Draw the graph
-			paint.setColor(Color.rgb(255, 128, 0));
 			for (int i = 0; i < trimmedValuesLength - 1; i++) {
 				canvas.drawLine(horizontalEdge + i, height / 2
 						- trimmedValues[i] * verticalScale, horizontalEdge + i
@@ -188,22 +263,6 @@ public class MagnitudeGraphView extends View {
 						paint);
 			}
 		} else {
-			for (final float value : values) {
-				if (value > max) {
-					max = value;
-				} else if (value < min) {
-					min = value;
-				}
-			}
-
-			final float spacing = (float) netGraphWidth
-					/ (float) (values.length - 1);
-
-			maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max) : Math
-					.abs(min));
-			verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
-
-			paint.setColor(Color.rgb(255, 128, 0));
 			for (int i = 0; i < values.length - 1; i++) {
 				canvas.drawLine(horizontalEdge + (i * spacing), height / 2
 						- values[i] * verticalScale, horizontalEdge + (i + 1)
@@ -220,8 +279,9 @@ public class MagnitudeGraphView extends View {
 		final float x = event.getX();
 		final int leftLimit = horizontalEdge + 1;
 		final int rightLimit = width - horizontalEdge - 1;
+
+		// Touch+drag rectangle code
 		if (action == MotionEvent.ACTION_DOWN) {
-			rectStart = x;
 			tempRect = new Rect((int) x, height - verticalEdge, (int) x,
 					verticalEdge);
 			if (x <= leftLimit) {
@@ -244,23 +304,100 @@ public class MagnitudeGraphView extends View {
 		} else if (action == MotionEvent.ACTION_UP) {
 			if (tempRect != null) {
 				if (x <= leftLimit) {
-					rectEnd = leftLimit;
 					tempRect.right = leftLimit;
 				} else if (x >= rightLimit) {
-					rectEnd = rightLimit;
 					tempRect.right = rightLimit;
 				} else if (x == tempRect.left) {
 					tempRect = null;
 					return true;
 				} else {
-					rectEnd = x;
 					tempRect.right = (int) x;
 				}
-				rectList.add(tempRect);
-				tempRect = null;
+				// Check that the rectangle is actually big enough to mean
+				// anything. If not, ignore it because it may have been an
+				// accidental touch. Width/40 is the threshold for minimum
+				// rectangle size
+				if (Math.abs(tempRect.right - tempRect.left) > (width / 40)) {
+					showDialog();
+				} else {
+					tempRect = null;
+					invalidate();
+				}
 			}
 		}
 		invalidate();
 		return true;
+	}
+
+	private void showDialog() {
+		label = "";
+		AlertDialog.Builder builder;
+		final LayoutInflater inflater = LayoutInflater.from(this.getContext());
+
+		final View layout = inflater.inflate(R.layout.log_name_dialog,
+				(ViewGroup) findViewById(R.id.layout_root));
+		layout.setPadding(10, 10, 10, 10);
+
+		final EditText text = (EditText) layout
+				.findViewById(R.id.log_name_text);
+		text.setHint(R.string.mag_graph_label_hint);
+
+		builder = new AlertDialog.Builder(this.getContext());
+		builder.setView(layout).setMessage(R.string.mag_graph_label_query)
+				.setCancelable(false).setPositiveButton(R.string.OK,
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+								// If OK is pressed, save rectangle
+								// and label to linked lists
+								label = text.getText().toString();
+								rectList.add(tempRect);
+								long rectStart;
+								long rectEnd;
+								if (tempRect.left < tempRect.right) {
+									rectStart = tempRect.left;
+									rectEnd = tempRect.right;
+								} else {
+									rectStart = tempRect.right;
+									rectEnd = tempRect.left;
+								}
+								rectStart = (rectStart / netGraphWidth)
+										* (end - start) + start;
+								rectEnd = (rectEnd / netGraphWidth)
+										* (end - start) + start;
+								labels.add(new Node(label, rectStart, rectEnd));
+								tempRect = null;
+								invalidate();
+								dialog.dismiss();
+							}
+						}).setNegativeButton(R.string.cancel,
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+								tempRect = null;
+								invalidate();
+								dialog.cancel();
+							}
+						});
+		builder.show();
+	}
+
+	/**
+	 * Node class used only for storing labels and timestamps from this graph.
+	 * 
+	 * @author Cicerone Cojocaru
+	 * 
+	 */
+	public class Node {
+		public final String label;
+		public final long startTime;
+		public final long endTime;
+
+		private Node(final String label, final long startTime,
+				final long endTime) {
+			this.label = label;
+			this.startTime = startTime;
+			this.endTime = endTime;
+		}
 	}
 }

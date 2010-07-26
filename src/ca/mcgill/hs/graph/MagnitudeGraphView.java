@@ -31,6 +31,7 @@ public class MagnitudeGraphView extends View {
 	private float max;
 	private float min;
 	private Rect tempRect;
+	private String label;
 	private final LinkedList<Rect> rectList = new LinkedList<Rect>();
 	private final LinkedList<Node> labels = new LinkedList<Node>();
 
@@ -94,75 +95,87 @@ public class MagnitudeGraphView extends View {
 		instantiated = false;
 	}
 
+	private Boolean checkLabel() {
+		if (label.length() > 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private void instantiate() {
+		// Get screen dimensions.
+		height = getHeight();
+		width = getWidth();
+
+		// Calculate graph edge locations
+		horizontalEdge = width / 10;
+		verticalEdge = height / 9;
+
+		// The net dimensions of the graph on screen
+		netGraphWidth = width - 2 * horizontalEdge;
+		netGraphHeight = height - 2 * verticalEdge;
+
+		// Padding inside the graph to keep curve from touching top/bottom
+		padding = netGraphHeight / 20;
+
+		// Calculate optimal font sizes
+		titleSize = width / 32;
+		axisTitleSize = width / 40;
+		axisValueSize = height / 25;
+
+		// Jump factor for how many points should be skipped if all don't
+		// fit on
+		// screen
+		jumpFactor = 1;
+		valuesLength = values.length;
+
+		// Trimmed array with only points that were not skipped
+		trimmedValues = new float[netGraphWidth];
+		trimmedValuesLength = trimmedValues.length;
+
+		if (valuesLength > netGraphWidth) {
+			jumpFactor = (int) ((float) valuesLength / (float) netGraphWidth);
+			int j = 0;
+			for (float i = 0; j < trimmedValuesLength; i += jumpFactor, j++) {
+				trimmedValues[j] = values[(int) i];
+				if (trimmedValues[j] > max) {
+					max = trimmedValues[j];
+				} else if (trimmedValues[j] < min) {
+					min = trimmedValues[j];
+				}
+			}
+
+			// Calculate scaling coefficients
+			maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max) : Math
+					.abs(min));
+			verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
+		} else {
+			// If fewer datapoints than pixels of width, use the values
+			// array
+			for (final float value : values) {
+				if (value > max) {
+					max = value;
+				} else if (value < min) {
+					min = value;
+				}
+			}
+
+			// Calculate spacing of points based on ratio of graph width to
+			// number of values
+			spacing = (float) netGraphWidth / (float) (values.length - 1);
+
+			maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max) : Math
+					.abs(min));
+			verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
+		}
+		instantiated = true;
+	}
+
 	@Override
 	protected void onDraw(final Canvas canvas) {
 		if (!instantiated) {
-			// Get screen dimensions.
-			height = getHeight();
-			width = getWidth();
-
-			// Calculate graph edge locations
-			horizontalEdge = width / 10;
-			verticalEdge = height / 9;
-
-			// The net dimensions of the graph on screen
-			netGraphWidth = width - 2 * horizontalEdge;
-			netGraphHeight = height - 2 * verticalEdge;
-
-			// Padding inside the graph to keep curve from touching top/bottom
-			padding = netGraphHeight / 20;
-
-			// Calculate optimal font sizes
-			titleSize = width / 32;
-			axisTitleSize = width / 40;
-			axisValueSize = height / 25;
-
-			// Jump factor for how many points should be skipped if all don't
-			// fit on
-			// screen
-			jumpFactor = 1;
-			valuesLength = values.length;
-
-			// Trimmed array with only points that were not skipped
-			trimmedValues = new float[netGraphWidth];
-			trimmedValuesLength = trimmedValues.length;
-
-			if (valuesLength > netGraphWidth) {
-				jumpFactor = (int) ((float) valuesLength / (float) netGraphWidth);
-				int j = 0;
-				for (float i = 0; j < trimmedValuesLength; i += jumpFactor, j++) {
-					trimmedValues[j] = values[(int) i];
-					if (trimmedValues[j] > max) {
-						max = trimmedValues[j];
-					} else if (trimmedValues[j] < min) {
-						min = trimmedValues[j];
-					}
-				}
-
-				// Calculate scaling coefficients
-				maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max)
-						: Math.abs(min));
-				verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
-			} else {
-				// If fewer datapoints than pixels of width, use the values
-				// array
-				for (final float value : values) {
-					if (value > max) {
-						max = value;
-					} else if (value < min) {
-						min = value;
-					}
-				}
-
-				// Calculate spacing of points based on ratio of graph width to
-				// number of values
-				spacing = (float) netGraphWidth / (float) (values.length - 1);
-
-				maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max)
-						: Math.abs(min));
-				verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
-			}
-			instantiated = true;
+			instantiate();
 		}
 
 		// Draw Rectangles
@@ -305,65 +318,7 @@ public class MagnitudeGraphView extends View {
 				// accidental touch. Width/40 is the threshold for minimum
 				// rectangle size
 				if (Math.abs(tempRect.right - tempRect.left) > (width / 40)) {
-
-					// Pop up dialog box asking for label
-					AlertDialog.Builder builder;
-					final LayoutInflater inflater = LayoutInflater.from(this
-							.getContext());
-
-					final View layout = inflater.inflate(
-							R.layout.log_name_dialog,
-							(ViewGroup) findViewById(R.id.layout_root));
-					layout.setPadding(10, 10, 10, 10);
-
-					final EditText text = (EditText) layout
-							.findViewById(R.id.log_name_text);
-					text.setHint(R.string.mag_graph_label_hint);
-
-					builder = new AlertDialog.Builder(this.getContext());
-					builder.setView(layout).setMessage(
-							R.string.mag_graph_label_query)
-							.setCancelable(false).setPositiveButton(
-									R.string.OK,
-									new DialogInterface.OnClickListener() {
-										public void onClick(
-												final DialogInterface dialog,
-												final int id) {
-											// If OK is pressed, save rectangle
-											// and label to linked lists
-											final String label = text.getText()
-													.toString();
-											rectList.add(tempRect);
-											long rectStart;
-											long rectEnd;
-											if (tempRect.left < tempRect.right) {
-												rectStart = tempRect.left;
-												rectEnd = tempRect.right;
-											} else {
-												rectStart = tempRect.right;
-												rectEnd = tempRect.left;
-											}
-											rectStart = (rectStart / netGraphWidth)
-													* (end - start) + start;
-											rectEnd = (rectEnd / netGraphWidth)
-													* (end - start) + start;
-											labels.add(new Node(label,
-													rectStart, rectEnd));
-											tempRect = null;
-											invalidate();
-											dialog.dismiss();
-										}
-									}).setNegativeButton(R.string.cancel,
-									new DialogInterface.OnClickListener() {
-										public void onClick(
-												final DialogInterface dialog,
-												final int id) {
-											tempRect = null;
-											invalidate();
-											dialog.cancel();
-										}
-									});
-					builder.show();
+					showDialog();
 				} else {
 					tempRect = null;
 					invalidate();
@@ -372,6 +327,59 @@ public class MagnitudeGraphView extends View {
 		}
 		invalidate();
 		return true;
+	}
+
+	private void showDialog() {
+		label = "";
+		AlertDialog.Builder builder;
+		final LayoutInflater inflater = LayoutInflater.from(this.getContext());
+
+		final View layout = inflater.inflate(R.layout.log_name_dialog,
+				(ViewGroup) findViewById(R.id.layout_root));
+		layout.setPadding(10, 10, 10, 10);
+
+		final EditText text = (EditText) layout
+				.findViewById(R.id.log_name_text);
+		text.setHint(R.string.mag_graph_label_hint);
+
+		builder = new AlertDialog.Builder(this.getContext());
+		builder.setView(layout).setMessage(R.string.mag_graph_label_query)
+				.setCancelable(false).setPositiveButton(R.string.OK,
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+								// If OK is pressed, save rectangle
+								// and label to linked lists
+								label = text.getText().toString();
+								rectList.add(tempRect);
+								long rectStart;
+								long rectEnd;
+								if (tempRect.left < tempRect.right) {
+									rectStart = tempRect.left;
+									rectEnd = tempRect.right;
+								} else {
+									rectStart = tempRect.right;
+									rectEnd = tempRect.left;
+								}
+								rectStart = (rectStart / netGraphWidth)
+										* (end - start) + start;
+								rectEnd = (rectEnd / netGraphWidth)
+										* (end - start) + start;
+								labels.add(new Node(label, rectStart, rectEnd));
+								tempRect = null;
+								invalidate();
+								dialog.dismiss();
+							}
+						}).setNegativeButton(R.string.cancel,
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+								tempRect = null;
+								invalidate();
+								dialog.cancel();
+							}
+						});
+		builder.show();
 	}
 
 	/**

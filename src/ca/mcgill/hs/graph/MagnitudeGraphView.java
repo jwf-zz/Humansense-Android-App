@@ -416,16 +416,18 @@ public class MagnitudeGraphView extends View {
 									showDialog();
 									return;
 								}
+
+								if (tempRect.left > tempRect.right) {
+									final int tempLeft = tempRect.right;
+									tempRect.right = tempRect.left;
+									tempRect.left = tempLeft;
+								}
+
 								rectList.add(tempRect);
 								long rectStart;
 								long rectEnd;
-								if (tempRect.left < tempRect.right) {
-									rectStart = tempRect.left;
-									rectEnd = tempRect.right;
-								} else {
-									rectStart = tempRect.right;
-									rectEnd = tempRect.left;
-								}
+								rectStart = tempRect.left;
+								rectEnd = tempRect.right;
 								rectStart = (rectStart / netGraphWidth)
 										* (end - start) + start;
 								rectEnd = (rectEnd / netGraphWidth)

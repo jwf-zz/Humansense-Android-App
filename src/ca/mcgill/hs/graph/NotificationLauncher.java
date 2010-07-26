@@ -133,6 +133,9 @@ public class NotificationLauncher extends Service {
 			final String ns = Context.NOTIFICATION_SERVICE;
 			final NotificationManager nm = (NotificationManager) getSystemService(ns);
 
+			// Cancel previous notification.
+			nm.cancel(NOTIFICATION_ID);
+
 			// Instantiate the notification
 			final Notification n = new Notification(icon, tickerText, System
 					.currentTimeMillis());

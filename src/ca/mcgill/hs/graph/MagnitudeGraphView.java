@@ -116,7 +116,7 @@ public class MagnitudeGraphView extends View {
 	}
 
 	private void adjustRect() {
-		if (tempRect.left < tempRect.right) {
+		if (tempRect.left > tempRect.right) {
 			for (final Rect r : rectList) {
 				if (tempRect.left < r.left) {
 					if (tempRect.right >= r.left) {
@@ -354,10 +354,8 @@ public class MagnitudeGraphView extends View {
 			if (tempRect != null) {
 				if (x <= leftLimit) {
 					tempRect.right = leftLimit;
-					adjustRect();
 				} else if (x >= rightLimit) {
 					tempRect.right = rightLimit;
-					adjustRect();
 				} else {
 					tempRect.right = (int) event.getX();
 					adjustRect();

@@ -33,6 +33,7 @@ public class MagnitudeGraphView extends View {
 	private float min;
 	private Rect tempRect;
 	private String label;
+	private int minRectSize;
 	private final LinkedList<Rect> rectList = new LinkedList<Rect>();
 	private final LinkedList<Node> labels = new LinkedList<Node>();
 
@@ -96,6 +97,9 @@ public class MagnitudeGraphView extends View {
 		instantiated = false;
 	}
 
+	/**
+	 * Adjusts the drawn rectangle to prevent overlapping with other rectangles.
+	 */
 	private void adjustRect() {
 		if (tempRect.left < tempRect.right) {
 			for (final Rect r : rectList) {
@@ -120,6 +124,12 @@ public class MagnitudeGraphView extends View {
 		}
 	}
 
+	/**
+	 * Checks the text input label from the user to make sure it is not of
+	 * length 0 and does not contain illegal characters.
+	 * 
+	 * @return true if the input string is acceptable, false otherwise
+	 */
 	private Boolean checkLabel() {
 		if (label.length() > 0) {
 			for (int i = 0; i < label.length(); i++) {
@@ -134,6 +144,11 @@ public class MagnitudeGraphView extends View {
 		}
 	}
 
+	/**
+	 * Instantiates all fields representing graph-drawing parameters. This
+	 * method is only called once when onDraw() is first called and the view
+	 * height and width are first available.
+	 */
 	private void instantiate() {
 		// Get screen dimensions.
 		height = getHeight();
@@ -150,14 +165,16 @@ public class MagnitudeGraphView extends View {
 		// Padding inside the graph to keep curve from touching top/bottom
 		padding = netGraphHeight / 20;
 
+		// The minimum size of rectangle that can be selected to label
+		minRectSize = width / 30;
+
 		// Calculate optimal font sizes
 		titleSize = width / 32;
 		axisTitleSize = width / 40;
 		axisValueSize = height / 25;
 
 		// Jump factor for how many points should be skipped if all don't
-		// fit on
-		// screen
+		// fit on screen
 		jumpFactor = 1;
 		valuesLength = values.length;
 
@@ -214,7 +231,7 @@ public class MagnitudeGraphView extends View {
 		// Draw Rectangles
 		if (tempRect != null) {
 			paint
-					.setColor(Math.abs(tempRect.right - tempRect.left) > (width / 40) ? Color
+					.setColor(Math.abs(tempRect.right - tempRect.left) > minRectSize ? Color
 							.rgb(0, 0, 125)
 							: Color.rgb(125, 0, 0));
 			canvas.drawRect(tempRect, paint);
@@ -222,7 +239,7 @@ public class MagnitudeGraphView extends View {
 		for (final Rect r : rectList) {
 			paint.setColor(Color.rgb(0, 0, 75));
 			canvas.drawRect(r, paint);
-			paint.setColor(Color.rgb(255, 255, 255));
+			paint.setColor(Color.LTGRAY);
 			paint.setStrokeWidth(0);
 			canvas.drawLine(r.right, r.top, r.right, r.bottom, paint);
 			canvas.drawLine(r.left, r.bottom, r.left, r.top, paint);
@@ -359,7 +376,7 @@ public class MagnitudeGraphView extends View {
 				// anything. If not, ignore it because it may have been an
 				// accidental touch. Width/40 is the threshold for minimum
 				// rectangle size
-				if (Math.abs(tempRect.right - tempRect.left) > (width / 40)) {
+				if (Math.abs(tempRect.right - tempRect.left) > minRectSize) {
 					showDialog();
 				} else {
 					tempRect = null;
@@ -371,6 +388,9 @@ public class MagnitudeGraphView extends View {
 		return true;
 	}
 
+	/**
+	 * Shows the text input dialog for user labelling.
+	 */
 	private void showDialog() {
 		label = "";
 		final AlertDialog.Builder builder;

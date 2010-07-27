@@ -19,18 +19,36 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import ca.mcgill.hs.R;
 
+/**
+ * This is the main view for the MagnitudeGraph activity. It draws the activity
+ * graph between two timestamps, and the user can select bits of it in order to
+ * label activities.
+ */
 public class MagnitudeGraphView extends View {
+	// The title of the graph
 	private final String title;
 
+	// These are the values and the two timestamps that are given/required to
+	// draw the graph.
 	private final float[] values;
 	private final long start;
 	private final long end;
+
+	// These are Date objects relating to the start and end timestamps
 	private final Date startTime;
 	private final Date endTime;
 	private final SimpleDateFormat sdf;
+
+	// The Paint object used to paint lines, rectangles and text on the canvas.
 	private final Paint paint;
+
+	// These floats are used in order to calculate the appropriate scaling of
+	// the values.
 	private float max;
 	private float min;
+
+	// These variables are used in order to correctly draw and label the
+	// activity selections.
 	private Rect tempRect;
 	private String label;
 	private int minRectSize;
@@ -80,6 +98,21 @@ public class MagnitudeGraphView extends View {
 	// calculations during onDraw()
 	private boolean instantiated;
 
+	/**
+	 * The basic constructor for this object. This draws a graph with the
+	 * appropriate values given and the correct timestamps.
+	 * 
+	 * @param context
+	 *            The context in which this View will be drawn.
+	 * @param title
+	 *            The graph title.
+	 * @param values
+	 *            The values which will be drawn in the graph.
+	 * @param start
+	 *            The start timestamp for the graph.
+	 * @param end
+	 *            The end timestamp for the graph.
+	 */
 	public MagnitudeGraphView(final Context context, final String title,
 			final float[] values, final long start, final long end) {
 		super(context);
@@ -220,6 +253,9 @@ public class MagnitudeGraphView extends View {
 		instantiated = true;
 	}
 
+	/**
+	 * Draws the view.
+	 */
 	@Override
 	protected void onDraw(final Canvas canvas) {
 		// Must instantiate here because height and width of the canvas are
@@ -241,8 +277,8 @@ public class MagnitudeGraphView extends View {
 			canvas.drawRect(r, paint);
 			paint.setColor(Color.LTGRAY);
 			paint.setStrokeWidth(0);
-			canvas.drawLine(r.right, r.top, r.right, r.bottom, paint);
 			canvas.drawLine(r.left, r.bottom, r.left, r.top, paint);
+			canvas.drawLine(r.right + 1, r.bottom, r.right + 1, r.top, paint);
 		}
 
 		// Draw title
@@ -330,6 +366,10 @@ public class MagnitudeGraphView extends View {
 
 	}
 
+	/**
+	 * This method gets called whenever a touch-screen event happens, such as
+	 * when the user touches the screen with their finger.
+	 */
 	@Override
 	public boolean onTouchEvent(final MotionEvent event) {
 		final int action = event.getAction();

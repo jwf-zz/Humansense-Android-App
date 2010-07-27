@@ -50,6 +50,7 @@ public class MagnitudeGraphView extends View {
 	// These variables are used in order to correctly draw and label the
 	// activity selections.
 	private Rect tempRect;
+	private int originalLeft;
 	private String label;
 	private int minRectSize;
 	private final LinkedList<Rect> rectList = new LinkedList<Rect>();
@@ -134,25 +135,21 @@ public class MagnitudeGraphView extends View {
 	 * Adjusts the drawn rectangle to prevent overlapping with other rectangles.
 	 */
 	private void adjustRect() {
-		if (tempRect.left < tempRect.right) {
-			for (final Rect r : rectList) {
-				if (tempRect.left < r.left) {
-					if (tempRect.right >= r.left) {
-						tempRect.right = r.left - 1;
-					}
-				} else if (tempRect.left < r.right) {
-					tempRect.left = r.right + 1;
-				}
-			}
-		} else {
-			for (final Rect r : rectList) {
-				if (tempRect.left > r.right) {
-					if (tempRect.right < r.right) {
-						tempRect.right = r.right + 1;
-					}
-				} else if (tempRect.left >= r.left) {
-					tempRect.left = r.left - 1;
-				}
+		tempRect.left = originalLeft;
+		for (final Rect r : rectList) {
+			if (tempRect.left >= r.left && tempRect.left <= r.right
+					&& tempRect.right > r.right) {
+				tempRect.left = r.right + 1;
+			} else if (tempRect.left >= r.left && tempRect.left <= r.right
+					&& tempRect.right < r.left) {
+				tempRect.left = r.left - 1;
+			} else if (tempRect.left < r.left && tempRect.right >= r.left) {
+				tempRect.right = r.left - 1;
+			} else if (tempRect.left > r.right && tempRect.right <= r.right) {
+				tempRect.right = r.right + 1;
+			} else if (tempRect.left >= r.left && tempRect.left <= r.right
+					&& tempRect.right >= r.left && tempRect.right <= r.right) {
+				tempRect.left = tempRect.right;
 			}
 		}
 	}
@@ -388,6 +385,7 @@ public class MagnitudeGraphView extends View {
 				tempRect.left = rightLimit;
 				tempRect.right = tempRect.left;
 			}
+			originalLeft = tempRect.left;
 		} else if (action == MotionEvent.ACTION_MOVE) {
 			if (tempRect != null) {
 				if (x <= leftLimit) {
@@ -453,10 +451,10 @@ public class MagnitudeGraphView extends View {
 								// If OK is pressed, save rectangle
 								// and label to linked lists
 								label = text.getText().toString();
-								if (!checkLabel()) {
-									showDialog();
-									return;
-								}
+								// if (!checkLabel()) {
+								// showDialog();
+								// return;
+								// }
 
 								if (tempRect.left > tempRect.right) {
 									final int tempLeft = tempRect.right;

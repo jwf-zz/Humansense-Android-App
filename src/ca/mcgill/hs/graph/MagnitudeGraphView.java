@@ -284,7 +284,7 @@ public class MagnitudeGraphView extends View {
 
 		// Draw title
 		paint.setTextAlign(Align.CENTER);
-		paint.setColor(Color.GREEN);
+		paint.setColor(Color.rgb(0, 255, 0));
 		paint.setTextSize(titleSize);
 		canvas.drawText(title, width / 2, verticalEdge - titleSize / 2, paint);
 
@@ -343,7 +343,6 @@ public class MagnitudeGraphView extends View {
 		}
 
 		// Set color and stroke width for graph curve
-		paint.setColor(Color.rgb(255, 128, 0));
 		paint.setStrokeWidth(2);
 		paint.setAntiAlias(true);
 
@@ -487,10 +486,10 @@ public class MagnitudeGraphView extends View {
 								long rectEnd;
 								rectStart = tempRect.left;
 								rectEnd = tempRect.right;
-								rectStart = (rectStart / netGraphWidth)
-										* (end - start) + start;
-								rectEnd = (rectEnd / netGraphWidth)
-										* (end - start) + start;
+								rectStart = start
+										+ (long) (((float) rectStart / (float) netGraphWidth) * (end - start));
+								rectEnd = start
+										+ (long) (((float) rectStart / (float) netGraphWidth) * (end - start));
 								labels.add(new Node(label, rectStart, rectEnd));
 								tempRect = null;
 								invalidate();

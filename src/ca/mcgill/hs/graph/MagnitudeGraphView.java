@@ -269,6 +269,7 @@ public class MagnitudeGraphView extends View {
 							: Color.rgb(125, 0, 0));
 			canvas.drawRect(tempRect, paint);
 		}
+		paint.setAntiAlias(false);
 		for (final Rect r : rectList) {
 			paint.setColor(Color.rgb(0, 0, 75));
 			canvas.drawRect(r, paint);
@@ -277,6 +278,7 @@ public class MagnitudeGraphView extends View {
 			canvas.drawLine(r.left, r.bottom, r.left, r.top, paint);
 			canvas.drawLine(r.right + 1, r.bottom, r.right + 1, r.top, paint);
 		}
+		paint.setAntiAlias(true);
 
 		// Draw title
 		paint.setTextAlign(Align.CENTER);
@@ -293,7 +295,6 @@ public class MagnitudeGraphView extends View {
 
 		// Draw Y-axis title
 		paint.setTextAlign(Align.LEFT);
-		paint.setColor(Color.GREEN);
 		canvas.drawText(getResources().getString(
 				R.string.mag_graph_magnitude_label), width / 160, height / 2,
 				paint);
@@ -316,7 +317,7 @@ public class MagnitudeGraphView extends View {
 		}
 
 		// Draw the outline of the graph
-		paint.setColor(Color.LTGRAY);
+		paint.setAntiAlias(false);
 		canvas.drawLine(horizontalEdge, verticalEdge, width - horizontalEdge,
 				verticalEdge, paint);
 		canvas.drawLine(horizontalEdge, height - verticalEdge, width
@@ -342,6 +343,7 @@ public class MagnitudeGraphView extends View {
 		// Set color and stroke width for graph curve
 		paint.setColor(Color.rgb(255, 128, 0));
 		paint.setStrokeWidth(2);
+		paint.setAntiAlias(true);
 
 		// Draw a different graph depending on the size of values compared to
 		// netGraphWidth

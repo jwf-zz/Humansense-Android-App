@@ -9,9 +9,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Shader;
 import android.graphics.Paint.Align;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -342,6 +345,20 @@ public class MagnitudeGraphView extends View {
 		// Set color and stroke width for graph curve
 		paint.setColor(Color.rgb(255, 128, 0));
 		paint.setStrokeWidth(2);
+		final int[] colors = { Color.rgb(255, 0, 0), Color.rgb(255, 128, 0),
+				Color.rgb(255, 255, 0), Color.rgb(0, 255, 0),
+				Color.rgb(255, 255, 0), Color.rgb(255, 128, 0),
+				Color.rgb(255, 0, 0) };
+		paint
+				.setShader(new LinearGradient(
+						0,
+						(int) ((height / 2) - ((maxSpike > 20 ? maxSpike : 20)
+								/ (maxSpike == 0 ? 1 : maxSpike) * (netGraphHeight / 2))),
+						0,
+						(int) ((height / 2) + ((maxSpike > 20 ? maxSpike : 20)
+								/ (maxSpike == 0 ? 1 : maxSpike) * (netGraphHeight / 2))),
+						colors, null, Shader.TileMode.CLAMP));
+		Log.i("RAWRSPIKE", maxSpike + "");
 
 		// Draw a different graph depending on the size of values compared to
 		// netGraphWidth
@@ -360,6 +377,8 @@ public class MagnitudeGraphView extends View {
 						paint);
 			}
 		}
+
+		paint.setShader(null);
 
 	}
 

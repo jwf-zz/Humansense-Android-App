@@ -19,6 +19,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Toast;
 import ca.mcgill.hs.R;
 
 /**
@@ -166,7 +167,7 @@ public class MagnitudeGraphView extends View {
 		if (label.length() > 0) {
 			for (int i = 0; i < label.length(); i++) {
 				final char c = label.charAt(i);
-				if (!(Character.isDigit(c) || Character.isLetter(c) || c == '-' || c == '\'')) {
+				if (!(Character.isLetter(c) || c == '-' || c == '\'')) {
 					return false;
 				}
 			}
@@ -471,6 +472,15 @@ public class MagnitudeGraphView extends View {
 								// and label to linked lists
 								label = text.getText().toString();
 								if (!checkLabel()) {
+									final Toast slice = Toast
+											.makeText(
+													getContext(),
+													"Please enter letters, dashes and apostrophes only.",
+													Toast.LENGTH_LONG);
+									slice.setGravity(slice.getGravity(), slice
+											.getXOffset(), height - 2
+											* verticalEdge);
+									slice.show();
 									showDialog();
 									return;
 								}

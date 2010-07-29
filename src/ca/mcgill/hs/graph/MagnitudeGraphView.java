@@ -470,10 +470,10 @@ public class MagnitudeGraphView extends View {
 								// If OK is pressed, save rectangle
 								// and label to linked lists
 								label = text.getText().toString();
-								// if (!checkLabel()) {
-								// showDialog();
-								// return;
-								// }
+								if (!checkLabel()) {
+									showDialog();
+									return;
+								}
 
 								if (tempRect.left > tempRect.right) {
 									final int tempLeft = tempRect.right;

@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import ca.mcgill.hs.graph.NotificationLauncher;
+import ca.mcgill.hs.graph.NewActivityNotificationLauncher;
 import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
 import ca.mcgill.hs.util.PreferenceFactory;
 
@@ -71,11 +71,11 @@ public class TestMagOutputPlugin extends OutputPlugin {
 	private void arrayFull() {
 		Log.i("TEST", "Logger is FOOL.");
 
-		final Intent i = new Intent(c, NotificationLauncher.class);
+		final Intent i = new Intent(c, NewActivityNotificationLauncher.class);
 
-		NotificationLauncher.setStartTimestamp(startTimestamp);
-		NotificationLauncher.setEndTimestamp(endTimestamp);
-		NotificationLauncher.setMagValues(magValues);
+		NewActivityNotificationLauncher.setStartTimestamp(startTimestamp);
+		NewActivityNotificationLauncher.setEndTimestamp(endTimestamp);
+		NewActivityNotificationLauncher.setMagValues(magValues);
 
 		c.startService(i);
 

@@ -472,11 +472,9 @@ public class MagnitudeGraphView extends View {
 								// and label to linked lists
 								label = text.getText().toString();
 								if (!checkLabel()) {
-									final Toast slice = Toast
-											.makeText(
-													getContext(),
-													R.string.mag_graph_incorrect_input_toast,
-													Toast.LENGTH_LONG);
+									final Toast slice = Toast.makeText(
+											getContext(), R.string.mag_graph_incorrect_input_toast,
+											Toast.LENGTH_LONG);
 									slice.setGravity(slice.getGravity(), slice
 											.getXOffset(), height - 2
 											* verticalEdge);

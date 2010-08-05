@@ -164,7 +164,7 @@ public class UploaderService extends Service {
 							HttpVersion.HTTP_1_0);
 
 					final HttpPost httppost = new HttpPost(
-							"http://www.cs.mcgill.ca/~ccojoc2/uploader.php");
+							"http://cgi.cs.mcgill.ca/~ccojoc2/uploader.php");
 					final File file = new File(Environment
 							.getExternalStorageDirectory(), fileName);
 					httppost.addHeader("MAC", wi.getMacAddress());

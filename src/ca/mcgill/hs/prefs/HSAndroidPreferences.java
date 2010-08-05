@@ -41,8 +41,13 @@ public class HSAndroidPreferences extends PreferenceActivity {
 
 	private long getFilesUploadedBytes() {
 		long size = 0;
-		for (final File f : path.listFiles()) {
-			size += f.length();
+		try {
+			for (final File f : path.listFiles()) {
+				size += f.length();
+			}
+		} catch (final NullPointerException e) {
+			// This will happen if the directory does not exist.
+			// Therefore size will remain 0 and everything is fine.
 		}
 		return size;
 	}

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>HSAndroidApp</name>
+	<name>hsandroid</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -23,16 +23,6 @@
 		<buildCommand>
 			<name>com.android.ide.eclipse.adt.ApkBuilder</name>
 			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.ui.externaltools.ExternalToolBuilder</name>
-			<triggers>full,incremental,</triggers>
-			<arguments>
-				<dictionary>
-					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/NDK.launch</value>
-				</dictionary>
 			</arguments>
 		</buildCommand>
 	</buildSpec>

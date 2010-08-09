@@ -98,7 +98,9 @@ public class UploaderService extends Service {
 	 *            the duration of the toast.
 	 */
 	private void makeToast(final String message, final int duration) {
-		final Toast slice = Toast.makeText(getBaseContext(), message, duration);
+		final Toast slice = Toast.makeText(getBaseContext(), getResources()
+				.getString(R.string.uploader_appname_label)
+				+ message, duration);
 		slice.setGravity(slice.getGravity(), slice.getXOffset(), slice
 				.getYOffset() + 100);
 		slice.show();

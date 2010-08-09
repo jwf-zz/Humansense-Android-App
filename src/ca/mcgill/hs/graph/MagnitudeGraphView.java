@@ -475,7 +475,7 @@ public class MagnitudeGraphView extends View {
 									final Toast slice = Toast
 											.makeText(
 													getContext(),
-													"Please enter letters, dashes and apostrophes only.",
+													R.string.mag_graph_incorrect_input_toast,
 													Toast.LENGTH_LONG);
 									slice.setGravity(slice.getGravity(), slice
 											.getXOffset(), height - 2

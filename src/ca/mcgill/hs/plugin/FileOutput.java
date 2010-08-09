@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.zip.GZIPOutputStream;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.Preference;
@@ -23,6 +24,7 @@ import ca.mcgill.hs.plugin.GPSLogger.GPSLoggerPacket;
 import ca.mcgill.hs.plugin.GSMLogger.GSMLoggerPacket;
 import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
+import ca.mcgill.hs.serv.UploaderService;
 import ca.mcgill.hs.util.PreferenceFactory;
 
 /**
@@ -32,6 +34,9 @@ import ca.mcgill.hs.util.PreferenceFactory;
  * 
  */
 public class FileOutput extends OutputPlugin {
+
+	// The preference manager for this plugin.
+	final SharedPreferences prefs;
 
 	// HashMap used for keeping file handles. There is one file associated with
 	// each input plugin connected.
@@ -90,8 +95,7 @@ public class FileOutput extends OutputPlugin {
 		PLUGIN_STOPPING = false;
 		THREADS_WRITING = 0;
 
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
+		prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
 		PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
 		BUFFER_SIZE = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY,
@@ -203,6 +207,13 @@ public class FileOutput extends OutputPlugin {
 			}
 		} catch (final IOException ioe) {
 			ioe.printStackTrace();
+		}
+
+		if (prefs.getBoolean("autoUploadData", false)) {
+			Log.i("REACH", "REACH");
+			final Intent uploadIntent = new Intent(context,
+					UploaderService.class);
+			context.startService(uploadIntent);
 		}
 	}
 

@@ -62,9 +62,15 @@
 	<PreferenceCategory android:title="@string/uploader_options_cat">
 	
 		<Preference 
-		android:title="Clear Data"
+		android:title="@string/uploader_clear_data_title"
 		android:key="manualClearData"
 		android:summary="@string/uploader_clear_data_desc"
+		/>
+		
+		<CheckBoxPreference
+		android:title="@string/uploader_auto_upload_title"
+		android:key="autoUploadData"
+		android:summary="@string/uploader_auto_upload_desc"
 		/>
 	
 	</PreferenceCategory>

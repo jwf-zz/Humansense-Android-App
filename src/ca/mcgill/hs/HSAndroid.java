@@ -124,8 +124,8 @@ public class HSAndroid extends Activity {
 	public boolean onCreateOptionsMenu(final Menu menu) {
 		menu.add(0, MENU_SETTINGS, 0, R.string.settingString).setIcon(
 				R.drawable.options);
-		menu.add(0, MENU_UPLOAD, 1, R.string.settingString).setIcon(
-				R.drawable.options);
+		menu.add(0, MENU_UPLOAD, 1, R.string.uploadString).setIcon(
+				R.drawable.upload);
 		return true;
 	}
 
@@ -140,6 +140,11 @@ public class HSAndroid extends Activity {
 			final Intent i = new Intent(getBaseContext(),
 					ca.mcgill.hs.prefs.HSAndroidPreferences.class);
 			startActivity(i);
+			break;
+		case MENU_UPLOAD:
+			final Intent uploaderIntent = new Intent(getBaseContext(),
+					ca.mcgill.hs.serv.UploaderService.class);
+			startActivity(uploaderIntent);
 			break;
 		}
 		return false;

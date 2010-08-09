@@ -32,6 +32,7 @@
     <string name="no">No</string>
     <string name="OK">OK</string>
     <string name="cancel">Cancel</string>
+    <string name="uploader_appname_label">Humansense File Uploader:\n</string>
     <string name="uploader_no_errors_one_file">1 file was uploaded to server.</string>
     <string name="uploader_no_errors_multiple_files">files were uploaded to server.</string>
     <string name="uploader_unable_to_connect">Unable to connect to server.</string>

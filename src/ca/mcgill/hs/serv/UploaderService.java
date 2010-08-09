@@ -29,7 +29,6 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
-import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
 
 public class UploaderService extends Service {
@@ -143,9 +142,6 @@ public class UploaderService extends Service {
 					Toast.LENGTH_SHORT);
 			return;
 		}
-		HSAndroid.uploading = true;
-		HSAndroid.uploadButton.setEnabled(false);
-		HSAndroid.uploadButton.setText(R.string.uploading_label);
 
 		registerReceiver(completionReceiver, new IntentFilter(
 				UPLOAD_COMPLETE_INTENT));
@@ -189,6 +185,7 @@ public class UploaderService extends Service {
 						}
 
 						if (!responseMsg.contains("SUCCESS 0x64asv65")) {
+							Log.i("", responseMsg);
 							ERROR_CODE = UPLOAD_FAILED_ERROR_CODE;
 						}
 						// Move files to uploaded folder if successful
@@ -266,9 +263,6 @@ public class UploaderService extends Service {
 		default:
 			break;
 		}
-		HSAndroid.uploading = false;
-		HSAndroid.uploadButton.setEnabled(true);
-		HSAndroid.uploadButton.setText(R.string.upload_label);
 		unregisterReceiver(completionReceiver);
 		filesToUpload.clear();
 	}

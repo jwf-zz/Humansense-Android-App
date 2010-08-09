@@ -45,6 +45,7 @@
 	<string name="auto_start_at_phone_boot_pref">Automatically start logging when phone starts.</string>
 	<string name="auto_start_at_phone_boot_pref_title">Auto-Start at Phone Boot</string>
 	<string name="settingString">Settings</string>
+	<string name="uploadString">Upload</string>
     <string name="start_phone_boot_label">Start at phone boot.</string>
     <string name="no_start_phone_boot_label">Do not start at phone boot.</string>
     <string name="start_app_start_label">Start at application start.</string>

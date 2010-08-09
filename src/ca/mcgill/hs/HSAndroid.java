@@ -4,8 +4,6 @@
 package ca.mcgill.hs;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -15,7 +13,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import ca.mcgill.hs.serv.HSService;
-import ca.mcgill.hs.serv.UploaderService;
 
 /**
  * This Activity is the entry point to the HSAndroid application. This Activity
@@ -29,7 +26,6 @@ import ca.mcgill.hs.serv.UploaderService;
 public class HSAndroid extends Activity {
 
 	private static Button serviceSwitch;
-	public static Button uploadButton;
 
 	private Intent i;
 
@@ -37,8 +33,7 @@ public class HSAndroid extends Activity {
 	public static final String HSANDROID_PREFS_NAME = "HSAndroidPrefs";
 
 	private static final int MENU_SETTINGS = 13371337;
-
-	public static boolean uploading = false;
+	private static final int MENU_UPLOAD = 13371338;
 
 	/**
 	 * Updates the main starting button. This is required due to the nature of
@@ -99,39 +94,25 @@ public class HSAndroid extends Activity {
 		});
 
 		// Intent for the Uploader service
-		final Intent uploaderIntent = new Intent(this, UploaderService.class);
-
-		// YES-NO DIALOG BOX FOR FILE UPLOAD
-		final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog, final int which) {
-				switch (which) {
-				case DialogInterface.BUTTON_POSITIVE:
-					startService(uploaderIntent);
-					break;
-
-				case DialogInterface.BUTTON_NEGATIVE:
-					break;
-				}
-			}
-		};
-
-		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage(R.string.upload_query).setPositiveButton(
-				R.string.yes, dialogClickListener).setNegativeButton(
-				R.string.no, dialogClickListener);
-
-		uploadButton = (Button) findViewById(R.id.uploadButton);
-		uploadButton.setOnClickListener(new View.OnClickListener() {
-			public void onClick(final View v) {
-				builder.show();
-			}
-		});
-
-		if (uploading) {
-			uploadButton.setEnabled(false);
-			uploadButton.setText(R.string.stop_label);
-		}
+		/*
+		 * final Intent uploaderIntent = new Intent(this,
+		 * UploaderService.class);
+		 * 
+		 * // YES-NO DIALOG BOX FOR FILE UPLOAD final
+		 * DialogInterface.OnClickListener dialogClickListener = new
+		 * DialogInterface.OnClickListener() {
+		 * 
+		 * @Override public void onClick(final DialogInterface dialog, final int
+		 * which) { switch (which) { case DialogInterface.BUTTON_POSITIVE:
+		 * startService(uploaderIntent); break;
+		 * 
+		 * case DialogInterface.BUTTON_NEGATIVE: break; } } };
+		 * 
+		 * final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		 * builder.setMessage(R.string.upload_query).setPositiveButton(
+		 * R.string.yes, dialogClickListener).setNegativeButton( R.string.no,
+		 * dialogClickListener);
+		 */
 
 	}
 
@@ -142,6 +123,8 @@ public class HSAndroid extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(final Menu menu) {
 		menu.add(0, MENU_SETTINGS, 0, R.string.settingString).setIcon(
+				R.drawable.options);
+		menu.add(0, MENU_UPLOAD, 1, R.string.settingString).setIcon(
 				R.drawable.options);
 		return true;
 	}

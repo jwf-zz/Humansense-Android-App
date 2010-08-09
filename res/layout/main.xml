@@ -10,10 +10,4 @@
    	android:layout_height="wrap_content"
    	android:text="@string/start_label"
    	android:layout_y="20dip"/>
-	<Button 
-	android:layout_height="wrap_content" 
-	android:layout_x="190dip"
-	android:layout_y="360dip" 
-	android:id="@+id/uploadButton"
-	android:text="@string/upload_label" android:layout_width="130dip"></Button>
 </AbsoluteLayout>

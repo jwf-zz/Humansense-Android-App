@@ -63,7 +63,8 @@ public class UploaderService extends Service {
 	private final int IOEXCEPTION_ERROR_CODE = 0x3;
 	private final int UPLOAD_FAILED_ERROR_CODE = 0x4;
 
-	private int ERROR_CODE = NO_ERROR_CODE;
+	private int FINAL_ERROR_CODE = NO_ERROR_CODE;
+	private int TEMP_ERROR_CODE;
 
 	// Upload complete BroadcastReceiver
 	private final BroadcastReceiver completionReceiver = new BroadcastReceiver() {
@@ -165,11 +166,18 @@ public class UploaderService extends Service {
 			return;
 		}
 
-		registerReceiver(completionReceiver, new IntentFilter(
-				UPLOAD_COMPLETE_INTENT));
-
 		final WifiManager wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		final WifiInfo wi = wm.getConnectionInfo();
+		if (!(wm.isWifiEnabled() && wi != null)) {
+			makeToast(
+					getResources().getString(R.string.uploader_no_connection),
+					Toast.LENGTH_SHORT);
+			uploading = false;
+			return;
+		}
+
+		registerReceiver(completionReceiver, new IntentFilter(
+				UPLOAD_COMPLETE_INTENT));
 
 		// Launch Notification
 		final SharedPreferences prefs = PreferenceManager
@@ -202,6 +210,8 @@ public class UploaderService extends Service {
 			@Override
 			public void run() {
 				for (final String fileName : filesToUpload) {
+					TEMP_ERROR_CODE = NO_ERROR_CODE;
+
 					final HttpClient httpclient = new DefaultHttpClient();
 					httpclient.getParams().setParameter(
 							CoreProtocolPNames.PROTOCOL_VERSION,
@@ -234,10 +244,11 @@ public class UploaderService extends Service {
 
 						if (!responseMsg.contains("SUCCESS 0x64asv65")) {
 							Log.i("", responseMsg);
-							ERROR_CODE = UPLOAD_FAILED_ERROR_CODE;
+							FINAL_ERROR_CODE = UPLOAD_FAILED_ERROR_CODE;
+							TEMP_ERROR_CODE = UPLOAD_FAILED_ERROR_CODE;
 						}
 						// Move files to uploaded folder if successful
-						if (ERROR_CODE == NO_ERROR_CODE) {
+						if (TEMP_ERROR_CODE == NO_ERROR_CODE) {
 							final File dest = new File(Environment
 									.getExternalStorageDirectory(),
 									(String) getResources().getText(
@@ -260,14 +271,14 @@ public class UploaderService extends Service {
 					} catch (final MalformedURLException ex) {
 						Log.e("HSAndroid Upload", "error: " + ex.getMessage(),
 								ex);
-						ERROR_CODE = MALFORMEDURLEXCEPTION_ERROR_CODE;
+						FINAL_ERROR_CODE = MALFORMEDURLEXCEPTION_ERROR_CODE;
 					} catch (final UnknownHostException uhe) {
 						Log.w("HSAndroid Upload", "Unable to connect...");
-						ERROR_CODE = UNKNOWNHOSTEXCEPTION_ERROR_CODE;
+						FINAL_ERROR_CODE = UNKNOWNHOSTEXCEPTION_ERROR_CODE;
 					} catch (final IOException ioe) {
 						Log.e("HSAndroid Upload", "error: " + ioe.getMessage(),
 								ioe);
-						ERROR_CODE = IOEXCEPTION_ERROR_CODE;
+						FINAL_ERROR_CODE = IOEXCEPTION_ERROR_CODE;
 					}
 
 					httpclient.getConnectionManager().shutdown();
@@ -290,7 +301,7 @@ public class UploaderService extends Service {
 
 		uploading = false;
 
-		switch (ERROR_CODE) {
+		switch (FINAL_ERROR_CODE) {
 		case NO_ERROR_CODE:
 			final int fileCount = filesToUpload.size();
 			if (fileCount == 1) {

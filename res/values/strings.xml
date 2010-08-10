@@ -8,6 +8,8 @@
     <string name="notification_ticker">Humansense</string>
     <string name="notification_text">Select to provide more information.</string>
     <string name="notification_title">Humansense Unknown Activity</string>
+    <string name="notification_upload_text">Uploading files to server...</string>
+    <string name="notification_upload_title">Humansense Uploader</string>
     
     <!--  Utility Strings -->
     <string name="live_file_path">hsandroidapp/data/live/</string>

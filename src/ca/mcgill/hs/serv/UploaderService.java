@@ -18,15 +18,20 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 import ca.mcgill.hs.R;
@@ -38,6 +43,13 @@ public class UploaderService extends Service {
 
 	// Unuploaded dir path
 	private String UNUPLOADED_PATH;
+
+	// Boolean making sure we don't try to upload more than once.
+	private boolean uploading = false;
+
+	// Notifications for the upload
+	private final int NOTIFICATION_ID = 455926;
+	final String ns = Context.NOTIFICATION_SERVICE;
 
 	// The files to upload to server.
 	private final LinkedList<String> filesToUpload = new LinkedList<String>();
@@ -137,11 +149,19 @@ public class UploaderService extends Service {
 	 * uploading files to the server.
 	 */
 	@Override
-	public void onStart(final Intent intent, final int startId) {
+	public synchronized void onStart(final Intent intent, final int startId) {
+
+		if (uploading) {
+			return;
+		} else {
+			uploading = true;
+		}
+
 		addFiles();
 		if (filesToUpload.size() == 0) {
 			makeToast(getResources().getString(R.string.uploader_no_new_files),
 					Toast.LENGTH_SHORT);
+			uploading = false;
 			return;
 		}
 
@@ -150,6 +170,44 @@ public class UploaderService extends Service {
 
 		final WifiManager wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		final WifiInfo wi = wm.getConnectionInfo();
+
+		// Launch Notification
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(this);
+
+		final NotificationManager nm = (NotificationManager) getSystemService(ns);
+
+		nm.cancel(NOTIFICATION_ID);
+
+		final int icon = R.drawable.notification_icon;
+		final String tickerText = getResources().getString(
+				R.string.notification_ticker);
+		final String contentTitle = getResources().getString(
+				R.string.notification_upload_title);
+		final String contentText = getResources().getString(
+				R.string.notification_upload_text);
+
+		final Notification n = new Notification(icon, tickerText, System
+				.currentTimeMillis());
+
+		if (prefs.getBoolean("notificationSoundPref", true)) {
+			n.defaults |= Notification.DEFAULT_SOUND;
+		}
+		if (prefs.getBoolean("notificationVibratePref", true)) {
+			n.defaults |= Notification.DEFAULT_VIBRATE;
+		}
+		n.flags |= Notification.FLAG_AUTO_CANCEL;
+
+		n.flags |= Notification.FLAG_SHOW_LIGHTS;
+		n.defaults |= Notification.DEFAULT_LIGHTS;
+		n.ledARGB = 0xff00ff00;
+
+		final Intent i = new Intent(this, HSService.class);
+		n.setLatestEventInfo(this, contentTitle, contentText, PendingIntent
+				.getActivity(this.getBaseContext(), 0, i,
+						PendingIntent.FLAG_CANCEL_CURRENT));
+
+		nm.notify(NOTIFICATION_ID, n);
 
 		// The thread in which the files will be uploaded.
 		new Thread() {
@@ -239,6 +297,11 @@ public class UploaderService extends Service {
 	 * resets the Upload button.
 	 */
 	private void onUploadComplete() {
+		final NotificationManager nm = (NotificationManager) getSystemService(ns);
+		nm.cancel(NOTIFICATION_ID);
+
+		uploading = false;
+
 		switch (ERROR_CODE) {
 		case NO_ERROR_CODE:
 			final int fileCount = filesToUpload.size();

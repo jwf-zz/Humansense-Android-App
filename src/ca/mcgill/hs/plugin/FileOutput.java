@@ -68,6 +68,9 @@ public class FileOutput extends OutputPlugin {
 	// Boolean ON-OFF switch *Temporary only*
 	private boolean PLUGIN_ACTIVE;
 
+	// A boolean making sure we're not uselessly uploading.
+	private boolean hasRunOnce = false;
+
 	// Preference key for this plugin's state
 	private final static String PLUGIN_ACTIVE_KEY = "fileOutputEnabled";
 	// Date format used in the log file names
@@ -406,7 +409,11 @@ public class FileOutput extends OutputPlugin {
 
 			// If files need to be rolled over, close all currently open
 			// files and clear the hash map.
-			closeAll();
+			if (hasRunOnce) {
+				closeAll();
+			} else {
+				hasRunOnce = true;
+			}
 			Log.i("ROLLOVER", "Creating rollover timestamp.");
 			rolloverTimestamp = currentTimeMillis + ROLLOVER_INTERVAL;
 		}

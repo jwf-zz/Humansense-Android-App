@@ -190,18 +190,6 @@ public class UploaderService extends Service {
 		final Notification n = new Notification(icon, tickerText, System
 				.currentTimeMillis());
 
-		if (prefs.getBoolean("notificationSoundPref", true)) {
-			n.defaults |= Notification.DEFAULT_SOUND;
-		}
-		if (prefs.getBoolean("notificationVibratePref", true)) {
-			n.defaults |= Notification.DEFAULT_VIBRATE;
-		}
-		n.flags |= Notification.FLAG_AUTO_CANCEL;
-
-		n.flags |= Notification.FLAG_SHOW_LIGHTS;
-		n.defaults |= Notification.DEFAULT_LIGHTS;
-		n.ledARGB = 0xff00ff00;
-
 		final Intent i = new Intent(this, HSService.class);
 		n.setLatestEventInfo(this, contentTitle, contentText, PendingIntent
 				.getActivity(this.getBaseContext(), 0, i,

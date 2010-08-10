@@ -66,26 +66,20 @@ public class GSMLogger extends InputPlugin {
 
 	}
 
+	/**
+	 * Returns whether or not this InputPlugin has Preferences.
+	 * 
+	 * @return whether or not this InputPlugin has preferences.
+	 */
+	public static boolean hasPreferences() {
+		return true;
+	}
+
 	// Boolean ON-OFF switch *Temporary only*
 	private boolean PLUGIN_ACTIVE;
 
 	// A String used for logging information to the android's logcat.
 	private static final String TAG = "GSMLogger";
-
-	// The TelephonyManager required to receive information about the device.
-	private final TelephonyManager tm;
-
-	// A PhoneStateListener used to listen to phone signals.
-	private PhoneStateListener psl;
-
-	// Variables used to write out the GSM data received.
-	private static long time;
-	private static int cid;
-	private static int lac;
-	private static int ns;
-	private static int[] cids;
-	private static int[] lacs;
-	private static int[] rssis;
 
 	/**
 	 * Returns the list of Preference objects for this InputPlugin.
@@ -105,14 +99,11 @@ public class GSMLogger extends InputPlugin {
 		return prefs;
 	}
 
-	/**
-	 * Returns whether or not this InputPlugin has Preferences.
-	 * 
-	 * @return whether or not this InputPlugin has preferences.
-	 */
-	public static boolean hasPreferences() {
-		return true;
-	}
+	// The TelephonyManager required to receive information about the device.
+	private final TelephonyManager tm;
+
+	// A PhoneStateListener used to listen to phone signals.
+	private PhoneStateListener psl;
 
 	// The Context used for the plugins.
 	private final Context context;
@@ -165,39 +156,45 @@ public class GSMLogger extends InputPlugin {
 		if (!PLUGIN_ACTIVE) {
 			return;
 		}
+		// Log.d(TAG, "Network Operator: " + tm.getNetworkOperator());
+		// Log.d(TAG, "Network Operator Name: " + tm.getNetworkOperatorName());
+		// Log.d(TAG, "Network Type: " + tm.getNetworkType());
+		// Log.d(TAG, "Phone Type: " + tm.getPhoneType());
 		if (tm.getPhoneType() == TelephonyManager.PHONE_TYPE_GSM
 				&& tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT) {
 			psl = new PhoneStateListener() {
-				private int rssi = -1, mcc = -1, mnc = -1;
+				private int rssi = -1;
+				private int mcc = -1;
+				private int mnc = -1;
+				private final TelephonyManager tmanager = tm;
 
 				public void logSignals(final GsmCellLocation cell) {
 					if (cell == null) {
 						return;
 					}
-					time = System.currentTimeMillis();
-					cid = cell.getCid();
-					lac = cell.getLac();
+					final long time = System.currentTimeMillis();
+					final int cid = cell.getCid();
+					final int lac = cell.getLac();
 
-					final List<NeighboringCellInfo> neighbours = tm
+					final List<NeighboringCellInfo> neighbours = tmanager
 							.getNeighboringCellInfo();
 
-					ns = neighbours.size();
-					cids = new int[ns];
-					lacs = new int[ns];
-					rssis = new int[ns];
+					final int ns = neighbours.size();
+					final int[] cids = new int[ns];
+					final int[] lacs = new int[ns];
+					final int[] rssis = new int[ns];
 
-					int asu, rssi;
+					int asu;
 					int i = 0;
 					for (final NeighboringCellInfo neighbour : neighbours) {
 						cids[i] = neighbour.getCid();
 						lacs[i] = neighbour.getLac();
 						asu = neighbour.getRssi();
 						if (asu == -1) {
-							rssi = -1;
+							rssis[i] = -1;
 						} else {
-							rssi = (-113 + 2 * asu);
+							rssis[i] = (-113 + 2 * asu);
 						}
-						rssis[i] = rssi;
 						i++;
 					}
 
@@ -220,18 +217,15 @@ public class GSMLogger extends InputPlugin {
 					case ServiceState.STATE_IN_SERVICE:
 					case ServiceState.STATE_EMERGENCY_ONLY:
 						final String op = serviceState.getOperatorNumeric();
-
+						// Log.d(TAG, "Operator Numeric Code: " + op);
 						if (op.length() > 3) {
-							final String mccStr = op.substring(0, 3);
-							final String mncStr = op.substring(3);
-
 							try {
-								mcc = Integer.parseInt(mccStr);
-								mnc = Integer.parseInt(mncStr);
+								mcc = Integer.parseInt(op.substring(0, 3));
+								mnc = Integer.parseInt(op.substring(3));
 							} catch (final Exception e) {
 							}
 						}
-
+						CellLocation.requestLocationUpdate();
 						break;
 					case ServiceState.STATE_POWER_OFF:
 						break;
@@ -245,14 +239,17 @@ public class GSMLogger extends InputPlugin {
 				public void onSignalStrengthsChanged(
 						final SignalStrength strength) {
 					super.onSignalStrengthsChanged(strength);
-					final int asu = strength.getGsmSignalStrength();
-					if (asu == -1) {
-						rssi = -1;
+					if (strength.isGsm()) {
+						final int asu = strength.getGsmSignalStrength();
+						if (asu == -1) {
+							rssi = -1;
+						} else {
+							rssi = (-113 + 2 * asu);
+						}
+						logSignals((GsmCellLocation) tm.getCellLocation());
 					} else {
-						rssi = (-113 + 2 * asu);
+						Log.d(TAG, "Signal Strength not for GSM.");
 					}
-
-					logSignals((GsmCellLocation) tm.getCellLocation());
 				}
 			};
 			tm.listen(psl, PhoneStateListener.LISTEN_SERVICE_STATE

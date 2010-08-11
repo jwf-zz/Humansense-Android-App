@@ -2,9 +2,14 @@
 <launchConfiguration type="org.eclipse.ui.externaltools.ProgramBuilderLaunchConfigurationType">
 <booleanAttribute key="org.eclipse.debug.ui.ATTR_LAUNCH_IN_BACKGROUND" value="false"/>
 <booleanAttribute key="org.eclipse.ui.externaltools.ATTR_BUILDER_ENABLED" value="false"/>
+<<<<<<< HEAD:.externalToolBuilders/NDK.launch
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="/home/ml/jpitre5/applications/android-ndk-r4/ndk-build"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_RUN_BUILD_KINDS" value="full,incremental,"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="-j4 V=1"/>
+=======
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="/home/ml/ccojoc2/applications/android-ndk-r4/ndk-build"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_RUN_BUILD_KINDS" value="full,incremental,"/>
+>>>>>>> 1992d521fad75467c6ead2bce6945abde3b70aef:.externalToolBuilders/NDK.launch
 <booleanAttribute key="org.eclipse.ui.externaltools.ATTR_TRIGGERS_CONFIGURED" value="true"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${workspace_loc:/HSAndroidApp}"/>
 </launchConfiguration>

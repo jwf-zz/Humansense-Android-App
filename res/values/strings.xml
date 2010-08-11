@@ -40,7 +40,7 @@
     <string name="uploader_unable_to_connect">Unable to connect to server.</string>
     <string name="uploader_upload_failed">One or more files have failed to upload.</string>
     <string name="uploader_no_new_files">No new files to upload.</string>
-    <string name="uploader_no_connection">No Wifi connections could be found.</string>
+    <string name="uploader_no_connection">No Wi-Fi connections could be found.</string>
     <string name="activity_magnitude_graph_label">Activity Recognition Graph</string>
     
 	<!-- Preferences Strings -->
@@ -67,13 +67,13 @@
     <string name="uploader_clear_data_desc">Clears data already uploaded to the server.\n</string>
     <string name="uploader_auto_upload_title">Upload Automatically</string>
     <string name="uploader_auto_upload_desc">Automatically upload files whenever they are available.\n</string>
-    <string name="uploader_only_use_wifi_title">Only Use Wifi</string>
-    <string name="uploader_only_use_wifi_desc">Forces the phone to only upload files via wifi.\n</string>
+    <string name="uploader_only_use_wifi_title">Only Use Wi-Fi</string>
+    <string name="uploader_only_use_wifi_desc">Forces the phone to only upload files via Wi-Fi.\n</string>
     
     <string name="set_preferences">Preferences</string>
     <string name="set_input_preferences">Input Plugin Preferences</string>
     <string name="set_output_preferences">Output Plugin Preferences</string>
-    <string name="wifilogger_interval_pref">Wifi Logging Interval</string>
+    <string name="wifilogger_interval_pref">Wi-Fi Logging Interval</string>
     <string name="wifilogger_interval_pref_summary">The time interval between two subsequent scans.</string>
     <string name="bluetoothlogger_autoenable_pref_label">BT Auto-Enable</string>
     <string name="bluetoothlogger_autoenable_pref_summary">Auto-Enables the Bluetooth adapter when logging is started.</string>

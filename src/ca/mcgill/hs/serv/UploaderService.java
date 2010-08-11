@@ -168,7 +168,12 @@ public class UploaderService extends Service {
 
 		final WifiManager wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		final WifiInfo wi = wm.getConnectionInfo();
-		if (!(wm.isWifiEnabled() && wi != null)) {
+
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(this);
+
+		if (prefs.getBoolean("uploadWifiOnly", false)
+				&& !(wm.isWifiEnabled() && wi != null)) {
 			makeToast(
 					getResources().getString(R.string.uploader_no_connection),
 					Toast.LENGTH_SHORT);
@@ -178,10 +183,6 @@ public class UploaderService extends Service {
 
 		registerReceiver(completionReceiver, new IntentFilter(
 				UPLOAD_COMPLETE_INTENT));
-
-		// Launch Notification
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(this);
 
 		final NotificationManager nm = (NotificationManager) getSystemService(ns);
 

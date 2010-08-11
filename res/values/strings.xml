@@ -67,6 +67,8 @@
     <string name="uploader_clear_data_desc">Clears data already uploaded to the server.\n</string>
     <string name="uploader_auto_upload_title">Upload Automatically</string>
     <string name="uploader_auto_upload_desc">Automatically upload files whenever they are available.\n</string>
+    <string name="uploader_only_use_wifi_title">Only Use Wifi</string>
+    <string name="uploader_only_use_wifi_desc">Forces the phone to only upload files via wifi.\n</string>
     
     <string name="set_preferences">Preferences</string>
     <string name="set_input_preferences">Input Plugin Preferences</string>

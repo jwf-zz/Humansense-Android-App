@@ -72,6 +72,12 @@
 		android:key="autoUploadData"
 		android:summary="@string/uploader_auto_upload_desc"
 		/>
+		
+		<CheckBoxPreference
+		android:title="@string/uploader_only_use_wifi_title"
+		android:key="uploadWifiOnly"
+		android:summary="@string/uploader_only_use_wifi_desc"
+		/>
 	
 	</PreferenceCategory>
 </PreferenceScreen>

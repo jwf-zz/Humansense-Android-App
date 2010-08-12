@@ -60,12 +60,6 @@
 	</PreferenceCategory>
 	
 	<PreferenceCategory android:title="@string/uploader_options_cat">
-	
-		<Preference 
-		android:title="@string/uploader_clear_data_title"
-		android:key="manualClearData"
-		android:summary="@string/uploader_clear_data_desc"
-		/>
 		
 		<CheckBoxPreference
 		android:title="@string/uploader_auto_upload_title"
@@ -77,6 +71,12 @@
 		android:title="@string/uploader_only_use_wifi_title"
 		android:key="uploadWifiOnly"
 		android:summary="@string/uploader_only_use_wifi_desc"
+		/>
+	
+		<Preference 
+		android:title="@string/uploader_clear_data_title"
+		android:key="manualClearData"
+		android:summary="@string/uploader_clear_data_desc"
 		/>
 	
 	</PreferenceCategory>

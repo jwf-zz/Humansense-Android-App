@@ -477,13 +477,13 @@ public class MagnitudeGraphView extends View {
 		}
 		paint.setColor(Color.WHITE);
 		RectF legendBtn = new RectF(width - horizontalEdge + width / 160,
-				height / 2 - height / 8, width - width / 160, height / 2
-						+ height / 8);
+				height / 2 - height / 13, width - width / 160, height / 2
+						+ height / 13);
 		canvas.drawRoundRect(legendBtn, 5f, 5f, paint);
 		paint.setColor(Color.BLACK);
 		legendBtn = new RectF(width - horizontalEdge + width / 160 + 2, height
-				/ 2 - height / 8 + 2, width - width / 160 - 2, height / 2
-				+ height / 8 - 2);
+				/ 2 - height / 13 + 2, width - width / 160 - 2, height / 2
+				+ height / 13 - 2);
 		canvas.drawRoundRect(legendBtn, 5f, 5f, paint);
 		paint.setColor(Color.GREEN);
 		paint.setTextSize(axisTitleSize);

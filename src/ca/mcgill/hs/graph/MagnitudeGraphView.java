@@ -18,6 +18,7 @@ import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Paint.Align;
 import android.os.Environment;
@@ -474,20 +475,44 @@ public class MagnitudeGraphView extends View {
 				}
 			}
 		}
+		paint.setColor(Color.WHITE);
+		RectF legendBtn = new RectF(width - horizontalEdge + width / 160,
+				height / 2 - height / 8, width - width / 160, height / 2
+						+ height / 8);
+		canvas.drawRoundRect(legendBtn, 5f, 5f, paint);
+		paint.setColor(Color.BLACK);
+		legendBtn = new RectF(width - horizontalEdge + width / 160 + 2, height
+				/ 2 - height / 8 + 2, width - width / 160 - 2, height / 2
+				+ height / 8 - 2);
+		canvas.drawRoundRect(legendBtn, 5f, 5f, paint);
+		paint.setColor(Color.GREEN);
+		paint.setTextSize(axisTitleSize);
+		canvas.drawText(getResources().getString(
+				R.string.mag_graph_legend_label), width - horizontalEdge / 2,
+				height / 2 + height / 80, paint);
+
 		if (legend != null) {
 			paint.setColor(0xA0000000);
 			canvas.drawRect(legend, paint);
 			for (int i = 0; i < indexOfActivities.activityNames.length; i++) {
 				paint.setColor(indexOfActivities.activityColors[i]);
-				paint.setStrokeWidth(5);
+				paint.setStrokeWidth(netGraphHeight / 74);
 				paint.setTextAlign(Align.LEFT);
-				canvas.drawLine(horizontalEdge + 20 + i % 4 * 160, height
-						- verticalEdge - 30 - i / 4 * 30, horizontalEdge + 20
-						+ i % 4 * 160 + 50, height - verticalEdge - 30 - i / 4
-						* 30, paint);
+				paint.setTextSize(axisValueSize);
+				canvas.drawLine(horizontalEdge + netGraphWidth / 30 + i % 4
+						* (netGraphWidth / 4),
+						height - verticalEdge - (netGraphHeight / 12) - i / 4
+								* (netGraphHeight / 12), horizontalEdge
+								+ (netGraphWidth / 30) + i % 4
+								* (netGraphWidth / 4) + (netGraphWidth / 15),
+						height - verticalEdge - (netGraphHeight / 12) - i / 4
+								* (netGraphHeight / 12), paint);
 				canvas.drawText(indexOfActivities.activityNames[i],
-						horizontalEdge + 20 + i % 4 * 160 + 50 + 5, height
-								- verticalEdge - 30 - i / 4 * 30 + 4, paint);
+						horizontalEdge + (netGraphWidth / 30) + i % 4
+								* (netGraphWidth / 4) + (netGraphWidth / 15)
+								+ (netGraphWidth / 128), height - verticalEdge
+								- (netGraphHeight / 12) - i / 4
+								* (netGraphHeight / 12) + height / 100, paint);
 			}
 			paint.setStrokeWidth(0);
 		}
@@ -504,10 +529,11 @@ public class MagnitudeGraphView extends View {
 		final float y = event.getY();
 		final int leftLimit = horizontalEdge + 1;
 		final int rightLimit = width - horizontalEdge - 1;
-
 		// Touch+drag rectangle code
 		if (action == MotionEvent.ACTION_DOWN) {
-			if (x > rightLimit) {
+			if (x >= width - horizontalEdge + width / 160
+					&& x <= width - width / 160 && y <= height / 2 + height / 8
+					&& y >= height / 2 - height / 8) {
 				possibleLegendPress = true;
 			}
 			tempRect = new Rect((int) x, height - verticalEdge, (int) x,
@@ -532,7 +558,10 @@ public class MagnitudeGraphView extends View {
 				adjustRect();
 			}
 		} else if (action == MotionEvent.ACTION_UP) {
-			if (possibleLegendPress == true) {
+			if (possibleLegendPress == true
+					&& x >= width - horizontalEdge + width / 160
+					&& x <= width - width / 160 && y <= height / 2 + height / 8
+					&& y >= height / 2 - height / 8) {
 				if (legendOn == false) {
 					legend = new Rect(horizontalEdge + 1, verticalEdge + 1,
 							width - horizontalEdge - 1, height - verticalEdge

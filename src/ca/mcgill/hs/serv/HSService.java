@@ -31,7 +31,7 @@ import ca.mcgill.hs.util.PreferenceFactory;
 public class HSService extends Service {
 
 	private static boolean isRunning;
-	private Context PASSABLE_CONTEXT;
+	private static Context PASSABLE_CONTEXT;
 
 	// Lists of the plugins currently enabled.
 	private static final LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
@@ -61,6 +61,15 @@ public class HSService extends Service {
 			preferencesChangedIntentReceived();
 		}
 	};
+
+	/**
+	 * Populates the list of output plugins.
+	 */
+	private static void addOutputPlugins() {
+		outputPluginList.add(new ScreenOutput(PASSABLE_CONTEXT));
+		outputPluginList.add(new FileOutput(PASSABLE_CONTEXT));
+		outputPluginList.add(new TestMagOutputPlugin(PASSABLE_CONTEXT, 100));
+	}
 
 	/**
 	 * Returns a boolean indicating if the service is running or not.
@@ -127,15 +136,6 @@ public class HSService extends Service {
 		inputPluginList.add(new WifiLogger(
 				(WifiManager) getSystemService(Context.WIFI_SERVICE),
 				PASSABLE_CONTEXT));
-	}
-
-	/**
-	 * Populates the list of output plugins.
-	 */
-	private void addOutputPlugins() {
-		outputPluginList.add(new ScreenOutput(PASSABLE_CONTEXT));
-		outputPluginList.add(new FileOutput(PASSABLE_CONTEXT));
-		outputPluginList.add(new TestMagOutputPlugin(PASSABLE_CONTEXT, 100));
 	}
 
 	@Override

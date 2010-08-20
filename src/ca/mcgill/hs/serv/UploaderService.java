@@ -66,6 +66,8 @@ public class UploaderService extends Service {
 	private int FINAL_ERROR_CODE = NO_ERROR_CODE;
 	private int TEMP_ERROR_CODE;
 
+	private static final String TAG = "HSUploaderService";
+
 	// Upload complete BroadcastReceiver
 	private final BroadcastReceiver completionReceiver = new BroadcastReceiver() {
 		@Override
@@ -212,7 +214,7 @@ public class UploaderService extends Service {
 			public void run() {
 				for (final String fileName : filesToUpload) {
 					TEMP_ERROR_CODE = NO_ERROR_CODE;
-
+					Log.d(TAG, "Uploading " + fileName);
 					final HttpClient httpclient = new DefaultHttpClient();
 					httpclient.getParams().setParameter(
 							CoreProtocolPNames.PROTOCOL_VERSION,
@@ -237,14 +239,14 @@ public class UploaderService extends Service {
 						String responseMsg = "";
 						if (resEntity != null) {
 							responseMsg = EntityUtils.toString(resEntity);
-							Log.i("Server Response", responseMsg);
+							Log.i(TAG, "Server Response: " + responseMsg);
 						}
 						if (resEntity != null) {
 							resEntity.consumeContent();
 						}
 
 						if (!responseMsg.contains("SUCCESS 0x64asv65")) {
-							Log.i("", responseMsg);
+							Log.i(TAG, "Server Response: " + responseMsg);
 							FINAL_ERROR_CODE = UPLOAD_FAILED_ERROR_CODE;
 							TEMP_ERROR_CODE = UPLOAD_FAILED_ERROR_CODE;
 						}
@@ -270,15 +272,13 @@ public class UploaderService extends Service {
 						}
 
 					} catch (final MalformedURLException ex) {
-						Log.e("HSAndroid Upload", "error: " + ex.getMessage(),
-								ex);
+						Log.e(TAG, "error: " + ex.getMessage(), ex);
 						FINAL_ERROR_CODE = MALFORMEDURLEXCEPTION_ERROR_CODE;
 					} catch (final UnknownHostException uhe) {
-						Log.w("HSAndroid Upload", "Unable to connect...");
+						Log.w(TAG, "Unable to connect...");
 						FINAL_ERROR_CODE = UNKNOWNHOSTEXCEPTION_ERROR_CODE;
 					} catch (final IOException ioe) {
-						Log.e("HSAndroid Upload", "error: " + ioe.getMessage(),
-								ioe);
+						Log.e(TAG, "error: " + ioe.getMessage(), ioe);
 						FINAL_ERROR_CODE = IOEXCEPTION_ERROR_CODE;
 					}
 

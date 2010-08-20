@@ -1,5 +1,11 @@
 package ca.mcgill.hs.graph;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.OptionalDataException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
@@ -14,6 +20,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.Paint.Align;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,6 +28,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 import ca.mcgill.hs.R;
+import ca.mcgill.hs.util.ActivityIndex;
 
 /**
  * This is the main view for the MagnitudeGraph activity. It draws the activity
@@ -34,6 +42,7 @@ public class MagnitudeGraphView extends View {
 	// These are the values and the two timestamps that are given/required to
 	// draw the graph.
 	private final float[] values;
+	private final int[] activities;
 	private final long start;
 	private final long end;
 
@@ -53,6 +62,9 @@ public class MagnitudeGraphView extends View {
 	// These variables are used in order to correctly draw and label the
 	// activity selections.
 	private Rect tempRect;
+	private Rect legend;
+	private boolean legendOn;
+	private boolean possibleLegendPress;
 	private int originalLeft;
 	private String label;
 	private int minRectSize;
@@ -102,6 +114,8 @@ public class MagnitudeGraphView extends View {
 	// calculations during onDraw()
 	private boolean instantiated;
 
+	private ActivityIndex indexOfActivities;
+
 	/**
 	 * The basic constructor for this object. This draws a graph with the
 	 * appropriate values given and the correct timestamps.
@@ -118,10 +132,12 @@ public class MagnitudeGraphView extends View {
 	 *            The end timestamp for the graph.
 	 */
 	public MagnitudeGraphView(final Context context, final String title,
-			final float[] values, final long start, final long end) {
+			final float[] values, final int[] activities, final long start,
+			final long end) {
 		super(context);
 		this.title = title;
 		this.values = values;
+		this.activities = activities;
 		this.start = start;
 		this.end = end;
 		this.startTime = new Date(this.start);
@@ -132,6 +148,59 @@ public class MagnitudeGraphView extends View {
 		this.max = values[0];
 		this.min = values[0];
 		instantiated = false;
+		this.indexOfActivities = null;
+		final boolean write = true;
+		if (write) {
+			final String[] acts = { "walking", "running", "jumping", "biking",
+					"driving", "sitting", "swimming", "nothing", "blah",
+					"failing", "writing", "talking", "standing", "sleeping",
+					"rollerblading", "kayaking" };
+			final int[] codes = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8,
+					0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF };
+			final int[] colors = { 0xFFFF0000, 0xFFFF8000, 0xFFFFFF00,
+					0xFF80FF00, 0xFF00FF00, 0xFF00FF80, 0xFF00FFFF, 0xFF0080FF,
+					0xFF0000FF, 0xFF8000FF, 0xFFFF00FF, 0xFFFF0080, 0xFFFFFFFF,
+					0xFFB88A00, 0xFFF5B800, 0xFF339933 };
+
+			this.indexOfActivities = new ActivityIndex(acts, codes, colors);
+		} else {
+			try {
+
+				final File j = new File(Environment
+						.getExternalStorageDirectory(), (String) context
+						.getResources().getText(R.string.activity_file_path));
+				final File file = new File(j, "ActivityIndex.aif");
+				final FileInputStream fis = new FileInputStream(file);
+				final ObjectInputStream ois = new ObjectInputStream(fis);
+				this.indexOfActivities = (ActivityIndex) ois.readObject();
+				ois.close();
+				fis.close();
+			} catch (final FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (final OptionalDataException e) {
+				e.printStackTrace();
+			} catch (final ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (final IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		/*
+		 * try { final File j = new
+		 * File(Environment.getExternalStorageDirectory(), (String)
+		 * context.getResources().getText( R.string.activity_file_path)); if
+		 * (!j.isDirectory()) { if (!j.mkdirs()) { Log.e("Output Dir",
+		 * "Could not create output directory!"); return; } } final File file =
+		 * new File(j, "ActivityIndex.aif"); if (!file.exists()) {
+		 * file.createNewFile(); } final FileOutputStream fos = new
+		 * FileOutputStream(file); final ObjectOutputStream oos = new
+		 * ObjectOutputStream(fos); oos.writeObject(indexOfActivities);
+		 * oos.close(); fos.close(); } catch (final FileNotFoundException e) {
+		 * e.printStackTrace(); } catch (final IOException i) {
+		 * i.printStackTrace(); }
+		 */
+
 	}
 
 	/**
@@ -196,10 +265,12 @@ public class MagnitudeGraphView extends View {
 		netGraphHeight = height - 2 * verticalEdge;
 
 		// Padding inside the graph to keep curve from touching top/bottom
-		padding = netGraphHeight / 20;
+		padding = netGraphHeight / 15;
 
 		// The minimum size of rectangle that can be selected to label
 		minRectSize = width / 30;
+
+		possibleLegendPress = false;
 
 		// Calculate optimal font sizes
 		titleSize = width / 32;
@@ -321,14 +392,15 @@ public class MagnitudeGraphView extends View {
 
 		// Draw the outline of the graph
 		paint.setAntiAlias(false);
-		canvas.drawLine(horizontalEdge, verticalEdge, width - horizontalEdge,
-				verticalEdge, paint);
-		canvas.drawLine(horizontalEdge, height - verticalEdge, width
-				- horizontalEdge, height - verticalEdge, paint);
-		canvas.drawLine(horizontalEdge, verticalEdge, horizontalEdge, height
-				- verticalEdge, paint);
-		canvas.drawLine(width - horizontalEdge, verticalEdge, width
-				- horizontalEdge, height - verticalEdge, paint);
+		paint.setStrokeWidth(2);
+		canvas.drawLine(horizontalEdge - 1, verticalEdge, width
+				- horizontalEdge + 1, verticalEdge, paint);
+		canvas.drawLine(horizontalEdge - 1, height - verticalEdge, width
+				- horizontalEdge + 1, height - verticalEdge, paint);
+		canvas.drawLine(horizontalEdge - 1, verticalEdge, horizontalEdge - 1,
+				height - verticalEdge, paint);
+		canvas.drawLine(width - horizontalEdge + 1, verticalEdge, width
+				- horizontalEdge + 1, height - verticalEdge, paint);
 
 		// Draw the gridlines
 		paint.setColor(Color.DKGRAY);
@@ -338,9 +410,9 @@ public class MagnitudeGraphView extends View {
 					height - verticalEdge, paint);
 		}
 		for (int i = 1; i < 4; i++) {
-			canvas.drawLine(horizontalEdge, verticalEdge + i * netGraphHeight
-					/ 4, width - horizontalEdge, verticalEdge + i
-					* netGraphHeight / 4, paint);
+			canvas.drawLine(horizontalEdge - 1, verticalEdge + i
+					* netGraphHeight / 4, width - horizontalEdge + 1,
+					verticalEdge + i * netGraphHeight / 4, paint);
 		}
 
 		// Set color and stroke width for graph curve
@@ -370,6 +442,17 @@ public class MagnitudeGraphView extends View {
 						+ 1, height / 2 - trimmedValues[i + 1] * verticalScale,
 						paint);
 			}
+			paint.setShader(null);
+			for (int i = 0; i < trimmedValuesLength - 1; i++) {
+				for (int a = 0; a < indexOfActivities.activityCodes.length; a++) {
+					if (indexOfActivities.activityCodes[a] == activities[i]) {
+						paint.setColor(indexOfActivities.activityColors[a]);
+					}
+				}
+				canvas.drawLine(1 + horizontalEdge + i, height - verticalEdge
+						- padding / 3, 1 + horizontalEdge + i, height
+						- verticalEdge, paint);
+			}
 		} else {
 			for (int i = 0; i < values.length - 1; i++) {
 				canvas.drawLine(horizontalEdge + (i * spacing), height / 2
@@ -377,10 +460,37 @@ public class MagnitudeGraphView extends View {
 						* spacing, height / 2 - values[i + 1] * verticalScale,
 						paint);
 			}
+			paint.setShader(null);
+			if (indexOfActivities != null) {
+				for (int i = 0; i < values.length - 1; i++) {
+					for (int a = 0; a < indexOfActivities.activityCodes.length; a++) {
+						if (indexOfActivities.activityCodes[a] == activities[i]) {
+							paint.setColor(indexOfActivities.activityColors[a]);
+						}
+					}
+					canvas.drawRect(horizontalEdge + (i * spacing), height
+							- verticalEdge - padding / 3, 1 + horizontalEdge
+							+ (i + 1) * spacing, height - verticalEdge, paint);
+				}
+			}
 		}
-
-		paint.setShader(null);
-
+		if (legend != null) {
+			paint.setColor(0xA0000000);
+			canvas.drawRect(legend, paint);
+			for (int i = 0; i < indexOfActivities.activityNames.length; i++) {
+				paint.setColor(indexOfActivities.activityColors[i]);
+				paint.setStrokeWidth(5);
+				paint.setTextAlign(Align.LEFT);
+				canvas.drawLine(horizontalEdge + 20 + i % 4 * 160, height
+						- verticalEdge - 30 - i / 4 * 30, horizontalEdge + 20
+						+ i % 4 * 160 + 50, height - verticalEdge - 30 - i / 4
+						* 30, paint);
+				canvas.drawText(indexOfActivities.activityNames[i],
+						horizontalEdge + 20 + i % 4 * 160 + 50 + 5, height
+								- verticalEdge - 30 - i / 4 * 30 + 4, paint);
+			}
+			paint.setStrokeWidth(0);
+		}
 	}
 
 	/**
@@ -391,11 +501,15 @@ public class MagnitudeGraphView extends View {
 	public boolean onTouchEvent(final MotionEvent event) {
 		final int action = event.getAction();
 		final float x = event.getX();
+		final float y = event.getY();
 		final int leftLimit = horizontalEdge + 1;
 		final int rightLimit = width - horizontalEdge - 1;
 
 		// Touch+drag rectangle code
 		if (action == MotionEvent.ACTION_DOWN) {
+			if (x > rightLimit) {
+				possibleLegendPress = true;
+			}
 			tempRect = new Rect((int) x, height - verticalEdge, (int) x,
 					verticalEdge);
 			if (x <= leftLimit) {
@@ -418,6 +532,18 @@ public class MagnitudeGraphView extends View {
 				adjustRect();
 			}
 		} else if (action == MotionEvent.ACTION_UP) {
+			if (possibleLegendPress == true) {
+				if (legendOn == false) {
+					legend = new Rect(horizontalEdge + 1, verticalEdge + 1,
+							width - horizontalEdge - 1, height - verticalEdge
+									- padding / 3);
+					legendOn = true;
+				} else {
+					legend = null;
+					legendOn = false;
+				}
+				possibleLegendPress = false;
+			}
 			if (tempRect != null) {
 				if (x <= leftLimit) {
 					tempRect.right = leftLimit;

@@ -15,6 +15,7 @@
     <string name="live_file_path">hsandroidapp/data/live/</string>
     <string name="recent_file_path">hsandroidapp/data/recent/</string>
     <string name="uploaded_file_path">hsandroidapp/data/uploaded/</string>
+    <string name="activity_file_path">hsandroidapp/data/activity/</string>
     
     <!-- Magnitude Graph Strings -->
     <string name="mag_graph_title">Select a section of the graph to add a label:</string>

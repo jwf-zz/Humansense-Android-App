@@ -113,18 +113,39 @@ public class TestMagOutputPlugin extends OutputPlugin {
 		}
 		for (int i = 24; i < 30; i++) {
 			magActivities[i] = 0x4;
-		}/*
-		 * for (int i = 30; i < 36; i++) { magActivities[i] = 0x5; } for (int i
-		 * = 36; i < 42; i++) { magActivities[i] = 0x6; } for (int i = 42; i <
-		 * 48; i++) { magActivities[i] = 0x7; } for (int i = 48; i < 54; i++) {
-		 * magActivities[i] = 0x8; } for (int i = 54; i < 60; i++) {
-		 * magActivities[i] = 0x9; } for (int i = 60; i < 66; i++) {
-		 * magActivities[i] = 0xA; } for (int i = 66; i < 72; i++) {
-		 * magActivities[i] = 0xB; } for (int i = 72; i < 78; i++) {
-		 * magActivities[i] = 0xC; } for (int i = 78; i < 84; i++) {
-		 * magActivities[i] = 0xD; } for (int i = 84; i < 90; i++) {
-		 * magActivities[i] = 0xE; } for (int i = 90; i < 100; i++) {
-		 * magActivities[i] = 0xF; }
-		 */
+		}
+		for (int i = 30; i < 36; i++) {
+			magActivities[i] = 0x5;
+		}
+		for (int i = 36; i < 42; i++) {
+			magActivities[i] = 0x6;
+		}
+		for (int i = 42; i < 48; i++) {
+			magActivities[i] = 0x7;
+		}
+		for (int i = 48; i < 54; i++) {
+			magActivities[i] = 0x8;
+		}
+		for (int i = 54; i < 60; i++) {
+			magActivities[i] = 0x9;
+		}
+		for (int i = 60; i < 66; i++) {
+			magActivities[i] = 0xA;
+		}
+		for (int i = 66; i < 72; i++) {
+			magActivities[i] = 0xB;
+		}
+		for (int i = 72; i < 78; i++) {
+			magActivities[i] = 0xC;
+		}
+		for (int i = 78; i < 84; i++) {
+			magActivities[i] = 0xD;
+		}
+		for (int i = 84; i < 90; i++) {
+			magActivities[i] = 0xE;
+		}
+		for (int i = 90; i < 100; i++) {
+			magActivities[i] = 0xF;
+		}
 	}
 }

@@ -31,11 +31,6 @@
 			android:label="@string/activity_magnitude_graph_label"
 			android:screenOrientation="landscape">
 		</activity>
-		<activity
-			android:name=".util.filemanager.FileManager"
-			android:label="@string/activity_magnitude_graph_label"
-			android:screenOrientation="landscape">
-		</activity>
         <service android:name="ca.mcgill.hs.serv.HSService"/>
         <service android:name="ca.mcgill.hs.serv.UploaderService"/>
         <service android:name="ca.mcgill.hs.graph.NewActivityNotificationLauncher"/>

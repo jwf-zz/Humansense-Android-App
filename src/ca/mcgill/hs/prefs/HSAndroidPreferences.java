@@ -14,6 +14,7 @@ import android.os.Environment;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.Preference.OnPreferenceClickListener;
+import android.widget.Toast;
 import ca.mcgill.hs.R;
 
 /**
@@ -28,10 +29,31 @@ public class HSAndroidPreferences extends PreferenceActivity {
 
 	private final File path = new File(Environment
 			.getExternalStorageDirectory(), "hsandroidapp/data/uploaded/");
+	private final File recent = new File(Environment
+			.getExternalStorageDirectory(), "hsandroidapp/data/recent/");
 
 	private int filesToDelete;
+	private int unuploadedFilesToDelete;
 	private long bytes;
 
+	/**
+	 * Returns the number of unuploaded files.
+	 * 
+	 * @return the number of unuploaded files.
+	 */
+	private int getFilesUnuploaded() {
+		if (recent.isDirectory()) {
+			return recent.listFiles().length;
+		} else {
+			return 0;
+		}
+	}
+
+	/**
+	 * Returns the number of uploaded files.
+	 * 
+	 * @return the number of uploaded files.
+	 */
 	private int getFilesUploaded() {
 		if (path.isDirectory()) {
 			return path.listFiles().length;
@@ -51,6 +73,21 @@ public class HSAndroidPreferences extends PreferenceActivity {
 			// Therefore size will remain 0 and everything is fine.
 		}
 		return size;
+	}
+
+	/**
+	 * Helper method for making toasts.
+	 * 
+	 * @param message
+	 *            the text to toast.
+	 * @param duration
+	 *            the duration of the toast.
+	 */
+	private void makeToast(final String message, final int duration) {
+		final Toast slice = Toast.makeText(getBaseContext(), message, duration);
+		slice.setGravity(slice.getGravity(), slice.getXOffset(), slice
+				.getYOffset() + 100);
+		slice.show();
 	}
 
 	/**
@@ -80,18 +117,6 @@ public class HSAndroidPreferences extends PreferenceActivity {
 						final Intent i = new Intent(
 								getBaseContext(),
 								ca.mcgill.hs.prefs.OutputPluginPreferences.class);
-						startActivity(i);
-						return true;
-					}
-				});
-
-		// FILE MANAGER
-		final Preference fileManager = findPreference("fileManagerActivityStart");
-		fileManager
-				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-					public boolean onPreferenceClick(final Preference preference) {
-						final Intent i = new Intent(getBaseContext(),
-								ca.mcgill.hs.util.filemanager.FileManager.class);
 						startActivity(i);
 						return true;
 					}
@@ -147,6 +172,52 @@ public class HSAndroidPreferences extends PreferenceActivity {
 					public boolean onPreferenceClick(final Preference preference) {
 						if (filesToDelete > 0) {
 							builder.show();
+						}
+						return true;
+					}
+				});
+
+		// CLEAR UNUPLOADED
+		final DialogInterface.OnClickListener undeletedClickListener = new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(final DialogInterface dialog, final int which) {
+				switch (which) {
+				case DialogInterface.BUTTON_POSITIVE:
+					for (final File f : recent.listFiles()) {
+						f.delete();
+					}
+					unuploadedFilesToDelete = getFilesUnuploaded();
+					break;
+
+				case DialogInterface.BUTTON_NEGATIVE:
+					break;
+				}
+			}
+		};
+
+		unuploadedFilesToDelete = getFilesUnuploaded();
+		final AlertDialog.Builder unuploadedBuilder = new AlertDialog.Builder(
+				this);
+		unuploadedBuilder
+				.setMessage(
+						"Delete "
+								+ unuploadedFilesToDelete
+								+ " unuploaded "
+								+ (unuploadedFilesToDelete == 1 ? "file"
+										: "files")
+								+ "? WARNING: All files deleted this way will be lost forever.")
+				.setPositiveButton("Yes", undeletedClickListener)
+				.setNegativeButton("No", undeletedClickListener);
+
+		final Preference clearUnuploaded = findPreference("deleteUnuploaded");
+		clearUnuploaded
+				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+					public boolean onPreferenceClick(final Preference preference) {
+						if (unuploadedFilesToDelete > 0) {
+							unuploadedBuilder.show();
+						} else {
+							makeToast("No new files to delete!",
+									Toast.LENGTH_SHORT);
 						}
 						return true;
 					}

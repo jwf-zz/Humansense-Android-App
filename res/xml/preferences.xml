@@ -81,12 +81,12 @@
 	
 	</PreferenceCategory>
 	
-	<PreferenceCategory android:title="@string/file_manager_cat">
+	<PreferenceCategory android:title="@string/unuploaded_cat">
 	
 		<Preference 
-				android:title="@string/file_manager_title"
-				android:key="fileManagerActivityStart"
-				android:summary="@string/file_manager_desc"
+				android:title="@string/unuploaded_title"
+				android:key="deleteUnuploaded"
+				android:summary="@string/unuploaded_desc"
 		/>
 		
 	</PreferenceCategory>

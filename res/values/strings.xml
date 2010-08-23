@@ -47,9 +47,9 @@
     <string name="activity_file_manager_label">Humansense File Manager</string>
     
 	<!-- Preferences Strings -->
-	<string name="file_manager_cat">File Manager</string>
-	<string name="file_manager_title">File Manager</string>
-	<string name="file_manager_desc">Delete unuploaded files on your device.</string>
+	<string name="unuploaded_cat">Unuploaded Files</string>
+	<string name="unuploaded_title">Delete Unuploaded</string>
+	<string name="unuploaded_desc">Deletes all unuploaded files on your device.</string>
 	<string name="startup_options_cat">Startup Options</string>
 	<string name="auto_start_at_app_start_pref">Automatically start logging when application starts.</string>
 	<string name="auto_start_at_app_start_pref_title">Auto-Start at App Start</string>

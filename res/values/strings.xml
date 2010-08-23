@@ -111,4 +111,7 @@
     <string name="notification_vibrate_title">Notification Vibration</string>
     <string name="notification_vibrate_summary">Enables or disables vibration when notifications are pushed.</string>
     
+<string name="unuploaded_management">Manage Unuploaded Files</string>
+<string name="unuploaded_management_desc">Delete files that have not yet been uploaded to the server.</string>
+<string name="manage_files">Unuploaded Files</string>
 </resources>

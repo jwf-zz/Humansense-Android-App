@@ -27,6 +27,10 @@
 			android:label="@string/set_output_preferences">
 		</activity>
 		<activity
+			android:name=".prefs.FileManager"
+			android:label="@string/manage_files">
+		</activity>
+		<activity
 			android:name=".graph.MagnitudeGraph"
 			android:label="@string/activity_magnitude_graph_label"
 			android:screenOrientation="landscape">

@@ -82,6 +82,11 @@
 	</PreferenceCategory>
 	
 	<PreferenceCategory android:title="@string/unuploaded_cat">
+		<Preference 
+				android:title="@string/unuploaded_management"
+				android:key="manageUnuploaded"
+				android:summary="@string/unuploaded_management_desc"
+		/>
 	
 		<Preference 
 				android:title="@string/unuploaded_title"

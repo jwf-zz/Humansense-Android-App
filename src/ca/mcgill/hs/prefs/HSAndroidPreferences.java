@@ -177,6 +177,18 @@ public class HSAndroidPreferences extends PreferenceActivity {
 					}
 				});
 
+		// MANAGE UNUPLOADED
+		final Preference manageUnuploaded = findPreference("manageUnuploaded");
+		manageUnuploaded
+				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+					public boolean onPreferenceClick(final Preference preference) {
+						final Intent i = new Intent(getBaseContext(),
+								ca.mcgill.hs.prefs.FileManager.class);
+						startActivity(i);
+						return true;
+					}
+				});
+
 		// CLEAR UNUPLOADED
 		final DialogInterface.OnClickListener undeletedClickListener = new DialogInterface.OnClickListener() {
 			@Override

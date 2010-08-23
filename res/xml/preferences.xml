@@ -80,4 +80,14 @@
 		/>
 	
 	</PreferenceCategory>
+	
+	<PreferenceCategory android:title="@string/unuploaded_cat">
+	
+		<Preference 
+				android:title="@string/unuploaded_title"
+				android:key="deleteUnuploaded"
+				android:summary="@string/unuploaded_desc"
+		/>
+		
+	</PreferenceCategory>
 </PreferenceScreen>

@@ -1,4 +1,5 @@
 /**
+
  * TODO: Insert licenses here.
  */
 package ca.mcgill.hs.prefs;
@@ -79,6 +80,18 @@ public class HSAndroidPreferences extends PreferenceActivity {
 						final Intent i = new Intent(
 								getBaseContext(),
 								ca.mcgill.hs.prefs.OutputPluginPreferences.class);
+						startActivity(i);
+						return true;
+					}
+				});
+
+		// FILE MANAGER
+		final Preference fileManager = findPreference("fileManagerActivityStart");
+		fileManager
+				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+					public boolean onPreferenceClick(final Preference preference) {
+						final Intent i = new Intent(getBaseContext(),
+								ca.mcgill.hs.util.filemanager.FileManager.class);
 						startActivity(i);
 						return true;
 					}

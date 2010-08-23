@@ -80,4 +80,14 @@
 		/>
 	
 	</PreferenceCategory>
+	
+	<PreferenceCategory android:title="@string/file_manager_cat">
+	
+		<Preference 
+				android:title="@string/file_manager_title"
+				android:key="fileManagerActivityStart"
+				android:summary="@string/file_manager_desc"
+		/>
+		
+	</PreferenceCategory>
 </PreferenceScreen>

@@ -3,8 +3,10 @@ package ca.mcgill.hs.graph;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OptionalDataException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -22,6 +24,7 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Paint.Align;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -46,6 +49,8 @@ public class MagnitudeGraphView extends View {
 	private final int[] activities;
 	private final long start;
 	private final long end;
+
+	private final int[] legendActs;
 
 	// These are Date objects relating to the start and end timestamps
 	private final Date startTime;
@@ -150,7 +155,11 @@ public class MagnitudeGraphView extends View {
 		this.min = values[0];
 		instantiated = false;
 		this.indexOfActivities = null;
-		final boolean write = true;
+		legendActs = new int[16];
+		for (int i = 0; i < 16; i++) {
+			legendActs[i] = -1;
+		}
+		final boolean write = false;
 		if (write) {
 			final String[] acts = { "walking", "running", "jumping", "biking",
 					"driving", "sitting", "swimming", "nothing", "blah",
@@ -164,6 +173,32 @@ public class MagnitudeGraphView extends View {
 					0xFFB88A00, 0xFFF5B800, 0xFF339933 };
 
 			this.indexOfActivities = new ActivityIndex(acts, codes, colors);
+
+			try {
+				final File j = new File(Environment
+						.getExternalStorageDirectory(), (String) context
+						.getResources().getText(R.string.activity_file_path));
+				if (!j.isDirectory()) {
+					if (!j.mkdirs()) {
+						Log.e("Output Dir",
+								"Could not create output directory!");
+						return;
+					}
+				}
+				final File file = new File(j, "ActivityIndex.aif");
+				if (!file.exists()) {
+					file.createNewFile();
+				}
+				final FileOutputStream fos = new FileOutputStream(file);
+				final ObjectOutputStream oos = new ObjectOutputStream(fos);
+				oos.writeObject(indexOfActivities);
+				oos.close();
+				fos.close();
+			} catch (final FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (final IOException i) {
+				i.printStackTrace();
+			}
 		} else {
 			try {
 
@@ -186,21 +221,6 @@ public class MagnitudeGraphView extends View {
 				e.printStackTrace();
 			}
 		}
-
-		/*
-		 * try { final File j = new
-		 * File(Environment.getExternalStorageDirectory(), (String)
-		 * context.getResources().getText( R.string.activity_file_path)); if
-		 * (!j.isDirectory()) { if (!j.mkdirs()) { Log.e("Output Dir",
-		 * "Could not create output directory!"); return; } } final File file =
-		 * new File(j, "ActivityIndex.aif"); if (!file.exists()) {
-		 * file.createNewFile(); } final FileOutputStream fos = new
-		 * FileOutputStream(file); final ObjectOutputStream oos = new
-		 * ObjectOutputStream(fos); oos.writeObject(indexOfActivities);
-		 * oos.close(); fos.close(); } catch (final FileNotFoundException e) {
-		 * e.printStackTrace(); } catch (final IOException i) {
-		 * i.printStackTrace(); }
-		 */
 
 	}
 
@@ -447,6 +467,7 @@ public class MagnitudeGraphView extends View {
 			for (int i = 0; i < trimmedValuesLength - 1; i++) {
 				for (int a = 0; a < indexOfActivities.activityCodes.length; a++) {
 					if (indexOfActivities.activityCodes[a] == activities[i]) {
+						legendActs[a] = indexOfActivities.activityCodes[a];
 						paint.setColor(indexOfActivities.activityColors[a]);
 					}
 				}

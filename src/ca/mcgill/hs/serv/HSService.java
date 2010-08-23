@@ -33,6 +33,9 @@ public class HSService extends Service {
 	private static boolean isRunning;
 	private static Context PASSABLE_CONTEXT;
 
+	// If true then performance timing information will be logged
+	private static final boolean PERF_COUNTERS = false;
+
 	// Lists of the plugins currently enabled.
 	private static final LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
 	private static final LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
@@ -89,20 +92,25 @@ public class HSService extends Service {
 	 *            the InputPlugin that created the DataPacket.
 	 */
 	public static void onDataReady(final DataPacket dp, final InputPlugin source) {
-		final long currentTime = System.currentTimeMillis();
+		final long currentTime;
+		if (PERF_COUNTERS) {
+			currentTime = System.currentTimeMillis();
+		}
 		for (final OutputPlugin op : outputPluginList) {
 			op.onDataReady(dp.clone());
 			tpe.execute(op);
 		}
-		timeSpentInOnDataReady += (System.currentTimeMillis() - currentTime);
-		numCallsToOnDataReady += 1;
-		if (numCallsToOnDataReady % 1000 == 0) {
-			final float avgTime = (float) timeSpentInOnDataReady
-					/ (float) numCallsToOnDataReady;
-			Log.d("PERFORMANCE:", "Average time for onDataReady is " + avgTime
-					+ " milliseconds");
-			timeSpentInOnDataReady = 0L;
-			numCallsToOnDataReady = 0;
+		if (PERF_COUNTERS) {
+			timeSpentInOnDataReady += (System.currentTimeMillis() - currentTime);
+			numCallsToOnDataReady += 1;
+			if (numCallsToOnDataReady % 1000 == 0) {
+				final float avgTime = (float) timeSpentInOnDataReady
+						/ (float) numCallsToOnDataReady;
+				Log.d("PERFORMANCE:", "Average time for onDataReady is "
+						+ avgTime + " milliseconds");
+				timeSpentInOnDataReady = 0L;
+				numCallsToOnDataReady = 0;
+			}
 		}
 	}
 

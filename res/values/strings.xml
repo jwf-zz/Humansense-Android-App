@@ -15,6 +15,7 @@
     <string name="live_file_path">hsandroidapp/data/live/</string>
     <string name="recent_file_path">hsandroidapp/data/recent/</string>
     <string name="uploaded_file_path">hsandroidapp/data/uploaded/</string>
+    <string name="activity_file_path">hsandroidapp/data/activity/</string>
     
     <!-- Magnitude Graph Strings -->
     <string name="mag_graph_title">Select a section of the graph to add a label:</string>
@@ -23,6 +24,7 @@
     <string name="mag_graph_label_query">What were you doing in this time period?</string>
     <string name="mag_graph_label_hint">Enter an activity (e.g. jogging)</string>
     <string name="mag_graph_incorrect_input_toast">Please enter letters, dashes and apostrophes only.</string>
+	<string name="mag_graph_legend_label">Legend</string>
 	
 	<!-- Object Strings -->
 	<string name="start_label">START SERVICE</string>

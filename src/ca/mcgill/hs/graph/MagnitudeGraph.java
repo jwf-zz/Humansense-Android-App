@@ -9,6 +9,7 @@ public class MagnitudeGraph extends Activity {
 
 	// These are the values for the magnitude of the field.
 	private static float[] magValues = null;
+	private static int[] magActivities = null;
 
 	// This is the first timestamp, the START
 	private static long start = -1;
@@ -49,8 +50,9 @@ public class MagnitudeGraph extends Activity {
 	 * @param values
 	 *            The set of magnitude values required for this graph.
 	 */
-	protected static void setValues(final float[] values) {
+	protected static void setValues(final float[] values, final int[] activities) {
 		magValues = values;
+		magActivities = activities;
 	}
 
 	/**
@@ -82,7 +84,7 @@ public class MagnitudeGraph extends Activity {
 		}
 
 		mgv = new MagnitudeGraphView(this, getResources().getString(
-				R.string.mag_graph_title), magValues, start, end);
+				R.string.mag_graph_title), magValues, magActivities, start, end);
 
 		setContentView(mgv);
 	}

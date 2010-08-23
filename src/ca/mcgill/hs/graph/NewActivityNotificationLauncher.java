@@ -27,6 +27,7 @@ public class NewActivityNotificationLauncher extends Service {
 	private static long start = -1;
 	private static long end = -1;
 	private static float[] magValues = null;
+	private static int[] magActivities = null;
 
 	// Notification ID, randomly chosen
 	public static final int NOTIFICATION_ID = 455925;
@@ -60,8 +61,9 @@ public class NewActivityNotificationLauncher extends Service {
 	 * @param values
 	 *            An array of floats for the magnitude values.
 	 */
-	public static void setMagValues(final float[] values) {
+	public static void setMagValues(final float[] values, final int[] activities) {
 		magValues = values;
+		magActivities = activities;
 	}
 
 	/**
@@ -97,6 +99,7 @@ public class NewActivityNotificationLauncher extends Service {
 		final SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(this);
 		if (start == -1 || end == -1 || start == end || magValues == null
+				|| magActivities == null
 				|| !prefs.getBoolean("notificationEnablePref", true)) {
 			Log
 					.e(
@@ -104,6 +107,9 @@ public class NewActivityNotificationLauncher extends Service {
 							"Could not start Service: one or more required values have not been previously set.");
 			if (magValues == null) {
 				Log.e("NotificationLauncher", "magValues was null;");
+			}
+			if (magActivities == null) {
+				Log.e("NotificationLauncher", "magActivities was null;");
 			}
 			if (start == -1) {
 				Log.e("NotificationLauncher", "start was not set;");
@@ -118,7 +124,7 @@ public class NewActivityNotificationLauncher extends Service {
 			onDestroy();
 		} else {
 			// Set up MagnitudeGraph
-			MagnitudeGraph.setValues(magValues);
+			MagnitudeGraph.setValues(magValues, magActivities);
 			MagnitudeGraph.setStartTimestamp(start);
 			MagnitudeGraph.setEndTimestamp(end);
 

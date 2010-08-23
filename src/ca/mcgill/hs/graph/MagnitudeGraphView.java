@@ -1,5 +1,13 @@
 package ca.mcgill.hs.graph;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OptionalDataException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
@@ -12,8 +20,11 @@ import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Paint.Align;
+import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,6 +32,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 import ca.mcgill.hs.R;
+import ca.mcgill.hs.util.ActivityIndex;
 
 /**
  * This is the main view for the MagnitudeGraph activity. It draws the activity
@@ -34,8 +46,19 @@ public class MagnitudeGraphView extends View {
 	// These are the values and the two timestamps that are given/required to
 	// draw the graph.
 	private final float[] values;
+	private final int[] activities;
 	private final long start;
 	private final long end;
+
+	// List of the activities present in this data set, for faster lookup in
+	// activities index.
+	private final int[] legendActs;
+
+	// Set of 16 colors used for legend drawing
+	private final int[] legendColors = { 0xFFFF0000, 0xFF00FF00, 0xFF0000FF,
+			0xFFFF8000, 0xFF00FFFF, 0xFF8000FF, 0xFFFFFF00, 0xFF339933,
+			0xFF0080FF, 0xFFF5B800, 0xFF80FF00, 0xFFFF0080, 0xFF00FF80,
+			0xFFFFFFFF, 0xFFB88A00, 0xFFFF00FF };
 
 	// These are Date objects relating to the start and end timestamps
 	private final Date startTime;
@@ -53,6 +76,9 @@ public class MagnitudeGraphView extends View {
 	// These variables are used in order to correctly draw and label the
 	// activity selections.
 	private Rect tempRect;
+	private Rect legendRect;
+	private boolean legendOn;
+	private boolean possibleLegendPress;
 	private int originalLeft;
 	private String label;
 	private int minRectSize;
@@ -102,6 +128,8 @@ public class MagnitudeGraphView extends View {
 	// calculations during onDraw()
 	private boolean instantiated;
 
+	private ActivityIndex indexOfActivities;
+
 	/**
 	 * The basic constructor for this object. This draws a graph with the
 	 * appropriate values given and the correct timestamps.
@@ -118,10 +146,12 @@ public class MagnitudeGraphView extends View {
 	 *            The end timestamp for the graph.
 	 */
 	public MagnitudeGraphView(final Context context, final String title,
-			final float[] values, final long start, final long end) {
+			final float[] values, final int[] activities, final long start,
+			final long end) {
 		super(context);
 		this.title = title;
 		this.values = values;
+		this.activities = activities;
 		this.start = start;
 		this.end = end;
 		this.startTime = new Date(this.start);
@@ -132,6 +162,74 @@ public class MagnitudeGraphView extends View {
 		this.max = values[0];
 		this.min = values[0];
 		instantiated = false;
+		this.indexOfActivities = null;
+		legendActs = new int[16];
+		for (int i = 0; i < 16; i++) {
+			legendActs[i] = -1;
+		}
+		legendRect = null;
+		final boolean write = false;
+		// Dummy code for testing only, used to generate a sample activity index
+		// file
+		if (write) {
+			final String[] acts = { "walking", "running", "jumping", "biking",
+					"driving", "sitting", "swimming", "nothing", "blah",
+					"failing", "writing", "talking", "standing", "sleeping",
+					"rollerblading", "kayaking" };
+			final int[] codes = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8,
+					0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF };
+
+			this.indexOfActivities = new ActivityIndex(acts, codes);
+
+			try {
+				final File j = new File(Environment
+						.getExternalStorageDirectory(), (String) context
+						.getResources().getText(R.string.activity_file_path));
+				if (!j.isDirectory()) {
+					if (!j.mkdirs()) {
+						Log.e("Output Dir",
+								"Could not create output directory!");
+						return;
+					}
+				}
+				final File file = new File(j, "ActivityIndex.aif");
+				if (!file.exists()) {
+					file.createNewFile();
+				}
+				final FileOutputStream fos = new FileOutputStream(file);
+				final ObjectOutputStream oos = new ObjectOutputStream(fos);
+				oos.writeObject(indexOfActivities);
+				oos.close();
+				fos.close();
+			} catch (final FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (final IOException i) {
+				i.printStackTrace();
+			}
+		} else {
+			// Code to read the activity index file, this will stay here.
+			try {
+
+				final File j = new File(Environment
+						.getExternalStorageDirectory(), (String) context
+						.getResources().getText(R.string.activity_file_path));
+				final File file = new File(j, "ActivityIndex.aif");
+				final FileInputStream fis = new FileInputStream(file);
+				final ObjectInputStream ois = new ObjectInputStream(fis);
+				this.indexOfActivities = (ActivityIndex) ois.readObject();
+				ois.close();
+				fis.close();
+			} catch (final FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (final OptionalDataException e) {
+				e.printStackTrace();
+			} catch (final ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (final IOException e) {
+				e.printStackTrace();
+			}
+		}
+
 	}
 
 	/**
@@ -196,10 +294,12 @@ public class MagnitudeGraphView extends View {
 		netGraphHeight = height - 2 * verticalEdge;
 
 		// Padding inside the graph to keep curve from touching top/bottom
-		padding = netGraphHeight / 20;
+		padding = netGraphHeight / 15;
 
 		// The minimum size of rectangle that can be selected to label
 		minRectSize = width / 30;
+
+		possibleLegendPress = false;
 
 		// Calculate optimal font sizes
 		titleSize = width / 32;
@@ -214,6 +314,9 @@ public class MagnitudeGraphView extends View {
 		// Trimmed array with only points that were not skipped
 		trimmedValues = new float[netGraphWidth];
 		trimmedValuesLength = trimmedValues.length;
+
+		legendRect = new Rect(horizontalEdge + 1, verticalEdge + 1, width
+				- horizontalEdge - 1, height - verticalEdge - padding / 3);
 
 		if (valuesLength > netGraphWidth) {
 			jumpFactor = (int) ((float) valuesLength / (float) netGraphWidth);
@@ -321,14 +424,15 @@ public class MagnitudeGraphView extends View {
 
 		// Draw the outline of the graph
 		paint.setAntiAlias(false);
-		canvas.drawLine(horizontalEdge, verticalEdge, width - horizontalEdge,
-				verticalEdge, paint);
-		canvas.drawLine(horizontalEdge, height - verticalEdge, width
-				- horizontalEdge, height - verticalEdge, paint);
-		canvas.drawLine(horizontalEdge, verticalEdge, horizontalEdge, height
-				- verticalEdge, paint);
-		canvas.drawLine(width - horizontalEdge, verticalEdge, width
-				- horizontalEdge, height - verticalEdge, paint);
+		paint.setStrokeWidth(2);
+		canvas.drawLine(horizontalEdge - 1, verticalEdge, width
+				- horizontalEdge + 1, verticalEdge, paint);
+		canvas.drawLine(horizontalEdge - 1, height - verticalEdge, width
+				- horizontalEdge + 1, height - verticalEdge, paint);
+		canvas.drawLine(horizontalEdge - 1, verticalEdge, horizontalEdge - 1,
+				height - verticalEdge, paint);
+		canvas.drawLine(width - horizontalEdge + 1, verticalEdge, width
+				- horizontalEdge + 1, height - verticalEdge, paint);
 
 		// Draw the gridlines
 		paint.setColor(Color.DKGRAY);
@@ -338,9 +442,9 @@ public class MagnitudeGraphView extends View {
 					height - verticalEdge, paint);
 		}
 		for (int i = 1; i < 4; i++) {
-			canvas.drawLine(horizontalEdge, verticalEdge + i * netGraphHeight
-					/ 4, width - horizontalEdge, verticalEdge + i
-					* netGraphHeight / 4, paint);
+			canvas.drawLine(horizontalEdge - 1, verticalEdge + i
+					* netGraphHeight / 4, width - horizontalEdge + 1,
+					verticalEdge + i * netGraphHeight / 4, paint);
 		}
 
 		// Set color and stroke width for graph curve
@@ -363,24 +467,169 @@ public class MagnitudeGraphView extends View {
 
 		// Draw a different graph depending on the size of values compared to
 		// netGraphWidth
+		int tempColor = -1;
 		if (valuesLength > netGraphWidth) {
+			// The actual curve is drawn
 			for (int i = 0; i < trimmedValuesLength - 1; i++) {
 				canvas.drawLine(horizontalEdge + i, height / 2
 						- trimmedValues[i] * verticalScale, horizontalEdge + i
 						+ 1, height / 2 - trimmedValues[i + 1] * verticalScale,
 						paint);
 			}
+			paint.setShader(null);
+			for (int i = 0; i < trimmedValuesLength - 1; i++) {
+				// Check if same activity as before, to reduce loop
+				// iterations
+				if (tempColor != -1 && activities[i] == activities[i - 1]) {
+					paint.setColor(tempColor);
+				} else {
+					// Check if the activity has already been seen
+					boolean found = false;
+					for (int a = 0; a < legendActs.length; a++) {
+						if (legendActs[a] == activities[i]) {
+							tempColor = legendColors[a];
+							paint.setColor(legendColors[a]);
+							found = true;
+						}
+					}
+					// If activity not seen before in this data set, have to
+					// look it up
+					if (found == false) {
+						for (int b = 0; b < indexOfActivities.activityCodes.length; b++) {
+							if (indexOfActivities.activityCodes[b] == activities[i]) {
+								int c = 0;
+								while (c < legendActs.length - 1
+										&& legendActs[c] != -1) {
+									c++;
+								}
+								try {
+									tempColor = legendColors[c];
+									legendActs[c] = indexOfActivities.activityCodes[b];
+									paint.setColor(legendColors[c]);
+								} catch (final ArrayIndexOutOfBoundsException e) {
+									Log
+											.e("Graph Error",
+													"Cannot draw any more activities, make sure you didn't send more than 16.");
+								}
+							}
+						}
+					}
+				}
+				// Draw a line for each point. This will create a colored bar at
+				// the bottom of the graph.
+				canvas.drawLine(1 + horizontalEdge + i, height - verticalEdge
+						- padding / 3, 1 + horizontalEdge + i, height
+						- verticalEdge, paint);
+			}
 		} else {
+			// The actual curve is drawn
 			for (int i = 0; i < values.length - 1; i++) {
 				canvas.drawLine(horizontalEdge + (i * spacing), height / 2
 						- values[i] * verticalScale, horizontalEdge + (i + 1)
 						* spacing, height / 2 - values[i + 1] * verticalScale,
 						paint);
 			}
+			paint.setShader(null);
+			if (indexOfActivities != null) {
+				for (int i = 0; i < values.length - 1; i++) {
+					// Check if same activity as before, to reduce loop
+					// iterations
+					if (tempColor != -1 && activities[i] == activities[i - 1]) {
+						paint.setColor(tempColor);
+					} else {
+						// Check if the activity has already been seen
+						boolean found = false;
+						for (int a = 0; a < legendActs.length; a++) {
+							if (legendActs[a] == activities[i]) {
+								tempColor = legendColors[a];
+								paint.setColor(legendColors[a]);
+								found = true;
+							}
+						}
+						// If activity not seen before in this data set, have to
+						// look it up
+						if (found == false) {
+							for (int b = 0; b < indexOfActivities.activityCodes.length; b++) {
+								if (indexOfActivities.activityCodes[b] == activities[i]) {
+									int c = 0;
+									while (c < legendActs.length - 1
+											&& legendActs[c] != -1) {
+										c++;
+									}
+									try {
+										tempColor = legendColors[c];
+										legendActs[c] = indexOfActivities.activityCodes[b];
+										paint.setColor(legendColors[c]);
+									} catch (final ArrayIndexOutOfBoundsException e) {
+										Log
+												.e("Graph Error",
+														"Cannot draw any more activities, make sure you didn't send more than 16.");
+									}
+								}
+							}
+						}
+					}
+					// Draw a colored rectangle between each point and the
+					// previous point along the bottom of the graph
+					canvas.drawRect(horizontalEdge + (i * spacing), height
+							- verticalEdge - padding / 3, 1 + horizontalEdge
+							+ (i + 1) * spacing, height - verticalEdge, paint);
+				}
+			}
 		}
 
-		paint.setShader(null);
+		// Draw the legend button
+		paint.setColor(Color.WHITE);
+		RectF legendBtn = new RectF(width - horizontalEdge + width / 160,
+				height / 2 - height / 13, width - width / 160, height / 2
+						+ height / 13);
+		canvas.drawRoundRect(legendBtn, 5f, 5f, paint);
+		paint.setColor(Color.BLACK);
+		legendBtn = new RectF(width - horizontalEdge + width / 160 + 2, height
+				/ 2 - height / 13 + 2, width - width / 160 - 2, height / 2
+				+ height / 13 - 2);
+		canvas.drawRoundRect(legendBtn, 5f, 5f, paint);
+		paint.setColor(Color.GREEN);
+		paint.setTextSize(axisTitleSize);
+		canvas.drawText(getResources().getString(
+				R.string.mag_graph_legend_label), width - horizontalEdge / 2,
+				height / 2 + height / 80, paint);
 
+		// If the legend button has been pressed, draw the legend
+		if (legendOn) {
+			// Draw part alpha black rectangle over graph area to fade out the
+			// curve so legend can be seen easily.
+			paint.setColor(0xA0000000);
+			canvas.drawRect(legendRect, paint);
+			for (int i = 0; i < legendActs.length && legendActs[i] != -1; i++) {
+				for (int index = 0; i < indexOfActivities.activityCodes.length; index++) {
+					if (indexOfActivities.activityCodes[index] == legendActs[i]) {
+						paint.setColor(legendColors[i]);
+						paint.setStrokeWidth(netGraphHeight / 74);
+						paint.setTextAlign(Align.LEFT);
+						paint.setTextSize(axisValueSize);
+						canvas.drawLine(horizontalEdge + netGraphWidth / 30 + i
+								% 4 * (netGraphWidth / 4), height
+								- verticalEdge - (netGraphHeight / 12) - i / 4
+								* (netGraphHeight / 12), horizontalEdge
+								+ (netGraphWidth / 30) + i % 4
+								* (netGraphWidth / 4) + (netGraphWidth / 15),
+								height - verticalEdge - (netGraphHeight / 12)
+										- i / 4 * (netGraphHeight / 12), paint);
+						canvas.drawText(indexOfActivities.activityNames[index],
+								horizontalEdge + (netGraphWidth / 30) + i % 4
+										* (netGraphWidth / 4)
+										+ (netGraphWidth / 15)
+										+ (netGraphWidth / 128), height
+										- verticalEdge - (netGraphHeight / 12)
+										- i / 4 * (netGraphHeight / 12)
+										+ height / 100, paint);
+						break;
+					}
+				}
+			}
+			paint.setStrokeWidth(0);
+		}
 	}
 
 	/**
@@ -391,11 +640,16 @@ public class MagnitudeGraphView extends View {
 	public boolean onTouchEvent(final MotionEvent event) {
 		final int action = event.getAction();
 		final float x = event.getX();
+		final float y = event.getY();
 		final int leftLimit = horizontalEdge + 1;
 		final int rightLimit = width - horizontalEdge - 1;
-
 		// Touch+drag rectangle code
 		if (action == MotionEvent.ACTION_DOWN) {
+			if (x >= width - horizontalEdge + width / 160
+					&& x <= width - width / 160 && y <= height / 2 + height / 8
+					&& y >= height / 2 - height / 8) {
+				possibleLegendPress = true;
+			}
 			tempRect = new Rect((int) x, height - verticalEdge, (int) x,
 					verticalEdge);
 			if (x <= leftLimit) {
@@ -418,6 +672,17 @@ public class MagnitudeGraphView extends View {
 				adjustRect();
 			}
 		} else if (action == MotionEvent.ACTION_UP) {
+			if (possibleLegendPress == true
+					&& x >= width - horizontalEdge + width / 160
+					&& x <= width - width / 160 && y <= height / 2 + height / 8
+					&& y >= height / 2 - height / 8) {
+				if (legendOn == false) {
+					legendOn = true;
+				} else {
+					legendOn = false;
+				}
+				possibleLegendPress = false;
+			}
 			if (tempRect != null) {
 				if (x <= leftLimit) {
 					tempRect.right = leftLimit;

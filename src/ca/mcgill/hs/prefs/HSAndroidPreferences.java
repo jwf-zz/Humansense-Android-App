@@ -186,7 +186,9 @@ public class HSAndroidPreferences extends PreferenceActivity {
 					for (final File f : recent.listFiles()) {
 						f.delete();
 					}
-					makeToast(unuploadedFilesToDelete + " have been deleted.",
+					makeToast(unuploadedFilesToDelete
+							+ (unuploadedFilesToDelete == 1 ? " file has"
+									: " files have") + " been deleted.",
 							Toast.LENGTH_SHORT);
 					unuploadedFilesToDelete = getFilesUnuploaded();
 					break;

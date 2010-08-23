@@ -186,7 +186,30 @@ public class HSAndroidPreferences extends PreferenceActivity {
 					for (final File f : recent.listFiles()) {
 						f.delete();
 					}
+					makeToast(unuploadedFilesToDelete + " have been deleted.",
+							Toast.LENGTH_SHORT);
 					unuploadedFilesToDelete = getFilesUnuploaded();
+					break;
+
+				case DialogInterface.BUTTON_NEGATIVE:
+					break;
+				}
+			}
+		};
+
+		final AlertDialog.Builder aggressiveBuilder = new AlertDialog.Builder(
+				this);
+		aggressiveBuilder.setMessage(
+				"ARE YOU SURE YOU WISH TO DELETE THESE FILES?")
+				.setPositiveButton("Yes", undeletedClickListener)
+				.setNegativeButton("No", undeletedClickListener);
+
+		final DialogInterface.OnClickListener aggressiveClickListener = new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(final DialogInterface dialog, final int which) {
+				switch (which) {
+				case DialogInterface.BUTTON_POSITIVE:
+					aggressiveBuilder.show();
 					break;
 
 				case DialogInterface.BUTTON_NEGATIVE:
@@ -206,8 +229,8 @@ public class HSAndroidPreferences extends PreferenceActivity {
 								+ (unuploadedFilesToDelete == 1 ? "file"
 										: "files")
 								+ "? WARNING: All files deleted this way will be lost forever.")
-				.setPositiveButton("Yes", undeletedClickListener)
-				.setNegativeButton("No", undeletedClickListener);
+				.setPositiveButton("Yes", aggressiveClickListener)
+				.setNegativeButton("No", aggressiveClickListener);
 
 		final Preference clearUnuploaded = findPreference("deleteUnuploaded");
 		clearUnuploaded

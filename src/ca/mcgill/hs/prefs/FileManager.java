@@ -6,16 +6,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 import ca.mcgill.hs.R;
 
 public class FileManager extends ListActivity {
@@ -78,9 +84,17 @@ public class FileManager extends ListActivity {
 		}
 	}
 
+	private void makeToast(final String message, final int duration) {
+		final Toast slice = Toast.makeText(getBaseContext(), message, duration);
+		slice.setGravity(slice.getGravity(), slice.getXOffset(), slice
+				.getYOffset() + 100);
+		slice.show();
+	}
+
 	@Override
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 		final List<Map<String, Boolean>> listItems = new ArrayList<Map<String, Boolean>>();
 
 		final String pathName = Environment.getExternalStorageDirectory()
@@ -99,7 +113,63 @@ public class FileManager extends ListActivity {
 		final String[] displayFields = new String[] { "Checked", "File Name" };
 		final int[] displayViews = new int[] { R.id.bcheck, R.id.btitle };
 
-		setListAdapter(new CheckboxFileListAdapter(this, listItems,
-				R.layout.file_check_list, pathName, displayFields, displayViews));
+		final CheckboxFileListAdapter checkList = new CheckboxFileListAdapter(
+				this, listItems, R.layout.file_check_list, pathName,
+				displayFields, displayViews);
+
+		final ListView listView = getListView();
+		final View footerView = getLayoutInflater().inflate(
+				R.layout.file_check_list_footer, listView, false);
+		final Button deleteButton = (Button) footerView
+				.findViewById(R.id.footer_delete_button);
+		final Button closeButton = (Button) footerView
+				.findViewById(R.id.footer_close_button);
+
+		final DialogInterface.OnClickListener deleteUnUploadedFiles = new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(final DialogInterface dialog, final int which) {
+				switch (which) {
+				case DialogInterface.BUTTON_POSITIVE:
+					final String[] filesToDelete = checkList.getCheckedFiles();
+					for (final String fname : filesToDelete) {
+						final File f = new File(fname);
+						if (f.exists()) {
+							Log.d("HSFileManager", "Deleting file "
+									+ f.getName());
+							f.delete();
+						}
+					}
+					makeToast("Deleted " + filesToDelete.length + " files.",
+							Toast.LENGTH_SHORT);
+					finish();
+					break;
+
+				case DialogInterface.BUTTON_NEGATIVE:
+					break;
+				}
+			}
+		};
+
+		final AlertDialog.Builder deletePrompt = new AlertDialog.Builder(this);
+		deletePrompt.setMessage("ARE YOU SURE YOU WISH TO DELETE THESE FILES?")
+				.setPositiveButton("Yes", deleteUnUploadedFiles)
+				.setNegativeButton("No", deleteUnUploadedFiles);
+
+		deleteButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(final View v) {
+				deletePrompt.show();
+			}
+
+		});
+
+		closeButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(final View v) {
+				finish();
+			}
+		});
+		listView.addFooterView(footerView);
+		setListAdapter(checkList);
 	}
 }

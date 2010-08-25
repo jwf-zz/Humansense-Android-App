@@ -36,7 +36,7 @@
 			android:screenOrientation="landscape">
 		</activity>
         <service android:name="ca.mcgill.hs.serv.HSService"/>
-        <service android:name="ca.mcgill.hs.serv.UploaderService"/>
+        <service android:name="ca.mcgill.hs.serv.NewUploaderService"/>
         <service android:name="ca.mcgill.hs.graph.NewActivityNotificationLauncher"/>
         <receiver android:name="ca.mcgill.hs.serv.HSServAutoStart" 
 			 android:enabled="true" 
@@ -52,6 +52,7 @@
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"></uses-permission>
 	<uses-permission android:name="android.permission.CHANGE_WIFI_STATE"></uses-permission>
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
 	<uses-permission android:name="android.permission.BATTERY_STATS"></uses-permission>

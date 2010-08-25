@@ -25,6 +25,9 @@
     <string name="mag_graph_label_hint">Enter an activity (e.g. jogging)</string>
     <string name="mag_graph_incorrect_input_toast">Please enter letters, dashes and apostrophes only.</string>
 	<string name="mag_graph_legend_label">Legend</string>
+
+	<!-- SimpleClassifierOutput plugin Strings -->
+	<string name="model_ini_path">hsandroidapp/models/models.ini</string>
 	
 	<!-- Object Strings -->
 	<string name="start_label">START SERVICE</string>
@@ -36,20 +39,24 @@
     <string name="no">No</string>
     <string name="OK">OK</string>
     <string name="cancel">Cancel</string>
+    <string name="file">file</string>
+    <string name="files">files</string>
+    <string name="deleted">deleted</string>
+    <string name="delete">delete</string>
+    <string name="Deleted">Deleted</string>
+    <string name="Delete">Delete</string>
+    <string name="unuploaded">unuploaded</string>
     <string name="uploader_appname_label">Humansense File Uploader:\n</string>
     <string name="uploader_no_errors_one_file">1 file was uploaded to server.</string>
     <string name="uploader_no_errors_multiple_files">files were uploaded to server.</string>
     <string name="uploader_unable_to_connect">Unable to connect to server.</string>
     <string name="uploader_upload_failed">One or more files have failed to upload.</string>
     <string name="uploader_no_new_files">No new files to upload.</string>
-    <string name="uploader_no_connection">No Wi-Fi connections could be found.</string>
+    <string name="uploader_no_connection">No connection could be found.</string>
     <string name="activity_magnitude_graph_label">Activity Recognition Graph</string>
     <string name="activity_file_manager_label">Humansense File Manager</string>
     
 	<!-- Preferences Strings -->
-	<string name="unuploaded_cat">Unuploaded Files</string>
-	<string name="unuploaded_title">Delete Unuploaded</string>
-	<string name="unuploaded_desc">Deletes all unuploaded files on your device.</string>
 	<string name="startup_options_cat">Startup Options</string>
 	<string name="auto_start_at_app_start_pref">Automatically start logging when application starts.</string>
 	<string name="auto_start_at_app_start_pref_title">Auto-Start at App Start</string>
@@ -61,6 +68,16 @@
     <string name="no_start_phone_boot_label">Do not start at phone boot.</string>
     <string name="start_app_start_label">Start at application start.</string>
     <string name="no_start_app_start_label">Do not start at application start.</string>
+    <string name="unuploaded_management">Manage Unuploaded Files</string>
+	<string name="unuploaded_management_desc">Individually delete files that have not yet been uploaded to the server.</string>
+	<string name="manage_files">Unuploaded Files</string>
+	<string name="unuploaded_cat">Unuploaded Files</string>
+	<string name="unuploaded_title">Delete Unuploaded Files</string>
+	<string name="unuploaded_desc">Deletes all unuploaded files on your device.</string>
+	<string name="delete_files_warning">Delete these files?</string>
+	<string name="file_deleted">file has been deleted.</string>
+	<string name="files_deleted">files have been deleted.</string>
+	<string name="no_files_to_delete">No files to delete.</string>
     
     <string name="plugin_options_cat">Plugin Options</string>
     <string name="input_plugin_pref_title">Input Plugins</string>
@@ -69,12 +86,12 @@
     <string name="output_plugin_pref_description">Shows options for all output plugins installed with defined preferences.</string>
     
     <string name="uploader_options_cat">Uploader Options</string>
-    <string name="uploader_clear_data_title">Clear Data</string>
-    <string name="uploader_clear_data_desc">Clears data already uploaded to the server.\n</string>
+    <string name="uploader_clear_data_title">Delete Uploaded Files</string>
+    <string name="uploader_clear_data_desc">Deletes files already uploaded to the server.\n</string>
     <string name="uploader_auto_upload_title">Upload Automatically</string>
     <string name="uploader_auto_upload_desc">Automatically upload files whenever they are available.\n</string>
     <string name="uploader_only_use_wifi_title">Only Use Wi-Fi</string>
-    <string name="uploader_only_use_wifi_desc">Forces the phone to only upload files via Wi-Fi.\n</string>
+    <string name="uploader_only_use_wifi_desc">Files are only uploaded over Wi-Fi.\n</string>
     
     <string name="set_preferences">Preferences</string>
     <string name="set_input_preferences">Input Plugin Preferences</string>
@@ -111,8 +128,4 @@
     <string name="notification_vibrate_title">Notification Vibration</string>
     <string name="notification_vibrate_summary">Enables or disables vibration when notifications are pushed.</string>
     
-<string name="unuploaded_management">Manage Unuploaded Files</string>
-<string name="unuploaded_management_desc">Delete files that have not yet been uploaded to the server.</string>
-<string name="manage_files">Unuploaded Files</string>
-<string name="model_ini_path">hsandroidapp/models/models.ini</string>
 </resources>

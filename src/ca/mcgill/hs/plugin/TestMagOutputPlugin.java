@@ -121,19 +121,19 @@ public class TestMagOutputPlugin extends OutputPlugin {
 			magActivities[i] = 0x6;
 		}
 		for (int i = 42; i < 48; i++) {
-			magActivities[i] = 0x7;
+			magActivities[i] = 0x3;
 		}
 		for (int i = 48; i < 54; i++) {
-			magActivities[i] = 0x8;
+			magActivities[i] = 0x5;
 		}
 		for (int i = 54; i < 60; i++) {
-			magActivities[i] = 0x9;
+			magActivities[i] = 0x0;
 		}
 		for (int i = 60; i < 66; i++) {
 			magActivities[i] = 0xA;
 		}
 		for (int i = 66; i < 72; i++) {
-			magActivities[i] = 0xB;
+			magActivities[i] = 0x2;
 		}
 		for (int i = 72; i < 78; i++) {
 			magActivities[i] = 0xC;
@@ -142,7 +142,7 @@ public class TestMagOutputPlugin extends OutputPlugin {
 			magActivities[i] = 0xD;
 		}
 		for (int i = 84; i < 90; i++) {
-			magActivities[i] = 0xE;
+			magActivities[i] = 0xA;
 		}
 		for (int i = 90; i < 100; i++) {
 			magActivities[i] = 0xF;

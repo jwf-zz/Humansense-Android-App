@@ -40,14 +40,33 @@ import ca.mcgill.hs.util.ActivityIndex;
  * label activities.
  */
 public class MagnitudeGraphView extends View {
+	/**
+	 * Node class used only for storing labels and timestamps from this graph.
+	 * 
+	 * @author Cicerone Cojocaru
+	 * 
+	 */
+	public class Node {
+		public final String label;
+		public final long startTime;
+		public final long endTime;
+
+		private Node(final String label, final long startTime,
+				final long endTime) {
+			this.label = label;
+			this.startTime = startTime;
+			this.endTime = endTime;
+		}
+	}
+
 	// The title of the graph
 	private final String title;
-
 	// These are the values and the two timestamps that are given/required to
 	// draw the graph.
 	private final float[] values;
 	private final int[] activities;
 	private final long start;
+
 	private final long end;
 
 	// List of the activities present in this data set, for faster lookup in
@@ -59,20 +78,19 @@ public class MagnitudeGraphView extends View {
 			0xFFFF8000, 0xFF00FFFF, 0xFF8000FF, 0xFFFFFF00, 0xFF339933,
 			0xFF0080FF, 0xFFF5B800, 0xFF80FF00, 0xFFFF0080, 0xFF00FF80,
 			0xFFFFFFFF, 0xFFB88A00, 0xFFFF00FF };
-
 	// These are Date objects relating to the start and end timestamps
 	private final Date startTime;
 	private final Date endTime;
+
 	private final SimpleDateFormat sdf;
 
 	// The Paint object used to paint lines, rectangles and text on the canvas.
 	private final Paint paint;
-
 	// These floats are used in order to calculate the appropriate scaling of
 	// the values.
 	private float max;
-	private float min;
 
+	private float min;
 	// These variables are used in order to correctly draw and label the
 	// activity selections.
 	private Rect tempRect;
@@ -83,26 +101,27 @@ public class MagnitudeGraphView extends View {
 	private String label;
 	private int minRectSize;
 	private final LinkedList<Rect> rectList = new LinkedList<Rect>();
-	private final LinkedList<Node> labels = new LinkedList<Node>();
 
+	private final LinkedList<Node> labels = new LinkedList<Node>();
 	// Get screen dimensions for this phone
 	private int height;
-	private int width;
 
+	private int width;
 	// Calculate graph edge locations
 	private int horizontalEdge;
-	private int verticalEdge;
 
+	private int verticalEdge;
 	// The net dimensions of the graph on screen
 	private int netGraphWidth;
+
 	private int netGraphHeight;
 
 	// The vertical padding inside the graph
 	private int padding;
-
 	// Font sizes
 	private int titleSize;
 	private int axisTitleSize;
+
 	private int axisValueSize;
 
 	// X-axis jump factor, used if more data points than pixels
@@ -110,9 +129,9 @@ public class MagnitudeGraphView extends View {
 
 	// Number of data points
 	private int valuesLength;
-
 	// Trimmed array of data points, compressed from values using the jumpFactor
 	private float[] trimmedValues;
+
 	private int trimmedValuesLength;
 
 	// Largest amplitude point
@@ -778,24 +797,5 @@ public class MagnitudeGraphView extends View {
 							}
 						});
 		builder.show();
-	}
-
-	/**
-	 * Node class used only for storing labels and timestamps from this graph.
-	 * 
-	 * @author Cicerone Cojocaru
-	 * 
-	 */
-	public class Node {
-		public final String label;
-		public final long startTime;
-		public final long endTime;
-
-		private Node(final String label, final long startTime,
-				final long endTime) {
-			this.label = label;
-			this.startTime = startTime;
-			this.endTime = endTime;
-		}
 	}
 }

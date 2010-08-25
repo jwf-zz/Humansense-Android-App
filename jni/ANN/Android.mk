@@ -2,9 +2,9 @@ LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/../ \
-	$(LOCAL_PATH)/../../ext/astl/include/ \
-	$(LOCAL_PATH)/../../ext/bionic/libstdc++/include/
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/../ 
+#	$(LOCAL_PATH)/../../ext/astl/include/ \
+#	$(LOCAL_PATH)/../../ext/bionic/libstdc++/include/
 
 LOCAL_MODULE    := libANN
 LOCAL_LDLIBS    := -llog

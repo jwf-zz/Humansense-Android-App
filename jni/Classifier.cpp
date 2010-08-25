@@ -43,7 +43,7 @@ Classifier::Classifier(std::vector<NamedModel*> *models) {
 }
 
 Classifier::~Classifier() {
-	__android_log_write(ANDROID_LOG_DEBUG, HS_TAG, "Classifier Destructor Called.");
+	LOG("Classifier Destructor Called.");
 
 	if (models != NULL) {
 		for (uint i = 0; i < numModels; i++) {
@@ -105,9 +105,17 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 	if (models == NULL) {
 		return NULL;
 	}
+
 	TDEModel* model;
 	int M = this->numModels;
-	const int extra_neighbours = 8;
+	uint extra_neighbours = 0;
+	if (ALGORITHM == 2) {
+		extra_neighbours = 32;
+	}
+	else if (ALGORITHM == 3) {
+		extra_neighbours = 5;
+	}
+
 	char* model_name;
 	ANNcoord *projected_data;
 	ANNpointArray ap;
@@ -118,10 +126,9 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 	uint i, j, k, l, a, pcaembdim;
 	uint N;
 	ANNdist dist, dist_next, *dst, l1, l2;
-	ANNcoord *p1, *p2, *p3, *p4;
+	ANNcoord *p1, *p2, *p3, *p4, *p5, interpcoeff;
 	mdists = cvCreateMat(length - MATCH_STEPS + 1, M, MAT_TYPE);
 	cvZero(mdists);
-	const int scoringMethod = 1; // 1 is independent steps, 2 is complete trajectory matching.
 
 	for (i = 0; i < length - MATCH_STEPS + 1; i++) {
 		for (k = 0; k < M; k++) {
@@ -132,7 +139,7 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 			mdist = 0.0;
 			ap = annAllocPts(MATCH_STEPS+1,pcaembdim);
 			convert_to_ann_points(ap, data[k] + i * pcaembdim, MATCH_STEPS + 1, pcaembdim);
-			if (scoringMethod == 1) {
+			if (ALGORITHM == 1) {
 				// Get the next MATCH_STEP+1 data points, and convert them to the appropriate
 				// format, stored in ap.
 				for (j = 0; j < MATCH_STEPS; j++) {
@@ -160,11 +167,7 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 						}
 					}
 					if (l < NEIGHBOURS) {
-						__android_log_print(
-								ANDROID_LOG_FATAL,
-								HS_TAG,
-								"Couldn't find enough neighbours (found: %d, required: %d).",
-								l, NEIGHBOURS);
+						LOG2("Couldn't find enough neighbours (found: %d, required: %d).", l, NEIGHBOURS);
 					}
 
 					// Computes the mean of the nearest neighbours.
@@ -201,10 +204,12 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 							l2 = l2 + (*p3 - *p1)*(*p3 - *p1);
 							*p1++; *p2++; *p3++;
 					}
-					mdist = mdist + dist/MAX(l1,l2);
+					if (MAX(l1,l2) > 0.0f) {
+						mdist = mdist + dist/MAX(l1,l2);
+					}
 				}
 			}
-			else if (scoringMethod == 2) {
+			else if (ALGORITHM == 2) {
 				// Just get the nearest neighbour of the first point.
 				model->getKNN(ap[0], NEIGHBOURS + extra_neighbours + 1, nn_idx, dists);
 				for (j = 0; j < MATCH_STEPS; j++) {
@@ -215,18 +220,13 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 						}
 						a = 0;
 						while ((uint)nn_idx[l] > N-MATCH_STEPS-1) {
-							/*
-							__android_log_print(
-									ANDROID_LOG_DEBUG,
-									HS_TAG,
-									"Bad neighbour %d.", nn_idx[l]);
-							*/
+//							__android_log_print(
+//									ANDROID_LOG_DEBUG,
+//									HS_TAG,
+//									"Bad neighbour %d.", nn_idx[l]);
 							nn_idx[l] = nn_idx[NEIGHBOURS+a++];
 							if (a >= extra_neighbours) {
-								__android_log_print(
-										ANDROID_LOG_FATAL,
-										HS_TAG,
-										"Couldn't find enough good neighbours.");
+								LOG("Couldn't find enough good neighbours.");
 								nn_idx[l] = 0;
 								break;
 							}
@@ -247,11 +247,7 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 						}
 					}
 					if (l < NEIGHBOURS) {
-						__android_log_print(
-								ANDROID_LOG_FATAL,
-								HS_TAG,
-								"Couldn't find enough neighbours (found: %d, required: %d).",
-								l, NEIGHBOURS);
+						LOG2("Couldn't find enough neighbours (found: %d, required: %d).", l, NEIGHBOURS);
 					}
 
 					// Computes the mean of the nearest neighbours.
@@ -289,7 +285,98 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 							l2 = l2 + (*p3 - *p1)*(*p3 - *p1);
 							*p1++; *p2++; *p3++;
 					}
-					mdist = mdist + dist/MAX(l1,l2);
+					if (MAX(l1,l2) > 0.0f) {
+						mdist = mdist + dist/MAX(l1,l2);
+					}
+				}
+			}
+			else if (ALGORITHM == 3) {
+				// Try to reduce score variance by taking account distance from
+				// line segments when constructing expected next points.
+				for (j = 0; j < MATCH_STEPS; j++) {
+					model->getKNN(ap[j], NEIGHBOURS+extra_neighbours+1, nn_idx, dists);
+
+					for (l = 0; l < NEIGHBOURS; l++) {
+						// Make sure none of the first neighbours is N, 0, or invalid.
+						if (nn_idx[l] == ANN_NULL_IDX) break;
+						a = 0;
+						while ((uint)nn_idx[l] >= N-3 || (uint)nn_idx[l] == 0) {
+							nn_idx[l] = nn_idx[NEIGHBOURS+a++];
+							if (a >= extra_neighbours) {
+								LOG("Couldn't find enough good neighbours.");
+								nn_idx[l] = 0;
+								break;
+							}
+						}
+
+						// Copy in the data.
+						p1 = (ANNcoord*)(nn[k]->data.ptr+l*nn[k]->step);
+						p2 = (ANNcoord*)(nnn[k]->data.ptr+l*nnn[k]->step);
+						p3 = model->getDataPoint(nn_idx[l]);
+						p4 = model->getDataPoint(nn_idx[l]+1);
+						p5 = model->getDataPoint(nn_idx[l]+2);
+
+						interpcoeff = get_interpolation_coefficient(ap[j], p3, p4, pcaembdim);
+						if (interpcoeff < 0.0f) {
+							// Back up one step.
+							p5 = p4;
+							p4 = p3;
+							p3 = model->getDataPoint(nn_idx[l]-1);
+							interpcoeff = get_interpolation_coefficient(ap[j], p3, p4, pcaembdim);
+						}
+						else if (interpcoeff > 1.0f) {
+							// Move ahead one step
+							p3 = p4;
+							p4 = p5;
+							p5 = model->getDataPoint(nn_idx[l]+3);
+							interpcoeff = get_interpolation_coefficient(ap[j], p3, p4, pcaembdim);
+						}
+						if (interpcoeff < 0.0f) interpcoeff = 0.0f;
+						if (interpcoeff > 1.0f) interpcoeff = 1.0f;
+						for (a = 0; a < pcaembdim; a++) {
+							*p1++ = (1.0f - interpcoeff) * *p3 + interpcoeff * *p4;
+							*p2++ = (1.0f - interpcoeff) * *p4 + interpcoeff * *p5;
+							p3++; p4++; p5++;
+						}
+					}
+					if (l < NEIGHBOURS)
+						LOG("Couldn't find enough good neighbours.");
+
+					// Computes the mean of the nearest neighbours.
+					cvReduce(nn[k], navg[k], 0, CV_REDUCE_AVG );
+
+					// Computes the mean of the neigbours' successors
+					cvReduce(nnn[k], navg_next[k], 0, CV_REDUCE_AVG );
+
+					p1 = (ANNcoord*)navg_next[k]->data.ptr;
+					p2 = (ANNcoord*)navg[k]->data.ptr;
+					dst = (ANNcoord*)proj_next[k]->data.ptr;
+					for (l = 0; l < pcaembdim; l++) {
+						*dst++ = ap[j][l] + (*p1++ - *p2++);
+					}
+
+					// p is the current point in the trajectory that we want to classify.
+					p = cvMat(1, pcaembdim, MAT_TYPE, ap[j]);
+					// np is the subsequent point in the trajectory to be classified.
+					np = cvMat(1, pcaembdim, MAT_TYPE, ap[j + 1]);
+
+					// Shift each vector to the origin and compute the dot product
+					// normalized by the length of the larger vector.
+					p1 = (ANNcoord*)p.data.ptr;
+					p2 = (ANNcoord*)np.data.ptr;
+					p3 = (ANNcoord*)proj_next[k]->data.ptr;
+					dist = 0.0;
+					l1 = 0.0; // Length of first vector
+					l2 = 0.0; // Length of second vector
+					for (l = 0; l < pcaembdim; l++) {
+						dist = dist + (*p2 - *p1)*(*p3 - *p1);
+						l1 = l1 + (*p2 - *p1)*(*p2 - *p1);
+						l2 = l2 + (*p3 - *p1)*(*p3 - *p1);
+						*p1++; *p2++; *p3++;
+					}
+					if (MAX(l1,l2) > 0.0f) {
+						mdist = mdist + dist/MAX(l1,l2);
+					}
 				}
 			}
 			cvmSet(mdists, i, k, mdist);
@@ -323,4 +410,16 @@ ANNcoord* Classifier::getProjectedData(int modelId, ANNcoord* input, int length)
 		projected = data;
 	}
 	return projected;
+}
+
+inline float get_interpolation_coefficient(ANNpoint p, ANNpoint p1, ANNpoint p2, uint dim) {
+	uint i;
+	float num = 0.0, denom = 0.0;
+	ANNcoord *a1 = p1, *a2 = p2, *q = p;
+	for (i = 0; i < dim; i++) {
+		num = num + (*q - *a1) * (*a2 - *a1);
+		denom = denom + (*a2 - *a1) * (*a2 - *a1);
+		a1++; a2++; q++;
+	}
+	return num / denom;
 }

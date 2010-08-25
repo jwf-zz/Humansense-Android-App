@@ -75,6 +75,17 @@ void get_embedding(Settings* settings, ANNcoord* &data, uint &length) {
 
 }
 
+void get_ann_points(ANNpointArray &dataPts, ANNcoord* series, unsigned long  rows, uint cols)
+{
+	unsigned long k = 0;
+    dataPts = annAllocPts(rows, cols);
+    for (ulong i = 0; i < rows; i++) {
+        for (ulong j = 0; j < cols; j++) {
+        	dataPts[i][j] = series[k++];
+        }
+    }
+}
+
 void convert_to_ann_points(ANNpointArray &dataPts, ANNcoord* series, uint  rows, uint  cols)
 {
 	uint k = 0, i, j;

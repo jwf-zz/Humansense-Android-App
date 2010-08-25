@@ -114,4 +114,5 @@
 <string name="unuploaded_management">Manage Unuploaded Files</string>
 <string name="unuploaded_management_desc">Delete files that have not yet been uploaded to the server.</string>
 <string name="manage_files">Unuploaded Files</string>
+<string name="model_ini_path">hsandroidapp/models/models.ini</string>
 </resources>

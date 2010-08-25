@@ -15,7 +15,7 @@
 #include "Classifier.h"
 #include "ClassifyTrajectory.h"
 
-#define NATIVE_CALL(type, name) extern "C" JNIEXPORT type JNICALL Java_ca_mcgill_cs_humansense_hsandroid_HSAndroid_ ## name
+#define NATIVE_CALL(type, name) extern "C" JNIEXPORT type JNICALL Java_ca_mcgill_hs_plugin_SimpleClassifierPlugin_ ## name
 
 extern Classifier *classifier;
 
@@ -120,14 +120,14 @@ NATIVE_CALL(void, classifySample)(JNIEnv* env, jobject obj, jfloatArray in, jint
 	CvMat *dists;
 	data = new ANNcoord*[M];
 	for (i = 0; i < M; i++ ) {
-		data[i] = classifier->getProjectedData(i, sample+startIndex, MATCH_STEPS+1);
+		data[i] = classifier->getProjectedData(i, sample+startIndex, Classifier::MATCH_STEPS+1);
 		/*
 		__android_log_print(ANDROID_LOG_DEBUG, HS_TAG, "%G %G %G %G %G",
 				data[i][0], data[i][1], data[i][2], data[i][3], data[i][4]);
 		*/
 	}
 
-	probs = classifier->classify(data, MATCH_STEPS);
+	probs = classifier->classify(data, Classifier::MATCH_STEPS);
 	// Use JNI_ABORT because this array was read-only
 	env->ReleasePrimitiveArrayCritical(in, sample, JNI_ABORT);
 

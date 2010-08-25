@@ -76,40 +76,6 @@ public class FileOutput extends OutputPlugin {
 	// Date format used in the log file names
 	private final static String LOG_DATE_FORMAT = "yy-MM-dd-HHmmss";
 
-	// Timestamps used for file rollover.
-	private long initialTimestamp = -1;
-	private long rolloverTimestamp = -1;
-	private long ROLLOVER_INTERVAL;
-	private long currentTimeMillis;
-
-	// The Context in which to use preferences.
-	private final Context context;
-
-	/**
-	 * This is the basic constructor for the FileOutput plugidatan. It has to be
-	 * instantiated before it is started, and needs to be passed a reference to
-	 * a Context.
-	 * 
-	 * @param context
-	 *            - the context in which this plugin is created.
-	 */
-	public FileOutput(final Context context) {
-		this.context = context;
-		PLUGIN_STOPPING = false;
-		THREADS_WRITING = 0;
-
-		prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-		PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
-		BUFFER_SIZE = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY,
-				(String) context.getResources().getText(
-						R.string.fileoutput_buffersizedefault_pref)));
-
-		ROLLOVER_INTERVAL = Integer.parseInt(prefs.getString(
-				ROLLOVER_INTERVAL_KEY, (String) context.getResources().getText(
-						R.string.fileoutput_rolloverintervaldefault_pref)));
-	}
-
 	/**
 	 * Returns the list of Preference objects for this OutputPlugin.
 	 * 
@@ -150,6 +116,42 @@ public class FileOutput extends OutputPlugin {
 	 */
 	public static boolean hasPreferences() {
 		return true;
+	}
+
+	// Timestamps used for file rollover.
+	private long initialTimestamp = -1;
+	private long rolloverTimestamp = -1;
+
+	private long ROLLOVER_INTERVAL;
+
+	private long currentTimeMillis;
+
+	// The Context in which to use preferences.
+	private final Context context;
+
+	/**
+	 * This is the basic constructor for the FileOutput plugidatan. It has to be
+	 * instantiated before it is started, and needs to be passed a reference to
+	 * a Context.
+	 * 
+	 * @param context
+	 *            - the context in which this plugin is created.
+	 */
+	public FileOutput(final Context context) {
+		this.context = context;
+		PLUGIN_STOPPING = false;
+		THREADS_WRITING = 0;
+
+		prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+		PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
+		BUFFER_SIZE = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY,
+				(String) context.getResources().getText(
+						R.string.fileoutput_buffersizedefault_pref)));
+
+		ROLLOVER_INTERVAL = Integer.parseInt(prefs.getString(
+				ROLLOVER_INTERVAL_KEY, (String) context.getResources().getText(
+						R.string.fileoutput_rolloverintervaldefault_pref)));
 	}
 
 	/**
@@ -366,15 +368,15 @@ public class FileOutput extends OutputPlugin {
 	 * @return the String representing the extension to add to the filename.
 	 */
 	private String getFileExtension(final DataPacket dp) {
-		if (dp.getClass() == WifiLoggerPacket.class) {
+		if (dp.getDataPacketId() == WifiLoggerPacket.PLUGIN_ID) {
 			return WIFI_EXT;
-		} else if (dp.getClass() == GPSLoggerPacket.class) {
+		} else if (dp.getDataPacketId() == GPSLoggerPacket.PLUGIN_ID) {
 			return GPS_EXT;
-		} else if (dp.getClass() == SensorLoggerPacket.class) {
+		} else if (dp.getDataPacketId() == SensorLoggerPacket.PLUGIN_ID) {
 			return SENS_EXT;
-		} else if (dp.getClass() == GSMLoggerPacket.class) {
+		} else if (dp.getDataPacketId() == GSMLoggerPacket.PLUGIN_ID) {
 			return GSM_EXT;
-		} else if (dp.getClass() == BluetoothPacket.class) {
+		} else if (dp.getDataPacketId() == BluetoothPacket.PLUGIN_ID) {
 			return BT_EXT;
 		} else {
 			return DEF_EXT;

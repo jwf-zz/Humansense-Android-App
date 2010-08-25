@@ -37,9 +37,9 @@ LOCAL_SRC_FILES := \
 	Utils.cpp
 
 LOCAL_C_INCLUDES := \
-	$(LOCAL_PATH)/ANN \
-	$(LOCAL_PATH)/../ext/astl/include \
-	$(LOCAL_PATH)/../ext/bionic/libstdc++/include
+	$(LOCAL_PATH)/ANN
+#	$(LOCAL_PATH)/../ext/astl/include \
+#	$(LOCAL_PATH)/../ext/bionic/libstdc++/include
 
 LOCAL_STATIC_LIBRARIES := libANN libcxcore libTisean
 

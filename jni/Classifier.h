@@ -19,6 +19,10 @@ private:
 	int numModels, windowSize;
 
 public:
+	const static int ALGORITHM = 3;
+	const static int NEIGHBOURS = 2;
+	const static int MATCH_STEPS = 16;
+
 	Classifier(std::vector<NamedModel*> *models);
 	virtual ~Classifier();
 
@@ -37,9 +41,8 @@ public:
 	std::vector<NamedModel*> *models;
 
 	CvMat **navg, **navg_next, **proj_next, **nn, **nnn;
-};
 
-#define MATCH_STEPS 32
-#define NEIGHBOURS 4
+};
+inline float get_interpolation_coefficient(ANNpoint p, ANNpoint p1, ANNpoint p2, uint dim);
 
 #endif /* CLASSIFIER_H_ */

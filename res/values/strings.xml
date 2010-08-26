@@ -74,6 +74,7 @@
 	<string name="unuploaded_cat">Unuploaded Files</string>
 	<string name="unuploaded_title">Delete Unuploaded Files</string>
 	<string name="unuploaded_desc">Deletes all unuploaded files on your device.</string>
+	<string name="delete_files_big_warning">Are you sure you wish to delete all unuploaded files?</string>
 	<string name="delete_files_warning">Delete these files?</string>
 	<string name="file_deleted">file has been deleted.</string>
 	<string name="files_deleted">files have been deleted.</string>

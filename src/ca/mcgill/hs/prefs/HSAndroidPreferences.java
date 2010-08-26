@@ -214,7 +214,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 
 		final AlertDialog.Builder aggressiveBuilder = new AlertDialog.Builder(
 				this);
-		aggressiveBuilder.setMessage(R.string.delete_files_warning)
+		aggressiveBuilder.setMessage(R.string.delete_files_big_warning)
 				.setPositiveButton(R.string.yes, undeletedClickListener)
 				.setNegativeButton(R.string.no, undeletedClickListener);
 

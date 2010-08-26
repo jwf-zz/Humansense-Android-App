@@ -232,17 +232,16 @@ public class HSAndroidPreferences extends PreferenceActivity {
 			}
 		};
 
-		unuploadedFilesToDelete = getFilesUnuploaded();
 		final AlertDialog.Builder unuploadedBuilder = new AlertDialog.Builder(
 				this);
 		unuploadedBuilder.setMessage(
 				getResources().getString(R.string.Delete)
 						+ " "
-						+ unuploadedFilesToDelete
+						+ getFilesUnuploaded()
 						+ " "
 						+ getResources().getString(R.string.unuploaded)
 						+ " "
-						+ (unuploadedFilesToDelete == 1 ? getResources()
+						+ (getFilesUnuploaded() == 1 ? getResources()
 								.getString(R.string.file) : getResources()
 								.getString(R.string.files)) + "?")
 				.setPositiveButton(R.string.yes, aggressiveClickListener)
@@ -252,6 +251,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 		clearUnuploaded
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 					public boolean onPreferenceClick(final Preference preference) {
+						unuploadedFilesToDelete = getFilesUnuploaded();
 						if (unuploadedFilesToDelete > 0) {
 							unuploadedBuilder.show();
 						} else {

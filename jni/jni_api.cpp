@@ -15,7 +15,7 @@
 #include "Classifier.h"
 #include "ClassifyTrajectory.h"
 
-#define NATIVE_CALL(type, name) extern "C" JNIEXPORT type JNICALL Java_ca_mcgill_hs_plugin_SimpleClassifierPlugin_ ## name
+#define NATIVE_CALL(type, name) extern "C" JNIEXPORT type JNICALL Java_ca_mcgill_hs_classifiers_TimeDelayEmbeddingClassifier_ ## name
 
 extern Classifier *classifier;
 
@@ -90,6 +90,13 @@ NATIVE_CALL(jint, getWindowSize)(JNIEnv* env, jobject obj) {
 		return 0;
 	}
 	return (jint)classifier->getWindowSize();
+}
+
+NATIVE_CALL(void, setAlgorithmNumber)(JNIEnv* env, jobject obj, jint algNum) {
+	if (classifier != NULL) {
+		classifier->setAlgorithmNumber(algNum);
+	}
+
 }
 
 NATIVE_CALL(jstring, getModelNames)(JNIEnv* env, jobject obj) {

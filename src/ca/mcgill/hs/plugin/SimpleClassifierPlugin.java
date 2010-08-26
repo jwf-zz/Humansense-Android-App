@@ -13,6 +13,7 @@ import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import ca.mcgill.hs.R;
+import ca.mcgill.hs.classifiers.TimeDelayEmbeddingClassifier;
 import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
 import ca.mcgill.hs.util.PreferenceFactory;
 
@@ -31,21 +32,10 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 						Looper.myLooper().quit();
 						return;
 					}
-					final int b = msg.arg1;
+					final int index = msg.arg1;
 					// final int timestamp = msg.arg2;
+					tdeClassifier.classify(index);
 					// Log.d(TAG,"ARV: Logging at timestamp: " + timestamp);
-					final float[] buf = new float[windowLength];
-					synchronized (buffer) {
-						for (int i = 0; i < windowLength; i++) {
-							buf[i] = buffer[b - windowLength + 1 + i];
-						}
-					}
-					classifySample(buf, 0, classProbs);
-					String message = "Class Probs: ";
-					for (int i = 0; i < classProbs.length; i++) {
-						message = message + classProbs[i] + "\t";
-					}
-					Log.d(PLUGIN_NAME, message);
 				}
 			};
 
@@ -53,7 +43,11 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 		}
 	}
 
+	private final TimeDelayEmbeddingClassifier tdeClassifier;
+
 	private LoggerThread loggerThread;
+
+	private boolean classifying = false;
 
 	// Preference key for this plugin's state
 	private final static String PLUGIN_ACTIVE_KEY = "simpleClassifierEnabled";
@@ -90,29 +84,11 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 		return true;
 	}
 
-	// Circular buffer for data.
-	private float[] buffer;
-	private int bufferIndex = 0;
-	private int bufferMidPoint;
-	private int bufferLength;
-	private int windowLength;
-	private float[] classProbs;
-
-	private int counter = 0;
-
 	private boolean PLUGIN_ACTIVE;
 
 	private final Context context;
 
-	private boolean modelsLoaded = false;
-
-	static {
-		System.loadLibrary("humansense");
-	}
-
-	// ******************************************************************** //
-	// Native Methods
-	// ******************************************************************** //
+	private int counter = 0;
 
 	public SimpleClassifierPlugin(final Context c) {
 		context = c;
@@ -120,48 +96,14 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 		final SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(c);
 
+		tdeClassifier = new TimeDelayEmbeddingClassifier();
+
 		PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
 	}
 
-	public native void annClose();
-
-	public native float annDist(int dim, float[] p, float[] q);
-
-	// Builds a model from data in in_file with embedding dimension m,
-	// PCA reduced dimension p, and delay time d. Model is saved in a file
-	// constructed from in_file with .dmp appended.
-	public native void buildTree(String in_file, int m, int p, int d);
-
-	// Classifies the data in the array in, starting from index offset, and
-	// returned values are stored in output, which must be an array of length
-	// getNumModels()
-	public native void classifySample(float[] in, int startIndex, float[] out);
-
-	// Loads models from models_file, then classifies data from in_file,
-	// storing the class-likelihoods in out_file.
-	public native void classifyTrajectory(String in_file, String out_file,
-			String models_file);
-
-	// Cleans up any loaded models.
-	public native void deleteModels();
-
-	// Returns a tab-separated list of model names
-	public native String getModelNames();
-
-	// Returns the number of loaded models
-	public native int getNumModels();
-
-	// Returns the minimum number of samples that must be passed to the
-	// classifySamples.
-	// It is the maximum of the window sizes required for all of the models.
-	public native int getWindowSize();
-
-	// Loads models from models_file.
-	public native void loadModels(String models_file);
-
 	@Override
 	void onDataReceived(final DataPacket dp) {
-		if (!PLUGIN_ACTIVE || !modelsLoaded) {
+		if (!PLUGIN_ACTIVE || !classifying) {
 			return;
 		}
 
@@ -173,25 +115,16 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 
 			final float m = (float) Math.sqrt(x * x + y * y + z * z)
 					- SensorManager.STANDARD_GRAVITY;
-			synchronized (buffer) {
-				buffer[bufferIndex] = m;
-				if (bufferIndex >= bufferMidPoint) {
-					if (bufferIndex > bufferMidPoint) {
-						buffer[bufferIndex - windowLength] = m;
-					}
-					counter += 1;
-					if (counter % 10 == 0) {
-						final Message msg = loggerThread.mHandler
-								.obtainMessage(LOG_MESSAGE, bufferIndex,
-										(int) packet.time);
-						loggerThread.mHandler.sendMessage(msg);
-						counter = 0;
-					}
-				}
-				bufferIndex++;
-				if (bufferIndex >= bufferLength) {
-					bufferIndex = bufferMidPoint;
-				}
+			final int index = tdeClassifier.addSample(m);
+			counter += 1;
+			/*
+			 * Classify every 10 samples.
+			 */
+			if (counter % 10 == 0) {
+				final Message msg = loggerThread.mHandler.obtainMessage(
+						LOG_MESSAGE, index, (int) packet.time);
+				loggerThread.mHandler.sendMessage(msg);
+				counter = 0;
 			}
 		}
 
@@ -203,32 +136,20 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 			final Thread t = new Thread() {
 				@Override
 				public void run() {
-					final File j = new File(Environment
+					final File modelsFile = new File(Environment
 							.getExternalStorageDirectory(), (String) context
 							.getResources().getText(R.string.model_ini_path));
-					if (j.canRead()) {
-						loadModels(j.getAbsolutePath());
-
-						// Prepare the buffer
-						windowLength = getWindowSize();
-						bufferLength = windowLength * 2 - 1;
-						bufferMidPoint = windowLength - 1;
-						buffer = new float[bufferLength];
-						bufferIndex = 0;
-						classProbs = new float[getNumModels()];
-
+					if (modelsFile.canRead()) {
 						loggerThread = new LoggerThread();
 						loggerThread.start();
+						tdeClassifier.loadModels(modelsFile);
 
-						modelsLoaded = true;
-						Log.d(PLUGIN_NAME, "Loaded " + getNumModels()
-								+ " models.");
-						Log.d(PLUGIN_NAME, "Window Size Is " + getWindowSize());
+						classifying = true;
 					} else {
 						// No Models.ini file found!
 						Log.e(PLUGIN_NAME, "Could not load models.ini from "
-								+ j.getAbsolutePath());
-						modelsLoaded = false;
+								+ modelsFile.getAbsolutePath());
+						classifying = false;
 					}
 				}
 			};
@@ -238,12 +159,12 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 
 	@Override
 	protected void onPluginStop() {
-		if (modelsLoaded) {
+		if (classifying) {
 			final Message msg = loggerThread.mHandler
 					.obtainMessage(QUIT_MESSAGE);
 			loggerThread.mHandler.sendMessage(msg);
-			modelsLoaded = false;
-			annClose();
+			classifying = false;
+			tdeClassifier.close();
 		}
 	}
 

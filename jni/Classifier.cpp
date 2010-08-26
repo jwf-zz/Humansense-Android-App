@@ -15,6 +15,7 @@ Classifier::Classifier(std::vector<NamedModel*> *models) {
 	int pcaembdim, i, W;
 	TDEModel *model;
 	windowSize = 0;
+	algorithm = 1; // Default to first algorithm
 	if (models == NULL) {
 		this->models = NULL;
 		this->numModels = 0;
@@ -109,10 +110,10 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 	TDEModel* model;
 	int M = this->numModels;
 	uint extra_neighbours = 0;
-	if (ALGORITHM == 2) {
+	if (algorithm == 2) {
 		extra_neighbours = 32;
 	}
-	else if (ALGORITHM == 3) {
+	else if (algorithm == 3) {
 		extra_neighbours = 5;
 	}
 
@@ -139,7 +140,7 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 			mdist = 0.0;
 			ap = annAllocPts(MATCH_STEPS+1,pcaembdim);
 			convert_to_ann_points(ap, data[k] + i * pcaembdim, MATCH_STEPS + 1, pcaembdim);
-			if (ALGORITHM == 1) {
+			if (algorithm == 1) {
 				// Get the next MATCH_STEP+1 data points, and convert them to the appropriate
 				// format, stored in ap.
 				for (j = 0; j < MATCH_STEPS; j++) {
@@ -209,7 +210,7 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 					}
 				}
 			}
-			else if (ALGORITHM == 2) {
+			else if (algorithm == 2) {
 				// Just get the nearest neighbour of the first point.
 				model->getKNN(ap[0], NEIGHBOURS + extra_neighbours + 1, nn_idx, dists);
 				for (j = 0; j < MATCH_STEPS; j++) {
@@ -290,7 +291,7 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 					}
 				}
 			}
-			else if (ALGORITHM == 3) {
+			else if (algorithm == 3) {
 				// Try to reduce score variance by taking account distance from
 				// line segments when constructing expected next points.
 				for (j = 0; j < MATCH_STEPS; j++) {
@@ -384,6 +385,10 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 		}
 	}
 	return mdists;
+}
+
+void Classifier::setAlgorithmNumber(int alg) {
+	algorithm = alg;
 }
 
 ANNcoord* Classifier::getProjectedData(int modelId, ANNcoord* input, int length) {

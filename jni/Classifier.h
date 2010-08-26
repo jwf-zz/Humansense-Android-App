@@ -17,9 +17,9 @@ class Classifier {
 
 private:
 	int numModels, windowSize;
+	int algorithm;
 
 public:
-	const static int ALGORITHM = 3;
 	const static int NEIGHBOURS = 2;
 	const static int MATCH_STEPS = 16;
 
@@ -36,6 +36,7 @@ public:
 	ANNcoord* getProjectedData(int model, ANNcoord* input, int length);
 	int getNumModels();
 	int getWindowSize();
+	void setAlgorithmNumber(int alg);
 	char* getModelNames();
 
 	std::vector<NamedModel*> *models;

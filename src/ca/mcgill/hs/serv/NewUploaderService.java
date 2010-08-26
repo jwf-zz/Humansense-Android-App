@@ -53,6 +53,9 @@ import ca.mcgill.hs.R;
  */
 public class NewUploaderService extends Service {
 
+	// Intent for when the auto-upload option was changed.
+	public static final String AUTO_UPLOAD_CHANGED_INTENT = "ca.mcgill.hs.HSAndroidApp.AUTO_UPLOAD_CHANGED_INTENT";
+
 	/* STATE BOOLEANS */
 	// This boolean indicates whether or not this service was started or not.
 	private static boolean started = false;

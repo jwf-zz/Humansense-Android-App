@@ -7,15 +7,19 @@ package ca.mcgill.hs.prefs;
 import java.io.File;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.widget.Toast;
 import ca.mcgill.hs.R;
+import ca.mcgill.hs.serv.NewUploaderService;
 
 /**
  * HSAndroidPreferences is a class extending PreferenceActivity which defines
@@ -35,6 +39,12 @@ public class HSAndroidPreferences extends PreferenceActivity {
 	private int filesToDelete;
 	private int unuploadedFilesToDelete;
 	private long bytes;
+
+	private static void broadcastAutoUploaderIntent(final Context c) {
+		final Intent i = new Intent();
+		i.setAction(NewUploaderService.AUTO_UPLOAD_CHANGED_INTENT);
+		c.sendBroadcast(i);
+	}
 
 	/**
 	 * Returns the number of unuploaded files.
@@ -260,6 +270,19 @@ public class HSAndroidPreferences extends PreferenceActivity {
 									Toast.LENGTH_SHORT);
 						}
 						return true;
+					}
+				});
+
+		// AutoUpload intent launch
+		final Context c = this;
+		final CheckBoxPreference autoUpload = (CheckBoxPreference) findPreference("autoUploadData");
+		autoUpload
+				.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+					public boolean onPreferenceChange(
+							final Preference preference, final Object newValue) {
+						autoUpload.setChecked((Boolean) newValue);
+						broadcastAutoUploaderIntent(c);
+						return false;
 					}
 				});
 	}

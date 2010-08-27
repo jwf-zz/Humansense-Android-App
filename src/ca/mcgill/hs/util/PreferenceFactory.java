@@ -6,6 +6,8 @@ import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.util.AttributeSet;
+import ca.mcgill.hs.prefs.SeekBarPreference;
 
 /**
  * An API allowing plugin programmers to easily generate preference objects.
@@ -209,4 +211,21 @@ public class PreferenceFactory {
 		return result;
 	}
 
+	public static SeekBarPreference getSeekBarPreference(final Context c,
+			final AttributeSet attrs, final String key) {
+		final SeekBarPreference result = new SeekBarPreference(c, attrs);
+		result.setKey(key);
+
+		final Context context = c;
+		result.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			public boolean onPreferenceChange(final Preference preference,
+					final Object newValue) {
+				// result.setValue((String) newValue);
+				broadcastIntent(context);
+				return false;
+			}
+		});
+
+		return result;
+	}
 }

@@ -89,6 +89,21 @@
 <item>16384</item>
 </string-array>
 
+<string-array name="accelerometerLingeringThresholds">
+<item>5</item>
+<item>10</item>
+<item>15</item>
+<item>20</item>
+<item>25</item>
+<item>30</item>
+</string-array>
+
+<string-array name="accelerometerLingeringWindow">
+<item>10</item>
+<item>25</item>
+<item>40</item>
+</string-array>
+
 <string-array name="fileOutputPluginRolloverIntervalStrings">
 <item>1 Hour</item>
 <item>6 Hours</item>

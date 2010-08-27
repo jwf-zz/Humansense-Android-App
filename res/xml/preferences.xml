@@ -60,7 +60,6 @@
 	</PreferenceCategory>
 	
 	<PreferenceCategory android:title="@string/uploader_options_cat">
-		
 		<CheckBoxPreference
 		android:title="@string/uploader_auto_upload_title"
 		android:key="autoUploadData"

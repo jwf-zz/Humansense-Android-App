@@ -2,8 +2,6 @@ package ca.mcgill.hs.classifiers;
 
 import java.io.File;
 
-import android.util.Log;
-
 public class TimeDelayEmbeddingClassifier {
 	private static final String TAG = "TimeDelayEmbeddingClassifier";
 
@@ -63,7 +61,7 @@ public class TimeDelayEmbeddingClassifier {
 		for (int i = 0; i < classProbs.length; i++) {
 			message = message + classProbs[i] + "\t";
 		}
-		Log.d(TAG, message);
+		// Log.d(TAG, message);
 		return classProbs;
 	}
 
@@ -100,6 +98,7 @@ public class TimeDelayEmbeddingClassifier {
 
 	public void loadModels(final File models) {
 		loadModels(models.getAbsolutePath());
+		setAlgorithmNumber(1);
 
 		// Prepare the buffer
 		windowLength = getWindowSize();
@@ -110,7 +109,6 @@ public class TimeDelayEmbeddingClassifier {
 
 		numLoadedModels = getNumModels();
 		classProbs = new float[numLoadedModels];
-
 	}
 
 	// Loads models from models_file.

@@ -142,11 +142,16 @@ public class NewUploaderService extends Service {
 	/* FILE VARIABLES */
 	private String UNUPLOADED_PATH;
 
+	/**
+	 * Called when the auto upload preference has changed.
+	 */
 	private void autoPrefChanged() {
 		final SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(this);
 		automatic = prefs.getBoolean("autoUploadData", false);
 
+		// If auto uploading has just been turned off and we were waiting, kill
+		// the timer and stop the service.
 		if (!automatic) {
 			if (waiting) {
 				timerKill();
@@ -296,6 +301,7 @@ public class NewUploaderService extends Service {
 	 */
 	private void onUploadComplete() {
 		nm.cancel(NOTIFICATION_ID);
+		// If we are on automatic uploading, do not toast the user.
 		if (!automatic) {
 			switch (FINAL_ERROR_CODE) {
 			case NO_ERROR_CODE:
@@ -402,6 +408,8 @@ public class NewUploaderService extends Service {
 		if (files.length == 0) {
 			return;
 		} else {
+			// Add all files to a map so that we can keep track of which files
+			// were supposed to upload as the list is cleared.
 			for (final String s : files) {
 				if (!fileMap.containsKey(s)) {
 					fileMap.put(s, null);
@@ -501,14 +509,24 @@ public class NewUploaderService extends Service {
 						final String f = fileList.remove();
 						final int retCode = uploadFile(f);
 						if (retCode != NO_ERROR_CODE) {
+							// In case of an IOException, the file is skipped.
+							// Otherwise it is put back into the queue.
 							if (retCode != IOEXCEPTION_ERROR_CODE) {
 								fileList.addLast(f);
 								if (ff == null) {
 									ff = f;
 								} else {
+									// If we have gone through the whole list
+									// and all files are giving errors, if on
+									// automatic set the timer to try again,
+									// else break and alert user that there were
+									// errors.
 									if (ff.equals(f)) {
 										if (automatic) {
 											waiting = true;
+											// We are waiting to try the upload
+											// for this file again after a set
+											// time.
 											timerStart();
 											return;
 										} else {
@@ -518,11 +536,15 @@ public class NewUploaderService extends Service {
 								}
 							}
 						} else {
+							// If there was no error code, the file was
+							// successfully uploaded.
 							filesUploaded++;
 						}
 					} else {
 						if (automatic) {
 							waiting = true;
+							// We now wait for a connection to become available,
+							// so register a receiver for it.
 							registerReceiver(connectReceiver, new IntentFilter(
 									ConnectivityManager.CONNECTIVITY_ACTION));
 							connectionReceiverRegistered = true;
@@ -553,6 +575,9 @@ public class NewUploaderService extends Service {
 				.getDefaultSharedPreferences(this);
 
 		wifiOnly = prefs.getBoolean("uploadWifiOnly", false);
+		// If we are on automatic uploads, wifi has been disabled, and we are
+		// waiting for a connection to become available, then it's possible that
+		// a 3G connection has been available the whole time so we try again.
 		if (automatic && wifiOnly == false && waiting) {
 			networkChanged();
 		}

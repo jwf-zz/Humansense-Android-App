@@ -40,33 +40,14 @@ import ca.mcgill.hs.util.ActivityIndex;
  * label activities.
  */
 public class MagnitudeGraphView extends View {
-	/**
-	 * Node class used only for storing labels and timestamps from this graph.
-	 * 
-	 * @author Cicerone Cojocaru
-	 * 
-	 */
-	public class Node {
-		public final String label;
-		public final long startTime;
-		public final long endTime;
-
-		private Node(final String label, final long startTime,
-				final long endTime) {
-			this.label = label;
-			this.startTime = startTime;
-			this.endTime = endTime;
-		}
-	}
-
 	// The title of the graph
 	private final String title;
+
 	// These are the values and the two timestamps that are given/required to
 	// draw the graph.
 	private final float[] values;
 	private final int[] activities;
 	private final long start;
-
 	private final long end;
 
 	// List of the activities present in this data set, for faster lookup in
@@ -78,19 +59,20 @@ public class MagnitudeGraphView extends View {
 			0xFFFF8000, 0xFF00FFFF, 0xFF8000FF, 0xFFFFFF00, 0xFF339933,
 			0xFF0080FF, 0xFFF5B800, 0xFF80FF00, 0xFFFF0080, 0xFF00FF80,
 			0xFFFFFFFF, 0xFFB88A00, 0xFFFF00FF };
+
 	// These are Date objects relating to the start and end timestamps
 	private final Date startTime;
 	private final Date endTime;
-
 	private final SimpleDateFormat sdf;
 
 	// The Paint object used to paint lines, rectangles and text on the canvas.
 	private final Paint paint;
+
 	// These floats are used in order to calculate the appropriate scaling of
 	// the values.
 	private float max;
-
 	private float min;
+
 	// These variables are used in order to correctly draw and label the
 	// activity selections.
 	private Rect tempRect;
@@ -101,27 +83,26 @@ public class MagnitudeGraphView extends View {
 	private String label;
 	private int minRectSize;
 	private final LinkedList<Rect> rectList = new LinkedList<Rect>();
-
 	private final LinkedList<Node> labels = new LinkedList<Node>();
+
 	// Get screen dimensions for this phone
 	private int height;
-
 	private int width;
+
 	// Calculate graph edge locations
 	private int horizontalEdge;
-
 	private int verticalEdge;
+
 	// The net dimensions of the graph on screen
 	private int netGraphWidth;
-
 	private int netGraphHeight;
 
 	// The vertical padding inside the graph
 	private int padding;
+
 	// Font sizes
 	private int titleSize;
 	private int axisTitleSize;
-
 	private int axisValueSize;
 
 	// X-axis jump factor, used if more data points than pixels
@@ -129,9 +110,9 @@ public class MagnitudeGraphView extends View {
 
 	// Number of data points
 	private int valuesLength;
+
 	// Trimmed array of data points, compressed from values using the jumpFactor
 	private float[] trimmedValues;
-
 	private int trimmedValuesLength;
 
 	// Largest amplitude point
@@ -295,177 +276,12 @@ public class MagnitudeGraphView extends View {
 	}
 
 	/**
-	 * Instantiates all fields representing graph-drawing parameters. This
-	 * method is only called once when onDraw() is first called and the view
-	 * height and width are first available.
+	 * Draws the curve based on the data set given.
+	 * 
+	 * @param canvas
+	 *            the canvas to draw on
 	 */
-	private void instantiate() {
-		// Get screen dimensions.
-		height = getHeight();
-		width = getWidth();
-
-		// Calculate graph edge locations
-		horizontalEdge = width / 10;
-		verticalEdge = height / 9;
-
-		// The net dimensions of the graph on screen
-		netGraphWidth = width - 2 * horizontalEdge;
-		netGraphHeight = height - 2 * verticalEdge;
-
-		// Padding inside the graph to keep curve from touching top/bottom
-		padding = netGraphHeight / 15;
-
-		// The minimum size of rectangle that can be selected to label
-		minRectSize = width / 30;
-
-		possibleLegendPress = false;
-
-		// Calculate optimal font sizes
-		titleSize = width / 32;
-		axisTitleSize = width / 40;
-		axisValueSize = height / 25;
-
-		// Jump factor for how many points should be skipped if all don't
-		// fit on screen
-		jumpFactor = 1;
-		valuesLength = values.length;
-
-		// Trimmed array with only points that were not skipped
-		trimmedValues = new float[netGraphWidth];
-		trimmedValuesLength = trimmedValues.length;
-
-		legendRect = new Rect(horizontalEdge + 1, verticalEdge + 1, width
-				- horizontalEdge - 1, height - verticalEdge - padding / 3);
-
-		if (valuesLength > netGraphWidth) {
-			jumpFactor = (int) ((float) valuesLength / (float) netGraphWidth);
-			int j = 0;
-			for (float i = 0; j < trimmedValuesLength; i += jumpFactor, j++) {
-				trimmedValues[j] = values[(int) i];
-				if (trimmedValues[j] > max) {
-					max = trimmedValues[j];
-				} else if (trimmedValues[j] < min) {
-					min = trimmedValues[j];
-				}
-			}
-
-			// Calculate scaling coefficients
-			maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max) : Math
-					.abs(min));
-			verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
-		} else {
-			// If fewer datapoints than pixels of width, use the values
-			// array
-			for (final float value : values) {
-				if (value > max) {
-					max = value;
-				} else if (value < min) {
-					min = value;
-				}
-			}
-
-			// Calculate spacing of points based on ratio of graph width to
-			// number of values
-			spacing = (float) netGraphWidth / (float) (values.length - 1);
-
-			maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max) : Math
-					.abs(min));
-			verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
-		}
-		instantiated = true;
-	}
-
-	/**
-	 * Draws the view.
-	 */
-	@Override
-	protected void onDraw(final Canvas canvas) {
-		// Must instantiate here because height and width of the canvas are
-		// unavailable until onDraw is called.
-		if (!instantiated) {
-			instantiate();
-		}
-
-		// Draw Rectangles
-		if (tempRect != null) {
-			paint
-					.setColor(Math.abs(tempRect.right - tempRect.left) > minRectSize ? Color
-							.rgb(0, 0, 125)
-							: Color.rgb(125, 0, 0));
-			canvas.drawRect(tempRect, paint);
-		}
-		paint.setAntiAlias(false);
-		for (final Rect r : rectList) {
-			paint.setColor(Color.rgb(0, 0, 75));
-			canvas.drawRect(r, paint);
-			paint.setColor(Color.LTGRAY);
-			paint.setStrokeWidth(0);
-			canvas.drawLine(r.left, r.bottom, r.left, r.top, paint);
-			canvas.drawLine(r.right + 1, r.bottom, r.right + 1, r.top, paint);
-		}
-		paint.setAntiAlias(true);
-
-		// Draw title
-		paint.setTextAlign(Align.CENTER);
-		paint.setColor(Color.rgb(0, 255, 0));
-		paint.setTextSize(titleSize);
-		canvas.drawText(title, width / 2, verticalEdge - titleSize / 2, paint);
-
-		// Draw X-axis title
-		paint.setTextAlign(Align.CENTER);
-		paint.setTextSize(axisTitleSize);
-		canvas.drawText(
-				getResources().getString(R.string.mag_graph_time_label),
-				width / 2, height - height / 80, paint);
-
-		// Draw Y-axis title
-		paint.setTextAlign(Align.LEFT);
-		canvas.drawText(getResources().getString(
-				R.string.mag_graph_magnitude_label), width / 160, height / 2,
-				paint);
-
-		// Draw X-axis tick values
-		paint.setTextAlign(Align.CENTER);
-		paint.setColor(Color.LTGRAY);
-		paint.setTextSize(axisValueSize);
-
-		canvas.drawText(sdf.format(startTime), horizontalEdge, height
-				- verticalEdge + height / 20, paint);
-		canvas.drawText(sdf.format(endTime), width - horizontalEdge, height
-				- verticalEdge + height / 20, paint);
-		final Date axisValueTime = new Date();
-		for (int i = 1; i < 5; i++) {
-			axisValueTime.setTime(start + i * (end - start) / 5);
-			canvas.drawText(sdf.format(axisValueTime), (horizontalEdge + i
-					* netGraphWidth / 5), height - verticalEdge + height / 20,
-					paint);
-		}
-
-		// Draw the outline of the graph
-		paint.setAntiAlias(false);
-		paint.setStrokeWidth(2);
-		canvas.drawLine(horizontalEdge - 1, verticalEdge, width
-				- horizontalEdge + 1, verticalEdge, paint);
-		canvas.drawLine(horizontalEdge - 1, height - verticalEdge, width
-				- horizontalEdge + 1, height - verticalEdge, paint);
-		canvas.drawLine(horizontalEdge - 1, verticalEdge, horizontalEdge - 1,
-				height - verticalEdge, paint);
-		canvas.drawLine(width - horizontalEdge + 1, verticalEdge, width
-				- horizontalEdge + 1, height - verticalEdge, paint);
-
-		// Draw the gridlines
-		paint.setColor(Color.DKGRAY);
-		for (int i = 1; i < 5; i++) {
-			canvas.drawLine(horizontalEdge + i * netGraphWidth / 5,
-					verticalEdge, horizontalEdge + i * netGraphWidth / 5,
-					height - verticalEdge, paint);
-		}
-		for (int i = 1; i < 4; i++) {
-			canvas.drawLine(horizontalEdge - 1, verticalEdge + i
-					* netGraphHeight / 4, width - horizontalEdge + 1,
-					verticalEdge + i * netGraphHeight / 4, paint);
-		}
-
+	private void drawCurve(final Canvas canvas) {
 		// Set color and stroke width for graph curve
 		paint.setStrokeWidth(2);
 		paint.setAntiAlias(true);
@@ -596,7 +412,125 @@ public class MagnitudeGraphView extends View {
 				}
 			}
 		}
+	}
 
+	/**
+	 * Draws the graph outline, axes, gridlines, titles and labels.
+	 * 
+	 * @param canvas
+	 *            the canvas to draw on
+	 */
+	private void drawGraph(final Canvas canvas) {
+		// Draw title
+		paint.setTextAlign(Align.CENTER);
+		paint.setColor(Color.rgb(0, 255, 0));
+		paint.setTextSize(titleSize);
+		canvas.drawText(title, width / 2, verticalEdge - titleSize / 2, paint);
+
+		// Draw X-axis title
+		paint.setTextAlign(Align.CENTER);
+		paint.setTextSize(axisTitleSize);
+		canvas.drawText(
+				getResources().getString(R.string.mag_graph_time_label),
+				width / 2, height - height / 80, paint);
+
+		// Draw Y-axis title
+		paint.setTextAlign(Align.LEFT);
+		canvas.drawText(getResources().getString(
+				R.string.mag_graph_magnitude_label), width / 160, height / 2,
+				paint);
+
+		// Draw X-axis tick values
+		paint.setTextAlign(Align.CENTER);
+		paint.setColor(Color.LTGRAY);
+		paint.setTextSize(axisValueSize);
+
+		canvas.drawText(sdf.format(startTime), horizontalEdge, height
+				- verticalEdge + height / 20, paint);
+		canvas.drawText(sdf.format(endTime), width - horizontalEdge, height
+				- verticalEdge + height / 20, paint);
+		final Date axisValueTime = new Date();
+		for (int i = 1; i < 5; i++) {
+			axisValueTime.setTime(start + i * (end - start) / 5);
+			canvas.drawText(sdf.format(axisValueTime), (horizontalEdge + i
+					* netGraphWidth / 5), height - verticalEdge + height / 20,
+					paint);
+		}
+
+		// Draw the outline of the graph
+		paint.setAntiAlias(false);
+		paint.setStrokeWidth(2);
+		canvas.drawLine(horizontalEdge - 1, verticalEdge, width
+				- horizontalEdge + 1, verticalEdge, paint);
+		canvas.drawLine(horizontalEdge - 1, height - verticalEdge, width
+				- horizontalEdge + 1, height - verticalEdge, paint);
+		canvas.drawLine(horizontalEdge - 1, verticalEdge, horizontalEdge - 1,
+				height - verticalEdge, paint);
+		canvas.drawLine(width - horizontalEdge + 1, verticalEdge, width
+				- horizontalEdge + 1, height - verticalEdge, paint);
+
+		// Draw the gridlines
+		paint.setColor(Color.DKGRAY);
+		for (int i = 1; i < 5; i++) {
+			canvas.drawLine(horizontalEdge + i * netGraphWidth / 5,
+					verticalEdge, horizontalEdge + i * netGraphWidth / 5,
+					height - verticalEdge, paint);
+		}
+		for (int i = 1; i < 4; i++) {
+			canvas.drawLine(horizontalEdge - 1, verticalEdge + i
+					* netGraphHeight / 4, width - horizontalEdge + 1,
+					verticalEdge + i * netGraphHeight / 4, paint);
+		}
+	}
+
+	/**
+	 * Draws the legend over top of the graph.
+	 * 
+	 * @param canvas
+	 *            the canvas to draw on
+	 */
+	private void drawLegend(final Canvas canvas) {
+		// Draw part alpha black rectangle over graph area to fade out the
+		// curve so legend can be seen easily.
+		paint.setColor(0xA0000000);
+		canvas.drawRect(legendRect, paint);
+		for (int i = 0; i < legendActs.length && legendActs[i] != -1; i++) {
+			for (int index = 0; i < indexOfActivities.activityCodes.length; index++) {
+				if (indexOfActivities.activityCodes[index] == legendActs[i]) {
+					paint.setColor(legendColors[i]);
+					paint.setStrokeWidth(netGraphHeight / 74);
+					paint.setTextAlign(Align.LEFT);
+					paint.setTextSize(axisValueSize);
+					canvas.drawLine(horizontalEdge + netGraphWidth / 30 + i % 4
+							* (netGraphWidth / 4), height - verticalEdge
+							- (netGraphHeight / 12) - i / 4
+							* (netGraphHeight / 12), horizontalEdge
+							+ (netGraphWidth / 30) + i % 4
+							* (netGraphWidth / 4) + (netGraphWidth / 15),
+							height - verticalEdge - (netGraphHeight / 12) - i
+									/ 4 * (netGraphHeight / 12), paint);
+					canvas.drawText(indexOfActivities.activityNames[index],
+							horizontalEdge + (netGraphWidth / 30) + i % 4
+									* (netGraphWidth / 4)
+									+ (netGraphWidth / 15)
+									+ (netGraphWidth / 128), height
+									- verticalEdge - (netGraphHeight / 12) - i
+									/ 4 * (netGraphHeight / 12) + height / 100,
+							paint);
+					break;
+				}
+			}
+		}
+		paint.setStrokeWidth(0);
+	}
+
+	/**
+	 * Draws the legend button.
+	 * 
+	 * @param canvas
+	 *            the canvas to draw on
+	 */
+	private void drawLegendButton(final Canvas canvas) {
 		// Draw the legend button
 		paint.setColor(Color.WHITE);
 		RectF legendBtn = new RectF(width - horizontalEdge + width / 160,
@@ -613,41 +547,134 @@ public class MagnitudeGraphView extends View {
 		canvas.drawText(getResources().getString(
 				R.string.mag_graph_legend_label), width - horizontalEdge / 2,
 				height / 2 + height / 80, paint);
+	}
+
+	/**
+	 * Draws any rectangles that have been drawn by the user.
+	 * 
+	 * @param canvas
+	 *            the canvas to draw on
+	 */
+	private void drawRectangles(final Canvas canvas) {
+		if (tempRect != null) {
+			paint
+					.setColor(Math.abs(tempRect.right - tempRect.left) > minRectSize ? Color
+							.rgb(0, 0, 125)
+							: Color.rgb(125, 0, 0));
+			canvas.drawRect(tempRect, paint);
+		}
+		paint.setAntiAlias(false);
+		for (final Rect r : rectList) {
+			paint.setColor(Color.rgb(0, 0, 75));
+			canvas.drawRect(r, paint);
+			paint.setColor(Color.LTGRAY);
+			paint.setStrokeWidth(0);
+			canvas.drawLine(r.left, r.bottom, r.left, r.top, paint);
+			canvas.drawLine(r.right + 1, r.bottom, r.right + 1, r.top, paint);
+		}
+		paint.setAntiAlias(true);
+	}
+
+	/**
+	 * Instantiates all fields representing graph-drawing parameters. This
+	 * method is only called once when onDraw() is first called and the view
+	 * height and width are first available.
+	 */
+	private void instantiate() {
+		// Get screen dimensions.
+		height = getHeight();
+		width = getWidth();
+
+		// Calculate graph edge locations
+		horizontalEdge = width / 10;
+		verticalEdge = height / 9;
+
+		// The net dimensions of the graph on screen
+		netGraphWidth = width - 2 * horizontalEdge;
+		netGraphHeight = height - 2 * verticalEdge;
+
+		// Padding inside the graph to keep curve from touching top/bottom
+		padding = netGraphHeight / 15;
+
+		// The minimum size of rectangle that can be selected to label
+		minRectSize = width / 30;
+
+		possibleLegendPress = false;
+
+		// Calculate optimal font sizes
+		titleSize = width / 32;
+		axisTitleSize = width / 40;
+		axisValueSize = height / 25;
+
+		// Jump factor for how many points should be skipped if all don't
+		// fit on screen
+		jumpFactor = 1;
+		valuesLength = values.length;
+
+		// Trimmed array with only points that were not skipped
+		trimmedValues = new float[netGraphWidth];
+		trimmedValuesLength = trimmedValues.length;
+
+		legendRect = new Rect(horizontalEdge + 1, verticalEdge + 1, width
+				- horizontalEdge - 1, height - verticalEdge - padding / 3);
+
+		if (valuesLength > netGraphWidth) {
+			jumpFactor = (int) ((float) valuesLength / (float) netGraphWidth);
+			int j = 0;
+			for (float i = 0; j < trimmedValuesLength; i += jumpFactor, j++) {
+				trimmedValues[j] = values[(int) i];
+				if (trimmedValues[j] > max) {
+					max = trimmedValues[j];
+				} else if (trimmedValues[j] < min) {
+					min = trimmedValues[j];
+				}
+			}
+
+			// Calculate scaling coefficients
+			maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max) : Math
+					.abs(min));
+			verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
+		} else {
+			// If fewer datapoints than pixels of width, use the values
+			// array
+			for (final float value : values) {
+				if (value > max) {
+					max = value;
+				} else if (value < min) {
+					min = value;
+				}
+			}
+
+			// Calculate spacing of points based on ratio of graph width to
+			// number of values
+			spacing = (float) netGraphWidth / (float) (values.length - 1);
+
+			maxSpike = (Math.abs(max) > Math.abs(min) ? Math.abs(max) : Math
+					.abs(min));
+			verticalScale = ((netGraphHeight - padding) / 2) / maxSpike;
+		}
+		instantiated = true;
+	}
+
+	/**
+	 * Draws the view.
+	 */
+	@Override
+	protected void onDraw(final Canvas canvas) {
+		// Must instantiate here because height and width of the canvas are
+		// unavailable until onDraw is called.
+		if (!instantiated) {
+			instantiate();
+		}
+
+		drawRectangles(canvas);
+		drawGraph(canvas);
+		drawCurve(canvas);
+		drawLegendButton(canvas);
 
 		// If the legend button has been pressed, draw the legend
 		if (legendOn) {
-			// Draw part alpha black rectangle over graph area to fade out the
-			// curve so legend can be seen easily.
-			paint.setColor(0xA0000000);
-			canvas.drawRect(legendRect, paint);
-			for (int i = 0; i < legendActs.length && legendActs[i] != -1; i++) {
-				for (int index = 0; i < indexOfActivities.activityCodes.length; index++) {
-					if (indexOfActivities.activityCodes[index] == legendActs[i]) {
-						paint.setColor(legendColors[i]);
-						paint.setStrokeWidth(netGraphHeight / 74);
-						paint.setTextAlign(Align.LEFT);
-						paint.setTextSize(axisValueSize);
-						canvas.drawLine(horizontalEdge + netGraphWidth / 30 + i
-								% 4 * (netGraphWidth / 4), height
-								- verticalEdge - (netGraphHeight / 12) - i / 4
-								* (netGraphHeight / 12), horizontalEdge
-								+ (netGraphWidth / 30) + i % 4
-								* (netGraphWidth / 4) + (netGraphWidth / 15),
-								height - verticalEdge - (netGraphHeight / 12)
-										- i / 4 * (netGraphHeight / 12), paint);
-						canvas.drawText(indexOfActivities.activityNames[index],
-								horizontalEdge + (netGraphWidth / 30) + i % 4
-										* (netGraphWidth / 4)
-										+ (netGraphWidth / 15)
-										+ (netGraphWidth / 128), height
-										- verticalEdge - (netGraphHeight / 12)
-										- i / 4 * (netGraphHeight / 12)
-										+ height / 100, paint);
-						break;
-					}
-				}
-			}
-			paint.setStrokeWidth(0);
+			drawLegend(canvas);
 		}
 	}
 
@@ -797,5 +824,24 @@ public class MagnitudeGraphView extends View {
 							}
 						});
 		builder.show();
+	}
+
+	/**
+	 * Node class used only for storing labels and timestamps from this graph.
+	 * 
+	 * @author Cicerone Cojocaru
+	 * 
+	 */
+	public class Node {
+		public final String label;
+		public final long startTime;
+		public final long endTime;
+
+		private Node(final String label, final long startTime,
+				final long endTime) {
+			this.label = label;
+			this.startTime = startTime;
+			this.endTime = endTime;
+		}
 	}
 }

@@ -4,6 +4,9 @@
 	<string name="top_message">Welcome to Humansense!</string>
     <string name="app_name">Humansense</string>
     
+    <!--  Widget Strings -->
+    <string name="lingering_notification_widget_name">Lingering Notification</string>
+    
     <!--  Notification Strings -->
     <string name="notification_ticker">Humansense</string>
     <string name="notification_text">Select to provide more information.</string>
@@ -121,6 +124,15 @@
     <string name="fileoutput_rolloverinterval_pref">File Rollover Interval</string>
     <string name="fileoutput_rolloverintervaldefault_pref">43200000</string>
     <string name="fileoutput_rolloverinterval_pref_summary">How often should new log files be started.</string>
+    
+    <string name="accelerometerLingeringThresholds">Lingering Power Threshold</string>
+    <string name="accelerometerLingeringThresholdDefault">10</string>
+    <string name="accelerometerLingeringThresholdSummary">The threshold for classifying activity as lingering.</string>
+    <string name="accelerometerLingeringWindow">Lingering Power Window</string>
+    <string name="accelerometerLingeringWindowDefault">25</string>
+    <string name="accelerometerLingeringWindowSummary">The number of samples to consider for lingering classification.</string>
+
+    
     <string name="notification_prefs_cat">Notification Settings</string>
     <string name="notification_enable_title">Notifications</string>
     <string name="notification_enable_summary">Enables or disables notifications.\n(WARNING: Disabling notifications will reduce the effectiveness of activity recognition.)</string>

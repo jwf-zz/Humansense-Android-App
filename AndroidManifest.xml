@@ -47,6 +47,14 @@
 		   	 </intent-filter>
 		</receiver>
 
+		<!-- Broadcast Receiver that will process AppWidget updates -->
+		<receiver android:name=".classifiers.LingeringNotificationWidget" android:label="@string/lingering_notification_widget_name">
+	    	<intent-filter>
+	        	<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+		    </intent-filter>
+	    	<meta-data android:name="android.appwidget.provider" android:resource="@xml/lingering_notification_widget" />
+		</receiver>
+
     </application>
     <uses-sdk android:minSdkVersion="8" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
@@ -63,4 +71,5 @@
 	<uses-permission android:name="android.permission.BLUETOOTH" />
 	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 	<uses-permission android:name="android.permission.VIBRATE" />
+	
 </manifest> 

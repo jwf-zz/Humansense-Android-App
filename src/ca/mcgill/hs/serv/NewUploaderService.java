@@ -6,6 +6,8 @@ import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -55,6 +57,36 @@ public class NewUploaderService extends Service {
 
 	// Intent for when the auto-upload option was changed.
 	public static final String AUTO_UPLOAD_CHANGED_INTENT = "ca.mcgill.hs.HSAndroidApp.AUTO_UPLOAD_CHANGED_INTENT";
+	public static final String WIFI_ONLY_CHANGED_INTENT = "ca.mcgill.hs.HSAndroidApp.WIFI_ONLY_CHANGED_INTENT";
+	private boolean connectionReceiverRegistered = false;
+	private boolean waiting = false;
+	private Timer timer = new Timer();
+	private final long DELAY = 30000;
+	private final BroadcastReceiver connectReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(final Context context, final Intent intent) {
+			if (((NetworkInfo) intent
+					.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO))
+					.getDetailedState().toString().equals("CONNECTED")) {
+				networkChanged();
+			}
+		}
+	};
+	// BroadcastReceiver for Use Wifi only preference change
+	private final BroadcastReceiver wifiOnlyPrefChanged = new BroadcastReceiver() {
+		@Override
+		public void onReceive(final Context context, final Intent intent) {
+			wifiPrefChanged();
+		}
+	};
+
+	// Broadcast receiver for automatic upload preference changed
+	private final BroadcastReceiver autoPrefChanged = new BroadcastReceiver() {
+		@Override
+		public void onReceive(final Context context, final Intent intent) {
+			autoPrefChanged();
+		}
+	};
 
 	/* STATE BOOLEANS */
 	// This boolean indicates whether or not this service was started or not.
@@ -72,17 +104,18 @@ public class NewUploaderService extends Service {
 	public static final int UNKNOWNHOSTEXCEPTION_ERROR_CODE = 0x2;
 	public static final int IOEXCEPTION_ERROR_CODE = 0x3;
 	public static final int UPLOAD_FAILED_ERROR_CODE = 0x4;
+	public static final int NO_CONNECTION_ERROR = 0x5;
 	private int FINAL_ERROR_CODE;
 	private int TEMP_ERROR_CODE;
 
+	/* WIFI MANAGER */
 	private WifiManager wm;
 	private WifiInfo wi;
 
+	// Count of files uploaded
 	private int filesUploaded;
 
 	/* CONNECTION VARIABLES */
-	private int connection_attempts;
-	private final boolean connection_successful = false;
 	private HttpClient httpclient;
 	private HttpPost httppost;
 	private boolean wifiOnly;
@@ -109,7 +142,29 @@ public class NewUploaderService extends Service {
 	/* FILE VARIABLES */
 	private String UNUPLOADED_PATH;
 
+	private void autoPrefChanged() {
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		automatic = prefs.getBoolean("autoUploadData", false);
+
+		if (!automatic) {
+			if (waiting) {
+				timerKill();
+				stopService(shutdownIntent);
+			}
+		}
+	}
+
+	/**
+	 * Determines whether or not the phone is able to upload data over the
+	 * internet.
+	 * 
+	 * @return true if it is possible to upload, false otherwise.
+	 */
 	private boolean canUpload() {
+		if (cm == null || cm.getActiveNetworkInfo() == null) {
+			return false;
+		}
 		if (!wifiOnly) {
 			if (cm.getActiveNetworkInfo().getState() != NetworkInfo.State.CONNECTED) {
 				return false;
@@ -140,6 +195,15 @@ public class NewUploaderService extends Service {
 		slice.show();
 	}
 
+	/**
+	 * Called when there has been a change in network connectivity.
+	 */
+	private void networkChanged() {
+		unregisterConnectReceiver();
+		Log.i("NETWORK", "NETWORK");
+		uploadFiles();
+	}
+
 	@Override
 	public IBinder onBind(final Intent arg0) {
 		return null;
@@ -157,7 +221,12 @@ public class NewUploaderService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		waiting = false;
 		started = false;
+		timer.cancel();
+		unregisterConnectReceiver();
+		unregisterReceiver(wifiOnlyPrefChanged);
+		unregisterReceiver(autoPrefChanged);
 		onUploadComplete();
 	}
 
@@ -180,6 +249,11 @@ public class NewUploaderService extends Service {
 
 		// At this point we consider the service to be started.
 		started = true;
+
+		registerReceiver(wifiOnlyPrefChanged, new IntentFilter(
+				WIFI_ONLY_CHANGED_INTENT));
+		registerReceiver(autoPrefChanged, new IntentFilter(
+				AUTO_UPLOAD_CHANGED_INTENT));
 
 		wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		wi = wm.getConnectionInfo();
@@ -213,51 +287,58 @@ public class NewUploaderService extends Service {
 		nm.notify(NOTIFICATION_ID, n);
 
 		filesUploaded = 0;
-
-		new Thread() {
-			@Override
-			public void run() {
-				uploadFiles();
-			}
-		}.start();
+		uploadFiles();
 	}
 
 	/**
-	 * Gets called whenever the file upload is complete.
+	 * Called whenever the file upload is complete. Toasts user if upload was
+	 * manual.
 	 */
 	private void onUploadComplete() {
 		nm.cancel(NOTIFICATION_ID);
-
-		switch (FINAL_ERROR_CODE) {
-		case NO_ERROR_CODE:
-			if (filesUploaded == 1) {
+		if (!automatic) {
+			switch (FINAL_ERROR_CODE) {
+			case NO_ERROR_CODE:
+				if (filesUploaded == 1) {
+					makeToast(getResources().getString(
+							R.string.uploader_no_errors_one_file),
+							Toast.LENGTH_SHORT);
+				} else {
+					makeToast(
+							filesUploaded
+									+ " "
+									+ getResources()
+											.getString(
+													R.string.uploader_no_errors_multiple_files),
+							Toast.LENGTH_SHORT);
+				}
+				break;
+			case UNKNOWNHOSTEXCEPTION_ERROR_CODE:
 				makeToast(getResources().getString(
-						R.string.uploader_no_errors_one_file),
+						R.string.uploader_unable_to_connect),
 						Toast.LENGTH_SHORT);
-			} else {
-				makeToast(filesUploaded
-						+ " "
-						+ getResources().getString(
-								R.string.uploader_no_errors_multiple_files),
-						Toast.LENGTH_SHORT);
+				break;
+			case UPLOAD_FAILED_ERROR_CODE:
+				makeToast(getResources().getString(
+						R.string.uploader_upload_failed), Toast.LENGTH_SHORT);
+				break;
+			case IOEXCEPTION_ERROR_CODE:
+				makeToast(getResources().getString(
+						R.string.uploader_upload_failed), Toast.LENGTH_SHORT);
+				break;
+			case NO_CONNECTION_ERROR:
+				makeToast(getResources().getString(
+						R.string.uploader_no_connection), Toast.LENGTH_SHORT);
+				break;
+			default:
+				break;
 			}
-			break;
-		case UNKNOWNHOSTEXCEPTION_ERROR_CODE:
-			makeToast(getResources().getString(
-					R.string.uploader_unable_to_connect), Toast.LENGTH_SHORT);
-			break;
-		case UPLOAD_FAILED_ERROR_CODE:
-			makeToast(
-					getResources().getString(R.string.uploader_upload_failed),
-					Toast.LENGTH_SHORT);
-		default:
-			break;
 		}
 		unregisterReceiver(completionReceiver);
 	}
 
 	/**
-	 * Attempts 3 times to connect to a network.
+	 * Initializes preferences and the ConnectivityManager.
 	 */
 	private void setUpConnection() {
 		final SharedPreferences prefs = PreferenceManager
@@ -267,6 +348,37 @@ public class NewUploaderService extends Service {
 		automatic = prefs.getBoolean("autoUploadData", false);
 
 		cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+	}
+
+	/**
+	 * Cancels the timer.
+	 */
+	private void timerKill() {
+		timer.cancel();
+		timer = new Timer();
+	}
+
+	/**
+	 * Starts the timer for reattempting file upload.
+	 */
+	private void timerStart() {
+		final TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				uploadFiles();
+			}
+		};
+		timer.schedule(task, DELAY);
+	}
+
+	/**
+	 * Safely unregisters the ConnectReceiver.
+	 */
+	private void unregisterConnectReceiver() {
+		if (connectionReceiverRegistered) {
+			connectionReceiverRegistered = false;
+			unregisterReceiver(connectReceiver);
+		}
 	}
 
 	/**
@@ -299,7 +411,14 @@ public class NewUploaderService extends Service {
 		}
 	}
 
-	private boolean uploadFile(final String fileName) {
+	/**
+	 * Uploads the specified file to the server.
+	 * 
+	 * @param fileName
+	 *            the file to upload
+	 * @return a code indicating the result of the upload.
+	 */
+	private int uploadFile(final String fileName) {
 		TEMP_ERROR_CODE = NO_ERROR_CODE;
 		Log.d(TAG, "Uploading " + fileName);
 		httpclient = new DefaultHttpClient();
@@ -355,40 +474,88 @@ public class NewUploaderService extends Service {
 		} catch (final MalformedURLException ex) {
 			Log.e(TAG, "error: " + ex.getMessage(), ex);
 			FINAL_ERROR_CODE = MALFORMEDURLEXCEPTION_ERROR_CODE;
-			return false;
+			return MALFORMEDURLEXCEPTION_ERROR_CODE;
 		} catch (final UnknownHostException uhe) {
 			Log.w(TAG, "Unable to connect...");
 			FINAL_ERROR_CODE = UNKNOWNHOSTEXCEPTION_ERROR_CODE;
-			return false;
+			return UNKNOWNHOSTEXCEPTION_ERROR_CODE;
 		} catch (final IOException ioe) {
 			Log.e(TAG, "error: " + ioe.getMessage(), ioe);
 			FINAL_ERROR_CODE = IOEXCEPTION_ERROR_CODE;
-			return false;
+			return IOEXCEPTION_ERROR_CODE;
 		}
-		return true;
+		return TEMP_ERROR_CODE;
 	}
 
+	/**
+	 * Runs a new thread that uploads all files in the fileList.
+	 */
 	private void uploadFiles() {
-		while (!fileList.isEmpty()) {
-			if (canUpload()) {
-				final String f = fileList.remove();
-				final boolean success = uploadFile(f);
-				if (!success) {
-					fileList.addFirst(f);
+		new Thread() {
+			@Override
+			public void run() {
+				updateFileList();
+				String ff = null;
+				while (!fileList.isEmpty()) {
+					if (canUpload()) {
+						final String f = fileList.remove();
+						final int retCode = uploadFile(f);
+						if (retCode != NO_ERROR_CODE) {
+							if (retCode != IOEXCEPTION_ERROR_CODE) {
+								fileList.addLast(f);
+								if (ff == null) {
+									ff = f;
+								} else {
+									if (ff.equals(f)) {
+										if (automatic) {
+											waiting = true;
+											timerStart();
+											return;
+										} else {
+											break;
+										}
+									}
+								}
+							}
+						} else {
+							filesUploaded++;
+						}
+					} else {
+						if (automatic) {
+							waiting = true;
+							registerReceiver(connectReceiver, new IntentFilter(
+									ConnectivityManager.CONNECTIVITY_ACTION));
+							connectionReceiverRegistered = true;
+							return;
+						} else {
+							FINAL_ERROR_CODE = NO_CONNECTION_ERROR;
+							break;
+						}
+					}
 				}
-				filesUploaded++;
-			} else {
-				makeToast(getResources().getString(
-						R.string.uploader_no_connection), Toast.LENGTH_SHORT);
-				break;
+				fileMap.clear();
+				fileList.clear();
+				if (httpclient != null) {
+					httpclient.getConnectionManager().shutdown();
+				}
+				final Intent i = new Intent();
+				i.setAction(UPLOAD_COMPLETE_INTENT);
+				sendBroadcast(i);
 			}
+		}.start();
+	}
+
+	/**
+	 * Called when the wifi only preference is changed.
+	 */
+	private void wifiPrefChanged() {
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(this);
+
+		wifiOnly = prefs.getBoolean("uploadWifiOnly", false);
+		if (automatic && wifiOnly == false && waiting) {
+			networkChanged();
 		}
-		fileMap.clear();
-		fileList.clear();
-		httpclient.getConnectionManager().shutdown();
-		final Intent i = new Intent();
-		i.setAction(UPLOAD_COMPLETE_INTENT);
-		sendBroadcast(i);
 	}
 
 }

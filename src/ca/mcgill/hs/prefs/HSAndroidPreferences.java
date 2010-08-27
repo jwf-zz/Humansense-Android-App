@@ -46,6 +46,12 @@ public class HSAndroidPreferences extends PreferenceActivity {
 		c.sendBroadcast(i);
 	}
 
+	private static void broadcastWifiUploaderIntent(final Context c) {
+		final Intent i = new Intent();
+		i.setAction(NewUploaderService.WIFI_ONLY_CHANGED_INTENT);
+		c.sendBroadcast(i);
+	}
+
 	/**
 	 * Returns the number of unuploaded files.
 	 * 
@@ -281,7 +287,23 @@ public class HSAndroidPreferences extends PreferenceActivity {
 					public boolean onPreferenceChange(
 							final Preference preference, final Object newValue) {
 						autoUpload.setChecked((Boolean) newValue);
+						if ((Boolean) newValue == true) {
+							final Intent auto = new Intent(c,
+									NewUploaderService.class);
+							c.startService(auto);
+						}
 						broadcastAutoUploaderIntent(c);
+						return false;
+					}
+				});
+
+		final CheckBoxPreference wifiOnly = (CheckBoxPreference) findPreference("uploadWifiOnly");
+		wifiOnly
+				.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+					public boolean onPreferenceChange(
+							final Preference preference, final Object newValue) {
+						wifiOnly.setChecked((Boolean) newValue);
+						broadcastWifiUploaderIntent(c);
 						return false;
 					}
 				});

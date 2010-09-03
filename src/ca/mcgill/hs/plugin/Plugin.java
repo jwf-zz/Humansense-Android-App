@@ -14,11 +14,11 @@ public interface Plugin {
 	/**
 	 * Sets up the plugin in order for it to run.
 	 */
-	public void startPlugin();
+	public abstract void startPlugin();
 
 	/**
 	 * Cleans up once the plugin execution is halted.
 	 */
-	public void stopPlugin();
+	public abstract void stopPlugin();
 
 }

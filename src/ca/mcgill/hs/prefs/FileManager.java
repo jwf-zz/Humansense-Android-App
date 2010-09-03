@@ -131,6 +131,12 @@ public class FileManager extends ListActivity {
 		}
 	}
 
+	public static final File RECENT_FILES_DIRECTORY = new File(Environment
+			.getExternalStorageDirectory(), "hsandroidapp/data/recent/");
+	public static final File UPLOADED_FILES_DIRECTORY = new File(Environment
+			.getExternalStorageDirectory()
+			+ "hsandroidapp/data/uploaded/");
+
 	/**
 	 * Helper function for displaying brief messages
 	 * 

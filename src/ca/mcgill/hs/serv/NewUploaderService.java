@@ -40,6 +40,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 import ca.mcgill.hs.R;
+import ca.mcgill.hs.prefs.HSAndroidPreferences;
 
 /**
  * A new uploader service for the HSAndroid Application. When this service
@@ -58,20 +59,33 @@ public class NewUploaderService extends Service {
 	// Intent for when the auto-upload option was changed.
 	public static final String AUTO_UPLOAD_CHANGED_INTENT = "ca.mcgill.hs.HSAndroidApp.AUTO_UPLOAD_CHANGED_INTENT";
 	public static final String WIFI_ONLY_CHANGED_INTENT = "ca.mcgill.hs.HSAndroidApp.WIFI_ONLY_CHANGED_INTENT";
+
+	// Intent for when a new file is ready to be uploaded.
+	public static final String FILE_ADDED_INTENT = "ca.mcgill.hs.HSAndroidApp.FILE_ADDED_INTENT";
+
+	public static final String UPLOAD_URL = "http://www.cs.mcgill.ca/~jfrank8/humansense/uploader.php";
+
 	private boolean connectionReceiverRegistered = false;
 	private boolean waiting = false;
 	private Timer timer = new Timer();
 	private final long DELAY = 30000;
+
 	private final BroadcastReceiver connectReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
+			/*
+			 * if (((NetworkInfo) intent
+			 * .getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO))
+			 * .getDetailedState().toString().equals("CONNECTED")) {
+			 */
 			if (((NetworkInfo) intent
 					.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO))
-					.getDetailedState().toString().equals("CONNECTED")) {
+					.isConnected()) {
 				networkChanged();
 			}
 		}
 	};
+
 	// BroadcastReceiver for Use Wifi only preference change
 	private final BroadcastReceiver wifiOnlyPrefChanged = new BroadcastReceiver() {
 		@Override
@@ -109,8 +123,8 @@ public class NewUploaderService extends Service {
 	private int TEMP_ERROR_CODE;
 
 	/* WIFI MANAGER */
-	private WifiManager wm;
-	private WifiInfo wi;
+	private WifiManager wifiMgr;
+	private WifiInfo wifiInfo;
 
 	// Count of files uploaded
 	private int filesUploaded;
@@ -120,16 +134,17 @@ public class NewUploaderService extends Service {
 	private HttpPost httppost;
 	private boolean wifiOnly;
 	private boolean automatic;
-	private ConnectivityManager cm;
+	private ConnectivityManager connectivityMgr;
 
 	/* NOTIFICATION VARIABLES */
-	public final int NOTIFICATION_ID = 455926;
-	private final String NOTIFICATION_STRING = Context.NOTIFICATION_SERVICE;
-	private NotificationManager nm;
+	private static final String NOTIFICATION_STRING = Context.NOTIFICATION_SERVICE;
+	public static final int NOTIFICATION_ID = NOTIFICATION_STRING.hashCode();
+	private NotificationManager notificationMgr;
 
 	/* UPLOAD COMPLETION INTENTS */
 	public static final String UPLOAD_COMPLETE_INTENT = "ca.mcgill.hs.HSAndroidApp.UPLOAD_COMPLETE_INTENT";
-	private Intent shutdownIntent;
+	private static Intent shutdownIntent;
+
 	private final BroadcastReceiver completionReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
@@ -142,13 +157,14 @@ public class NewUploaderService extends Service {
 	/* FILE VARIABLES */
 	private String UNUPLOADED_PATH;
 
+	private static SharedPreferences prefs;
+
 	/**
 	 * Called when the auto upload preference has changed.
 	 */
 	private void autoPrefChanged() {
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(this);
-		automatic = prefs.getBoolean("autoUploadData", false);
+		automatic = prefs.getBoolean(
+				HSAndroidPreferences.AUTO_UPLOAD_DATA_PREF, false);
 
 		// If auto uploading has just been turned off and we were waiting, kill
 		// the timer and stop the service.
@@ -167,16 +183,17 @@ public class NewUploaderService extends Service {
 	 * @return true if it is possible to upload, false otherwise.
 	 */
 	private boolean canUpload() {
-		if (cm == null || cm.getActiveNetworkInfo() == null) {
+		if (connectivityMgr == null
+				|| connectivityMgr.getActiveNetworkInfo() == null) {
 			return false;
 		}
 		if (!wifiOnly) {
-			if (cm.getActiveNetworkInfo().getState() != NetworkInfo.State.CONNECTED) {
+			if (connectivityMgr.getActiveNetworkInfo().getState() != NetworkInfo.State.CONNECTED) {
 				return false;
 			}
 		} else {
-			if (cm.getActiveNetworkInfo().getState() != NetworkInfo.State.CONNECTED
-					|| cm.getActiveNetworkInfo().getType() != ConnectivityManager.TYPE_WIFI) {
+			if (connectivityMgr.getActiveNetworkInfo().getState() != NetworkInfo.State.CONNECTED
+					|| connectivityMgr.getActiveNetworkInfo().getType() != ConnectivityManager.TYPE_WIFI) {
 				return false;
 			}
 		}
@@ -205,7 +222,6 @@ public class NewUploaderService extends Service {
 	 */
 	private void networkChanged() {
 		unregisterConnectReceiver();
-		Log.i("NETWORK", "NETWORK");
 		uploadFiles();
 	}
 
@@ -217,6 +233,7 @@ public class NewUploaderService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		FINAL_ERROR_CODE = NO_ERROR_CODE;
 		shutdownIntent = new Intent(this, NewUploaderService.class);
 		UNUPLOADED_PATH = (String) getBaseContext().getResources().getText(
@@ -260,8 +277,8 @@ public class NewUploaderService extends Service {
 		registerReceiver(autoPrefChanged, new IntentFilter(
 				AUTO_UPLOAD_CHANGED_INTENT));
 
-		wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-		wi = wm.getConnectionInfo();
+		wifiMgr = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		wifiInfo = wifiMgr.getConnectionInfo();
 
 		// Register completion receiver
 		registerReceiver(completionReceiver, new IntentFilter(
@@ -270,8 +287,8 @@ public class NewUploaderService extends Service {
 		// Connect to a network
 		setUpConnection();
 
-		nm = (NotificationManager) getSystemService(NOTIFICATION_STRING);
-		nm.cancel(NOTIFICATION_ID);
+		notificationMgr = (NotificationManager) getSystemService(NOTIFICATION_STRING);
+		notificationMgr.cancel(NOTIFICATION_ID);
 
 		final int icon = R.drawable.notification_icon;
 		final String tickerText = getResources().getString(
@@ -289,7 +306,7 @@ public class NewUploaderService extends Service {
 				.getActivity(this.getBaseContext(), 0, i,
 						PendingIntent.FLAG_CANCEL_CURRENT));
 
-		nm.notify(NOTIFICATION_ID, n);
+		notificationMgr.notify(NOTIFICATION_ID, n);
 
 		filesUploaded = 0;
 		uploadFiles();
@@ -300,7 +317,7 @@ public class NewUploaderService extends Service {
 	 * manual.
 	 */
 	private void onUploadComplete() {
-		nm.cancel(NOTIFICATION_ID);
+		notificationMgr.cancel(NOTIFICATION_ID);
 		// If we are on automatic uploading, do not toast the user.
 		if (!automatic) {
 			switch (FINAL_ERROR_CODE) {
@@ -347,13 +364,12 @@ public class NewUploaderService extends Service {
 	 * Initializes preferences and the ConnectivityManager.
 	 */
 	private void setUpConnection() {
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(this);
+		wifiOnly = prefs.getBoolean(
+				HSAndroidPreferences.UPLOAD_OVER_WIFI_ONLY_PREF, false);
+		automatic = prefs.getBoolean(
+				HSAndroidPreferences.AUTO_UPLOAD_DATA_PREF, false);
 
-		wifiOnly = prefs.getBoolean("uploadWifiOnly", false);
-		automatic = prefs.getBoolean("autoUploadData", false);
-
-		cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		connectivityMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 	}
 
 	/**
@@ -433,10 +449,10 @@ public class NewUploaderService extends Service {
 		httpclient.getParams().setParameter(
 				CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_0);
 
-		httppost = new HttpPost("http://www.cs.mcgill.ca/~ccojoc2/uploader.php");
+		httppost = new HttpPost(UPLOAD_URL);
 		final File file = new File(Environment.getExternalStorageDirectory(),
 				fileName);
-		httppost.addHeader("MAC", wi.getMacAddress());
+		httppost.addHeader("MAC", wifiInfo.getMacAddress());
 		final MultipartEntity mpEntity = new MultipartEntity();
 		final ContentBody cbFile = new FileBody(file, "binary/octet-stream");
 		mpEntity.addPart("uploadedfile", cbFile);
@@ -571,10 +587,9 @@ public class NewUploaderService extends Service {
 	 * Called when the wifi only preference is changed.
 	 */
 	private void wifiPrefChanged() {
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(this);
 
-		wifiOnly = prefs.getBoolean("uploadWifiOnly", false);
+		wifiOnly = prefs.getBoolean(
+				HSAndroidPreferences.UPLOAD_OVER_WIFI_ONLY_PREF, false);
 		// If we are on automatic uploads, wifi has been disabled, and we are
 		// waiting for a connection to become available, then it's possible that
 		// a 3G connection has been available the whole time so we try again.

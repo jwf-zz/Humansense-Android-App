@@ -44,7 +44,7 @@ Classifier::Classifier(std::vector<NamedModel*> *models) {
 }
 
 Classifier::~Classifier() {
-	LOG("Classifier Destructor Called.");
+	HS_LOG("Classifier Destructor Called.");
 
 	if (models != NULL) {
 		for (uint i = 0; i < numModels; i++) {
@@ -168,7 +168,7 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 						}
 					}
 					if (l < NEIGHBOURS) {
-						LOG2("Couldn't find enough neighbours (found: %d, required: %d).", l, NEIGHBOURS);
+						HS_LOG2("Couldn't find enough neighbours (found: %d, required: %d).", l, NEIGHBOURS);
 					}
 
 					// Computes the mean of the nearest neighbours.
@@ -227,7 +227,7 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 //									"Bad neighbour %d.", nn_idx[l]);
 							nn_idx[l] = nn_idx[NEIGHBOURS+a++];
 							if (a >= extra_neighbours) {
-								LOG("Couldn't find enough good neighbours.");
+								HS_LOG("Couldn't find enough good neighbours.");
 								nn_idx[l] = 0;
 								break;
 							}
@@ -248,7 +248,7 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 						}
 					}
 					if (l < NEIGHBOURS) {
-						LOG2("Couldn't find enough neighbours (found: %d, required: %d).", l, NEIGHBOURS);
+						HS_LOG2("Couldn't find enough neighbours (found: %d, required: %d).", l, NEIGHBOURS);
 					}
 
 					// Computes the mean of the nearest neighbours.
@@ -304,7 +304,7 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 						while ((uint)nn_idx[l] >= N-3 || (uint)nn_idx[l] == 0) {
 							nn_idx[l] = nn_idx[NEIGHBOURS+a++];
 							if (a >= extra_neighbours) {
-								LOG("Couldn't find enough good neighbours.");
+								HS_LOG("Couldn't find enough good neighbours.");
 								nn_idx[l] = 0;
 								break;
 							}
@@ -341,7 +341,7 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 						}
 					}
 					if (l < NEIGHBOURS)
-						LOG("Couldn't find enough good neighbours.");
+						HS_LOG("Couldn't find enough good neighbours.");
 
 					// Computes the mean of the nearest neighbours.
 					cvReduce(nn[k], navg[k], 0, CV_REDUCE_AVG );

@@ -10,26 +10,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <jni.h>
-#include <android/log.h>
 #include "BuildTree.h"
 #include "Classifier.h"
 #include "ClassifyTrajectory.h"
 
-#define NATIVE_CALL(type, name) extern "C" JNIEXPORT type JNICALL Java_ca_mcgill_hs_classifiers_TimeDelayEmbeddingClassifier_ ## name
+// Sensor stuff
+#include <hardware/sensors.h>
+#include <cutils/native_handle.h>
+
+#define NATIVE_CLASSIFIER_CALL(type, name) extern "C" JNIEXPORT type JNICALL Java_ca_mcgill_hs_classifiers_NativeClassifier_ ## name
 
 extern Classifier *classifier;
 
-NATIVE_CALL(float, annDist)(JNIEnv* env, jobject obj, jint dim, jfloatArray p, jfloatArray q) {
+NATIVE_CLASSIFIER_CALL(float, annDist)(JNIEnv* env, jobject obj, jint dim, jfloatArray p, jfloatArray q) {
 	jfloat *pa, *qa, dist;
-/*
-	pa = new jdouble[dim];
-	qa = new jdouble[dim];
-	env->GetDoubleArrayRegion(p, 0, dim, pa);
-	env->GetDoubleArrayRegion(q, 0, dim, qa);
-	dist = annDist(dim,pa,qa);
-	delete[] pa;
-	delete[] qa;
-*/
 	jboolean isCopy = JNI_FALSE;
 	pa = (jfloat*)env->GetPrimitiveArrayCritical(p, &isCopy);
 	qa = (jfloat*)env->GetPrimitiveArrayCritical(q, &isCopy);
@@ -40,11 +34,11 @@ NATIVE_CALL(float, annDist)(JNIEnv* env, jobject obj, jint dim, jfloatArray p, j
 	return dist;
 }
 
-NATIVE_CALL(void, annClose)(JNIEnv* env, jobject obj) {
+NATIVE_CLASSIFIER_CALL(void, annClose)(JNIEnv* env, jobject obj) {
 	annClose();
 }
 
-NATIVE_CALL(void, classifyTrajectory)(JNIEnv* env, jobject obj, jstring inputFile, jstring outputFile, jstring modelsFile) {
+NATIVE_CLASSIFIER_CALL(void, classifyTrajectory)(JNIEnv* env, jobject obj, jstring inputFile, jstring outputFile, jstring modelsFile) {
 	const char *fin_name = env->GetStringUTFChars(inputFile, 0);
 	const char *fout_name = env->GetStringUTFChars(outputFile, 0);
 	const char *fmodel_name = env->GetStringUTFChars(modelsFile, 0);
@@ -58,7 +52,7 @@ NATIVE_CALL(void, classifyTrajectory)(JNIEnv* env, jobject obj, jstring inputFil
 	env->ReleaseStringUTFChars(modelsFile, fmodel_name);
 }
 
-NATIVE_CALL(void, buildTree)(JNIEnv* env, jobject obj, jstring inputFile, jint m, jint p, jint d) {
+NATIVE_CLASSIFIER_CALL(void, buildTree)(JNIEnv* env, jobject obj, jstring inputFile, jint m, jint p, jint d) {
 	const char *in_file = env->GetStringUTFChars(inputFile, 0);
 
 	buildTree(in_file, m, p, d);
@@ -66,7 +60,7 @@ NATIVE_CALL(void, buildTree)(JNIEnv* env, jobject obj, jstring inputFile, jint m
 	env->ReleaseStringUTFChars(inputFile, in_file);
 }
 
-NATIVE_CALL(void, loadModels)(JNIEnv* env, jobject obj, jstring modelsFile) {
+NATIVE_CLASSIFIER_CALL(void, loadModels)(JNIEnv* env, jobject obj, jstring modelsFile) {
 	const char *fmodel_name = env->GetStringUTFChars(modelsFile, 0);
 
 	loadModels(fmodel_name);
@@ -74,32 +68,32 @@ NATIVE_CALL(void, loadModels)(JNIEnv* env, jobject obj, jstring modelsFile) {
 	env->ReleaseStringUTFChars(modelsFile, fmodel_name);
 }
 
-NATIVE_CALL(void, deleteModels)(JNIEnv* env, jobject obj) {
+NATIVE_CLASSIFIER_CALL(void, deleteModels)(JNIEnv* env, jobject obj) {
 	cleanUpModels();
 }
 
-NATIVE_CALL(jint, getNumModels)(JNIEnv* env, jobject obj) {
+NATIVE_CLASSIFIER_CALL(jint, getNumModels)(JNIEnv* env, jobject obj) {
 	if (classifier == NULL) {
 		return 0;
 	}
 	return (jint)classifier->getNumModels();
 }
 
-NATIVE_CALL(jint, getWindowSize)(JNIEnv* env, jobject obj) {
+NATIVE_CLASSIFIER_CALL(jint, getWindowSize)(JNIEnv* env, jobject obj) {
 	if (classifier == NULL) {
 		return 0;
 	}
 	return (jint)classifier->getWindowSize();
 }
 
-NATIVE_CALL(void, setAlgorithmNumber)(JNIEnv* env, jobject obj, jint algNum) {
+NATIVE_CLASSIFIER_CALL(void, setAlgorithmNumber)(JNIEnv* env, jobject obj, jint algNum) {
 	if (classifier != NULL) {
 		classifier->setAlgorithmNumber(algNum);
 	}
 
 }
 
-NATIVE_CALL(jstring, getModelNames)(JNIEnv* env, jobject obj) {
+NATIVE_CLASSIFIER_CALL(jstring, getModelNames)(JNIEnv* env, jobject obj) {
 	char* res;
 	jstring ret;
 
@@ -114,7 +108,7 @@ NATIVE_CALL(jstring, getModelNames)(JNIEnv* env, jobject obj) {
 	return ret;
 }
 
-NATIVE_CALL(void, classifySample)(JNIEnv* env, jobject obj, jfloatArray in, jint startIndex, jfloatArray out) {
+NATIVE_CLASSIFIER_CALL(void, classifySample)(JNIEnv* env, jobject obj, jfloatArray in, jint startIndex, jfloatArray out) {
 	int i, M, length;
 	ANNcoord *sample, *output, **data;
 	jboolean isCopy = JNI_FALSE;

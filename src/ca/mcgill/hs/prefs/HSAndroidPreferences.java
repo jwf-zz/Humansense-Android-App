@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -31,14 +30,14 @@ import ca.mcgill.hs.serv.NewUploaderService;
  */
 public class HSAndroidPreferences extends PreferenceActivity {
 
-	private final File path = new File(Environment
-			.getExternalStorageDirectory(), "hsandroidapp/data/uploaded/");
-	private final File recent = new File(Environment
-			.getExternalStorageDirectory(), "hsandroidapp/data/recent/");
-
-	private int filesToDelete;
-	private int unuploadedFilesToDelete;
-	private long bytes;
+	public static final String UPLOAD_OVER_WIFI_ONLY_PREF = "uploadWifiOnly";
+	public static final String AUTO_UPLOAD_DATA_PREF = "autoUploadData";
+	public static final String DELETE_UNUPLOADED_PREF = "deleteUnuploaded";
+	public static final String MANAGE_UNUPLOADED_PREF = "manageUnuploaded";
+	public static final String MANUAL_CLEAR_DATA_PREF = "manualClearData";
+	public static final String OUTPUT_PLUGIN_PREFS = "outputPluginPrefs";
+	public static final String INPUT_PLUGIN_PREFS = "inputPluginPrefs";
+	public static final String AUTO_START_AT_APP_START_PREF = "autoStartAtAppStart";
 
 	private static void broadcastAutoUploaderIntent(final Context c) {
 		final Intent i = new Intent();
@@ -51,6 +50,14 @@ public class HSAndroidPreferences extends PreferenceActivity {
 		i.setAction(NewUploaderService.WIFI_ONLY_CHANGED_INTENT);
 		c.sendBroadcast(i);
 	}
+
+	private final File path = FileManager.UPLOADED_FILES_DIRECTORY;
+	private final File recent = FileManager.RECENT_FILES_DIRECTORY;
+	private int filesToDelete;
+
+	private int unuploadedFilesToDelete;
+
+	private long bytes;
 
 	/**
 	 * Returns the number of unuploaded files.
@@ -115,7 +122,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.preferences);
 
-		final Preference inputPrefs = findPreference("inputPluginPrefs");
+		final Preference inputPrefs = findPreference(INPUT_PLUGIN_PREFS);
 		inputPrefs
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 					public boolean onPreferenceClick(final Preference preference) {
@@ -126,7 +133,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 					}
 				});
 
-		final Preference outputPrefs = findPreference("outputPluginPrefs");
+		final Preference outputPrefs = findPreference(OUTPUT_PLUGIN_PREFS);
 		outputPrefs
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 					public boolean onPreferenceClick(final Preference preference) {
@@ -142,7 +149,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 		filesToDelete = getFilesUploaded();
 		bytes = getFilesUploadedBytes();
 
-		final Preference manualClearData = findPreference("manualClearData");
+		final Preference manualClearData = findPreference(MANUAL_CLEAR_DATA_PREF);
 
 		manualClearData
 				.setSummary(getResources().getString(
@@ -192,7 +199,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 				});
 
 		// MANAGE UNUPLOADED
-		final Preference manageUnuploaded = findPreference("manageUnuploaded");
+		final Preference manageUnuploaded = findPreference(MANAGE_UNUPLOADED_PREF);
 		manageUnuploaded
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 					public boolean onPreferenceClick(final Preference preference) {
@@ -263,7 +270,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 				.setPositiveButton(R.string.yes, aggressiveClickListener)
 				.setNegativeButton(R.string.no, aggressiveClickListener);
 
-		final Preference clearUnuploaded = findPreference("deleteUnuploaded");
+		final Preference clearUnuploaded = findPreference(DELETE_UNUPLOADED_PREF);
 		clearUnuploaded
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 					public boolean onPreferenceClick(final Preference preference) {
@@ -281,7 +288,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 
 		// AutoUpload intent launch
 		final Context c = this;
-		final CheckBoxPreference autoUpload = (CheckBoxPreference) findPreference("autoUploadData");
+		final CheckBoxPreference autoUpload = (CheckBoxPreference) findPreference(AUTO_UPLOAD_DATA_PREF);
 		autoUpload
 				.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 					public boolean onPreferenceChange(
@@ -297,7 +304,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 					}
 				});
 
-		final CheckBoxPreference wifiOnly = (CheckBoxPreference) findPreference("uploadWifiOnly");
+		final CheckBoxPreference wifiOnly = (CheckBoxPreference) findPreference(UPLOAD_OVER_WIFI_ONLY_PREF);
 		wifiOnly
 				.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 					public boolean onPreferenceChange(

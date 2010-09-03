@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import ca.mcgill.hs.prefs.HSAndroidPreferences;
 import ca.mcgill.hs.serv.HSService;
 
 /**
@@ -27,13 +28,15 @@ public class HSAndroid extends Activity {
 
 	private static Button serviceSwitch;
 
-	private Intent i;
+	private Intent serviceIntent;
 
 	private boolean autoStartAppStart = false;
 	public static final String HSANDROID_PREFS_NAME = "HSAndroidPrefs";
 
 	private static final int MENU_SETTINGS = 13371337;
 	private static final int MENU_UPLOAD = 13371338;
+
+	private static final String TAG = "HSAndroid";
 
 	/**
 	 * Updates the main starting button. This is required due to the nature of
@@ -54,7 +57,8 @@ public class HSAndroid extends Activity {
 	private void getPrefs() {
 		final SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(getBaseContext());
-		autoStartAppStart = prefs.getBoolean("autoStartAtAppStart", false);
+		autoStartAppStart = prefs.getBoolean(
+				HSAndroidPreferences.AUTO_START_AT_APP_START_PREF, false);
 	}
 
 	/**
@@ -64,17 +68,44 @@ public class HSAndroid extends Activity {
 	@Override
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		// // final Sensor s = new Sensor();
+		// Log.d(TAG, "Sensor.androidInit: " + Sensor.androidInit());
+		// Log.d(TAG, "Bundle: " + Sensor.androidOpen());
+		// Log.d(TAG, "Sensor.sensorsModuleInit: " +
+		// Sensor.sensorsModuleInit());
+		// Log.d(TAG, "Sensor.sensorsDataInit: " + Sensor.sensorsDataInit());
+		//
+		// final Sensor sensor = new Sensor();
+		// Log.d(TAG, "Sensor.sensorsModuleGetNextSensor: "
+		// + Sensor.sensorsModuleGetNextSensor(sensor, 0));
+		// Log.d(TAG, "Sensor Name: " + sensor.getName());
+		// final float[] values = new float[3];
+		// final int[] accuracy = new int[1];
+		// final long[] timestamp = new long[1];
+		// Log.d(TAG, "Sensor.sensorsDataPoll: "
+		// + Sensor.sensorsDataPoll(values, accuracy, timestamp));
+		// Log.d(TAG, "\tSensor output: " + values[0] + ", " + values[1] + ", "
+		// + values[2]);
+		//
+		// Log.d(TAG, "Sensor.sensorsDataUnInit: " +
+		// Sensor.sensorsDataUninit());
+
+		// s.sensors_module_get_next_sensor(new Object(), 1);
+
+		// Sensor.sensors_module_init();
+
 		setContentView(R.layout.main);
 
 		// Intent
-		i = new Intent(this, HSService.class);
+		serviceIntent = new Intent(this, HSService.class);
 
 		// Setup preferences
 		getPrefs();
 
 		// Auto App Start
 		if (autoStartAppStart) {
-			startService(i);
+			startService(serviceIntent);
 		}
 
 		// Buttons
@@ -84,11 +115,13 @@ public class HSAndroid extends Activity {
 		serviceSwitch.setOnClickListener(new View.OnClickListener() {
 			public void onClick(final View v) {
 				if (!HSService.isRunning()) { // NOT RUNNING
-					startService(i);
+					// Debug.startMethodTracing("hsandroid");
+					startService(serviceIntent);
 					serviceSwitch.setText(R.string.stop_label);
 				} else { // RUNNING
-					stopService(i);
+					stopService(serviceIntent);
 					serviceSwitch.setText(R.string.start_label);
+					// Debug.stopMethodTracing();
 				}
 			}
 		});

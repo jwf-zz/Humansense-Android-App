@@ -39,7 +39,7 @@ public class InputPluginPreferences extends PreferenceActivity {
 		final PreferenceScreen root = getPreferenceManager()
 				.createPreferenceScreen(this);
 
-		for (final Class<?> c : HSService.inputPluginsAvailable) {
+		for (final Class<?> c : HSService.inputPluginClasses) {
 			if ((Boolean) c.getMethod("hasPreferences", (Class[]) null).invoke(
 					null, (Object[]) null)) {
 

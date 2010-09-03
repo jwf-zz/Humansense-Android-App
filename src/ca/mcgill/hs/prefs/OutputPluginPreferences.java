@@ -39,7 +39,7 @@ public class OutputPluginPreferences extends PreferenceActivity {
 		final PreferenceScreen root = getPreferenceManager()
 				.createPreferenceScreen(this);
 
-		for (final Class<?> c : HSService.outputPluginsAvailable) {
+		for (final Class<?> c : HSService.outputPluginClasses) {
 			if ((Boolean) c.getMethod("hasPreferences", (Class[]) null).invoke(
 					null, (Object[]) null)) {
 				final PreferenceCategory newCategory = new PreferenceCategory(

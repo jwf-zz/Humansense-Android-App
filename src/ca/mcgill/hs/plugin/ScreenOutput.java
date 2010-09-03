@@ -5,10 +5,11 @@ import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
-import ca.mcgill.hs.plugin.GPSLogger.GPSLoggerPacket;
-import ca.mcgill.hs.plugin.GSMLogger.GSMLoggerPacket;
-import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
+import ca.mcgill.hs.plugin.GPSLogger.GPSPacket;
+import ca.mcgill.hs.plugin.GSMLogger.GSMPacket;
+import ca.mcgill.hs.plugin.WifiLogger.WifiPacket;
 import ca.mcgill.hs.util.PreferenceFactory;
 
 /**
@@ -18,29 +19,77 @@ import ca.mcgill.hs.util.PreferenceFactory;
  * @author Cicerone Cojocaru, Jonathan Pitre
  * 
  */
-public class ScreenOutput extends OutputPlugin {
+public final class ScreenOutput extends OutputPlugin {
 
-	// Boolean ON-OFF switch *Temporary only*
-	private boolean PLUGIN_ACTIVE;
+	private static final String SCREEN_OUTPUT_ENABLE_PREF = "screenOutputEnable";
 
-	// The Context for the preferences.
-	private final Context context;
+	private static final String PLUGIN_NAME = "ScreenOutput";
+
+	// Keeps track of whether this plugin is enabled or not.
+	private static boolean pluginEnabled;
+
+	private static SharedPreferences prefs;
 
 	/**
-	 * This is the basic constructor for the ScreenOutput plugin. It has to be
-	 * instantiated before it is started, and needs to be passed a reference to
-	 * a Context.
+	 * Parses and writes given BluetoothPacket to the Android's logcat.
 	 * 
-	 * @param context
-	 *            the context in which this plugin is created.
+	 * @param gpslp
+	 *            the BluetoothPacket to parse and write out.
 	 */
-	public ScreenOutput(final Context context) {
-		this.context = context;
+	private static void dataParse(final BluetoothPacket bp) {
+		Log.i(PLUGIN_NAME, "Bluetooth Device Found");
+		Log.i(PLUGIN_NAME, "Name : " + bp.names.toString());
+		Log.i(PLUGIN_NAME, "Address : " + bp.addresses.toString());
+	}
 
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
+	/**
+	 * Parses and writes given GPSLoggerPacket to the Android's logcat.
+	 * 
+	 * @param gpslp
+	 *            the GPSLoggerPacket to parse and write out.
+	 */
+	private static void dataParse(final GPSPacket gpslp) {
+		Log.i(PLUGIN_NAME, "Area: [" + gpslp.altitude + "][" + gpslp.latitude
+				+ "][" + gpslp.longitude + "]");
+	}
 
-		PLUGIN_ACTIVE = prefs.getBoolean("screenOutputEnable", false);
+	/**
+	 * Parses and writes given GSMLoggerPacket to the Android's logcat.
+	 * 
+	 * @param gsmlp
+	 *            the GSMLoggerPacket to parse and write out.
+	 */
+	private static void dataParse(final GSMPacket gsmlp) {
+		Log.i(PLUGIN_NAME, "Timestamp : " + gsmlp.time);
+		Log.i(PLUGIN_NAME, "MCC : " + gsmlp.mcc);
+		Log.i(PLUGIN_NAME, "MNC : " + gsmlp.mnc);
+		Log.i(PLUGIN_NAME, "CID : " + gsmlp.cid);
+		Log.i(PLUGIN_NAME, "LAC : " + gsmlp.lac);
+		Log.i(PLUGIN_NAME, "RSSI : " + gsmlp.rssi);
+		Log.i(PLUGIN_NAME, "Neighbors : " + gsmlp.neighbors);
+		for (int i = gsmlp.neighbors - 1; i >= 0; i--) {
+			Log.i(PLUGIN_NAME, "Neighbor " + i + " CID : " + gsmlp.cids[i]);
+			Log.i(PLUGIN_NAME, "Neighbor " + i + " LAC : " + gsmlp.lacs[i]);
+			Log.i(PLUGIN_NAME, "Neighbor " + i + " RSSI : " + gsmlp.rssis[i]);
+		}
+	}
+
+	/**
+	 * Parses and writes given WifiLoggerPacket to the Android's logcat.
+	 * 
+	 * @param wlp
+	 *            the WifiLoggerPacket to parse and write out.
+	 */
+	private static void dataParse(final WifiPacket wlp) {
+		Log.i(PLUGIN_NAME, "Time: " + wlp.timestamp);
+		Log.i(PLUGIN_NAME, "Neighbors: " + wlp.neighbors);
+		final int j = wlp.levels.length;
+		for (int i = 0; i < j; i++) {
+			Log.i(PLUGIN_NAME, "SSID: " + wlp.SSIDs[i]);
+			Log.i(PLUGIN_NAME, "Level: " + wlp.levels[i]);
+			Log.i(PLUGIN_NAME, "BSSID: " + wlp.BSSIDs[i]);
+			Log.i(PLUGIN_NAME, " ");
+		}
 	}
 
 	/**
@@ -54,9 +103,11 @@ public class ScreenOutput extends OutputPlugin {
 		final Preference[] prefs = new Preference[1];
 
 		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
-				"screenOutputEnable", "ScreenOutput Plugin",
-				"Enables or disables this plugin.", "ScreenOutput is on.",
-				"ScreenOutput is off.");
+				SCREEN_OUTPUT_ENABLE_PREF,
+				R.string.screenoutput_enable_pref_label,
+				R.string.screenoutput_enable_pref_summary,
+				R.string.screenoutput_enable_pref_on,
+				R.string.screenoutput_enable_pref_off);
 
 		return prefs;
 	}
@@ -71,67 +122,16 @@ public class ScreenOutput extends OutputPlugin {
 	}
 
 	/**
-	 * Parses and writes given BluetoothPacket to the Android's logcat.
+	 * This is the basic constructor for the ScreenOutput plugin. It has to be
+	 * instantiated before it is started, and needs to be passed a reference to
+	 * a Context.
 	 * 
-	 * @param gpslp
-	 *            the BluetoothPacket to parse and write out.
+	 * @param context
+	 *            the context in which this plugin is created.
 	 */
-	private void dataParse(final BluetoothPacket bp) {
-		Log.i("BluetoothLogger SO", "Bluetooth Device Found");
-		Log.i("BluetoothLogger SO", "Name : " + bp.names.toString());
-		Log.i("BluetoothLogger SO", "Address : " + bp.addresses.toString());
-	}
-
-	/**
-	 * Parses and writes given GPSLoggerPacket to the Android's logcat.
-	 * 
-	 * @param gpslp
-	 *            the GPSLoggerPacket to parse and write out.
-	 */
-	private void dataParse(final GPSLoggerPacket gpslp) {
-		Log.i("GPSLocationLogger SO", "Area: [" + gpslp.altitude + "]["
-				+ gpslp.latitude + "][" + gpslp.longitude + "]");
-	}
-
-	/**
-	 * Parses and writes given GSMLoggerPacket to the Android's logcat.
-	 * 
-	 * @param gsmlp
-	 *            the GSMLoggerPacket to parse and write out.
-	 */
-	private void dataParse(final GSMLoggerPacket gsmlp) {
-		Log.i("GSMLogger SO", "Timestamp : " + gsmlp.time);
-		Log.i("GSMLogger SO", "MCC : " + gsmlp.mcc);
-		Log.i("GSMLogger SO", "MNC : " + gsmlp.mnc);
-		Log.i("GSMLogger SO", "CID : " + gsmlp.cid);
-		Log.i("GSMLogger SO", "LAC : " + gsmlp.lac);
-		Log.i("GSMLogger SO", "RSSI : " + gsmlp.rssi);
-		Log.i("GSMLogger SO", "Neighbors : " + gsmlp.neighbors);
-		for (int i = gsmlp.neighbors - 1; i >= 0; i--) {
-			Log.i("GSMLogger SO", "Neighbor " + i + " CID : " + gsmlp.cids[i]);
-			Log.i("GSMLogger SO", "Neighbor " + i + " LAC : " + gsmlp.lacs[i]);
-			Log
-					.i("GSMLogger SO", "Neighbor " + i + " RSSI : "
-							+ gsmlp.rssis[i]);
-		}
-	}
-
-	/**
-	 * Parses and writes given WifiLoggerPacket to the Android's logcat.
-	 * 
-	 * @param wlp
-	 *            the WifiLoggerPacket to parse and write out.
-	 */
-	private void dataParse(final WifiLoggerPacket wlp) {
-		Log.i("WifiLogger SO", "Time: " + wlp.timestamp);
-		Log.i("WifiLogger SO", "Neighbors: " + wlp.neighbors);
-		final int j = wlp.levels.length;
-		for (int i = 0; i < j; i++) {
-			Log.i("WifiLogger SO", "SSID: " + wlp.SSIDs[i]);
-			Log.i("WifiLogger SO", "Level: " + wlp.levels[i]);
-			Log.i("WifiLogger SO", "BSSID: " + wlp.BSSIDs[i]);
-			Log.i("WifiLogger SO", " ");
-		}
+	public ScreenOutput(final Context context) {
+		prefs = PreferenceManager.getDefaultSharedPreferences(context);
+		pluginEnabled = prefs.getBoolean(SCREEN_OUTPUT_ENABLE_PREF, false);
 	}
 
 	/**
@@ -144,16 +144,17 @@ public class ScreenOutput extends OutputPlugin {
 	 */
 	@Override
 	void onDataReceived(final DataPacket dp) {
-		if (!PLUGIN_ACTIVE) {
+		if (!pluginEnabled) {
 			return;
 		}
-		if (dp.getClass() == WifiLoggerPacket.class) {
-			dataParse((WifiLoggerPacket) dp);
-		} else if (dp.getClass() == GPSLoggerPacket.class) {
-			dataParse((GPSLoggerPacket) dp);
-		} else if (dp.getClass() == GSMLoggerPacket.class) {
-			dataParse((GSMLoggerPacket) dp);
-		} else if (dp.getClass() == BluetoothPacket.class) {
+		final int id = dp.getDataPacketId();
+		if (id == WifiPacket.PACKET_ID) {
+			dataParse((WifiPacket) dp);
+		} else if (id == GPSPacket.PACKET_ID) {
+			dataParse((GPSPacket) dp);
+		} else if (id == GSMPacket.PACKET_ID) {
+			dataParse((GSMPacket) dp);
+		} else if (id == BluetoothPacket.PACKET_ID) {
 			dataParse((BluetoothPacket) dp);
 		}
 	}
@@ -163,16 +164,13 @@ public class ScreenOutput extends OutputPlugin {
 	 */
 	@Override
 	public void onPreferenceChanged() {
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-
-		final boolean new_PLUGIN_ACTIVE = prefs.getBoolean(
-				"screenOutputEnable", false);
-		if (PLUGIN_ACTIVE && !new_PLUGIN_ACTIVE) {
+		final boolean pluginEnabledNew = prefs.getBoolean(
+				SCREEN_OUTPUT_ENABLE_PREF, false);
+		if (pluginEnabled && !pluginEnabledNew) {
 			stopPlugin();
-			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
-		} else if (!PLUGIN_ACTIVE && new_PLUGIN_ACTIVE) {
-			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+			pluginEnabled = pluginEnabledNew;
+		} else if (!pluginEnabled && pluginEnabledNew) {
+			pluginEnabled = pluginEnabledNew;
 			startPlugin();
 		}
 	}

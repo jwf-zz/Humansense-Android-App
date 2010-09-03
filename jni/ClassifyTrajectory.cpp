@@ -11,6 +11,7 @@
 #include <vector>
 #include <ANN/ANN.h>
 #include <Tisean/tsa.h>
+#include <android/log.h>
 
 #include "Utils.h"
 #include "BuildTree.h"
@@ -30,7 +31,7 @@ void loadModels(const char* ms_file) {
     int n = STR_LEN;
     std::vector<NamedModel*> *models = new std::vector<NamedModel*>();
 
-    __android_log_print(ANDROID_LOG_DEBUG, HS_TAG, "Using models from: %s", ms_file);
+    HS_LOG2("Using models from: %s", ms_file);
 
     // Read the models.ini file.
     models_file = fopen(ms_file, "r"); // models_file.open(ms_file);

@@ -19,8 +19,7 @@ import ca.mcgill.hs.util.PreferenceFactory;
  * 
  */
 public class SensorLogger extends InputPlugin implements SensorEventListener {
-
-	public static class SensorLoggerPacket implements DataPacket {
+	public static class SensorPacket implements DataPacket {
 
 		final long time;
 		final float x;
@@ -30,13 +29,13 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 		final float temperature;
 		final float[] magfield;
 		final float[] orientation;
-		final static String PLUGIN_NAME = "SensorLogger";
-		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
-		public SensorLoggerPacket(final long time, final float x,
-				final float y, final float z, final float m,
-				final float temperature, final float[] magfield,
-				final float[] orientation) {
+		final static String PACKET_NAME = "SensorPacket";
+		final static int PACKET_ID = PACKET_NAME.hashCode();
+
+		public SensorPacket(final long time, final float x, final float y,
+				final float z, final float m, final float temperature,
+				final float[] magfield, final float[] orientation) {
 			this.time = time;
 			this.x = x;
 			this.y = y;
@@ -49,21 +48,28 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 
 		@Override
 		public DataPacket clone() {
-			return new SensorLoggerPacket(time, x, y, z, m, temperature,
-					magfield, orientation);
+			return new SensorPacket(time, x, y, z, m, temperature, magfield,
+					orientation);
 		}
 
 		@Override
 		public int getDataPacketId() {
-			return SensorLoggerPacket.PLUGIN_ID;
+			return SensorPacket.PACKET_ID;
 		}
 
 		@Override
 		public String getInputPluginName() {
-			return SensorLoggerPacket.PLUGIN_NAME;
+			return SensorPacket.PACKET_NAME;
 		}
 
 	}
+
+	private static final String SENSOR_LOGGER_INTERVAL_PREF = "sensorIntervalPreference";
+	private static final String SENSOR_LOGGER_DEFAULT_INTERVAL = "0";
+	private static final String SENSOR_LOGGER_ENABLE_PREF = "sensorLoggerEnable";
+
+	final static String PLUGIN_NAME = "SensorLogger";
+	final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
 	/**
 	 * Returns the list of Preference objects for this InputPlugin.
@@ -76,14 +82,16 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 		final Preference[] prefs = new Preference[2];
 
 		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
-				"sensorLoggerEnable", "Sensor Plugin",
-				"Enables or disables this plugin.", "SensorLogger is on.",
-				"SensorLogger is off.");
+				SENSOR_LOGGER_ENABLE_PREF,
+				R.string.sensorlogger_enable_pref_label,
+				R.string.sensorlogger_interval_pref_summary,
+				R.string.sensorlogger_enable_pref_on,
+				R.string.sensorlogger_enable_pref_off);
 
 		prefs[1] = PreferenceFactory.getListPreference(c,
 				R.array.sensorLoggerIntervalStrings,
-				R.array.sensorLoggerIntervalValues, "0",
-				"sensorIntervalPreference",
+				R.array.sensorLoggerIntervalValues,
+				SENSOR_LOGGER_DEFAULT_INTERVAL, SENSOR_LOGGER_INTERVAL_PREF,
 				R.string.sensorlogger_interval_pref,
 				R.string.sensorlogger_interval_pref_summary);
 
@@ -99,29 +107,28 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 		return true;
 	}
 
-	// Boolean ON-OFF switch *Temporary only*
-	private boolean PLUGIN_ACTIVE;
+	// Keeps track of whether this plugin is enabled or not.
+	private boolean pluginEnabled;
 
 	// The SensorManager used to register listeners.
 	private final SensorManager sensorManager;
 
 	// A boolean checking whether or not we are logging at a given moment.
-	private static boolean logging = false;
+	private boolean logging = false;
 	// The speed at which the accelerometer will log.
-	private static int loggingSpeed;
+	private final int loggingSpeed;
 	// Offset for timestamps
-	private static long timestamp_offset = 0;
+	private long timestamp_offset = 0;
 	// Variables used to write out the sensor data received.
-	private static float temperature = 0.0f;
+	private float temperature = 0.0f;
 
-	private static float[] magfield = { 0.0f, 0.0f, 0.0f };
+	private float[] magfield = { 0.0f, 0.0f, 0.0f };
 
-	private static boolean magfieldUpdated = false;
+	private boolean magfieldUpdated = false;
 
-	private static float[] orientation = { 0.0f, 0.0f, 0.0f };
+	private final float[] orientation = { 0.0f, 0.0f, 0.0f };
 
-	// The Context used for the preferences.
-	private final Context context;
+	private final SharedPreferences prefs;
 
 	/**
 	 * This is the basic constructor for the SensorLogger plugin. It has to be
@@ -131,16 +138,15 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	 * @param gpsm
 	 * @param context
 	 */
-	public SensorLogger(final SensorManager sensorManager, final Context context) {
-		this.sensorManager = sensorManager;
-		this.context = context;
+	public SensorLogger(final Context context) {
+		sensorManager = (SensorManager) context
+				.getSystemService(Context.SENSOR_SERVICE);
 
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
+		prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		loggingSpeed = Integer.parseInt(prefs.getString(
-				"sensorIntervalPreference", "0"));
+				SENSOR_LOGGER_INTERVAL_PREF, SENSOR_LOGGER_DEFAULT_INTERVAL));
 
-		PLUGIN_ACTIVE = prefs.getBoolean("sensorLoggerEnable", false);
+		pluginEnabled = prefs.getBoolean(SENSOR_LOGGER_ENABLE_PREF, false);
 	}
 
 	/**
@@ -153,8 +159,8 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 		final float m = (float) Math.sqrt(x * x + y * y + z * z)
 				- SensorManager.STANDARD_GRAVITY;
 
-		write(new SensorLoggerPacket(timestamp, x, y, z, m, temperature,
-				magfield, orientation));
+		write(new SensorPacket(timestamp, x, y, z, m, temperature, magfield,
+				orientation));
 	}
 
 	/**
@@ -176,16 +182,13 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	 */
 	@Override
 	public void onPreferenceChanged() {
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-
-		final boolean new_PLUGIN_ACTIVE = prefs.getBoolean(
-				"sensorLoggerEnable", false);
-		if (PLUGIN_ACTIVE && !new_PLUGIN_ACTIVE) {
+		final boolean pluginActiveNew = prefs.getBoolean(
+				SENSOR_LOGGER_ENABLE_PREF, false);
+		if (pluginEnabled && !pluginActiveNew) {
 			stopPlugin();
-			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
-		} else if (!PLUGIN_ACTIVE && new_PLUGIN_ACTIVE) {
-			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+			pluginEnabled = pluginActiveNew;
+		} else if (!pluginEnabled && pluginActiveNew) {
+			pluginEnabled = pluginActiveNew;
 			startPlugin();
 		}
 	}
@@ -242,10 +245,10 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	 * Registers the appropriate listeners using the SensorManager.
 	 */
 	public void startPlugin() {
-		if (!PLUGIN_ACTIVE) {
+		if (!pluginEnabled) {
 			return;
 		}
-		Log.i("SensorLogger", "Registered Sensor Listener");
+		Log.i(PLUGIN_NAME, "Registered Sensor Listener");
 		sensorManager.registerListener(this, sensorManager
 				.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), loggingSpeed);
 		sensorManager.registerListener(this, sensorManager
@@ -261,10 +264,10 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	 * Unregisters the appropriate listeners using the SensorManager.
 	 */
 	public void stopPlugin() {
-		if (!PLUGIN_ACTIVE) {
+		if (!pluginEnabled) {
 			return;
 		}
-		Log.i("SensorLogger", "Unregistered Sensor Listener.");
+		Log.i(PLUGIN_NAME, "Unregistered Sensor Listener.");
 		sensorManager.unregisterListener(this, sensorManager
 				.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
 		sensorManager.unregisterListener(this, sensorManager
@@ -273,5 +276,4 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 				.getDefaultSensor(Sensor.TYPE_TEMPERATURE));
 		logging = false;
 	}
-
 }

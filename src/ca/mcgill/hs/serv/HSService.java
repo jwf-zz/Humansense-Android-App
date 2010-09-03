@@ -9,51 +9,36 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.SensorManager;
-import android.location.LocationManager;
-import android.net.wifi.WifiManager;
 import android.os.IBinder;
-import android.telephony.TelephonyManager;
 import android.util.Log;
-import ca.mcgill.hs.plugin.BluetoothLogger;
 import ca.mcgill.hs.plugin.DataPacket;
-import ca.mcgill.hs.plugin.FileOutput;
-import ca.mcgill.hs.plugin.GPSLogger;
-import ca.mcgill.hs.plugin.GSMLogger;
 import ca.mcgill.hs.plugin.InputPlugin;
 import ca.mcgill.hs.plugin.OutputPlugin;
-import ca.mcgill.hs.plugin.ScreenOutput;
-import ca.mcgill.hs.plugin.SensorLogger;
-import ca.mcgill.hs.plugin.SimpleClassifierPlugin;
-import ca.mcgill.hs.plugin.TestMagOutputPlugin;
-import ca.mcgill.hs.plugin.WifiLogger;
+import ca.mcgill.hs.plugin.PluginFactory;
 import ca.mcgill.hs.util.PreferenceFactory;
 
 public class HSService extends Service {
 
 	private static boolean isRunning;
-	private static Context PASSABLE_CONTEXT;
 
 	// If true then performance timing information will be logged
 	private static final boolean PERF_COUNTERS = false;
 
 	// Lists of the plugins currently enabled.
 	private static final LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
-	private static final LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
 
+	private static final LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
 	// Some variables for calculating performance metrics
 	private static long timeSpentInOnDataReady = 0L;
-	private static int numCallsToOnDataReady = 0;
 
+	private static int numCallsToOnDataReady = 0;
 	// A simple static array of the input plugin class names.
-	public static final Class<?>[] inputPluginsAvailable = {
-			BluetoothLogger.class, GPSLogger.class, GSMLogger.class,
-			SensorLogger.class, WifiLogger.class };
+	public static final Class<? extends InputPlugin>[] inputPluginClasses = PluginFactory
+			.getInputPluginClassList();
 
 	// A simple static array of the output plugin class names.
-	public static final Class<?>[] outputPluginsAvailable = { FileOutput.class,
-			ScreenOutput.class, TestMagOutputPlugin.class,
-			SimpleClassifierPlugin.class };
+	public static final Class<? extends OutputPlugin>[] outputPluginClasses = PluginFactory
+			.getOutputPluginClassList();
 
 	// ExecutorService
 	private static final ExecutorService tpe = Executors.newCachedThreadPool();
@@ -71,10 +56,9 @@ public class HSService extends Service {
 	 * Populates the list of output plugins.
 	 */
 	private static void addOutputPlugins() {
-		outputPluginList.add(new ScreenOutput(PASSABLE_CONTEXT));
-		outputPluginList.add(new FileOutput(PASSABLE_CONTEXT));
-		outputPluginList.add(new SimpleClassifierPlugin(PASSABLE_CONTEXT));
-		outputPluginList.add(new TestMagOutputPlugin(PASSABLE_CONTEXT, 100));
+		for (final Class<? extends OutputPlugin> plugin : outputPluginClasses) {
+			outputPluginList.add(PluginFactory.getOutputPlugin(plugin));
+		}
 	}
 
 	/**
@@ -134,19 +118,9 @@ public class HSService extends Service {
 	 * Populates the list of input plugins.
 	 */
 	private void addInputPlugins() {
-		inputPluginList.add(new BluetoothLogger(PASSABLE_CONTEXT));
-		inputPluginList.add(new GPSLogger(
-				(LocationManager) getSystemService(Context.LOCATION_SERVICE),
-				PASSABLE_CONTEXT));
-		inputPluginList.add(new GSMLogger(
-				(TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE),
-				PASSABLE_CONTEXT));
-		inputPluginList.add(new SensorLogger(
-				(SensorManager) getSystemService(Context.SENSOR_SERVICE),
-				PASSABLE_CONTEXT));
-		inputPluginList.add(new WifiLogger(
-				(WifiManager) getSystemService(Context.WIFI_SERVICE),
-				PASSABLE_CONTEXT));
+		for (final Class<? extends InputPlugin> plugin : inputPluginClasses) {
+			inputPluginList.add(PluginFactory.getInputPlugin(plugin));
+		}
 	}
 
 	@Override
@@ -194,7 +168,7 @@ public class HSService extends Service {
 		}
 		super.onStart(intent, startId);
 
-		PASSABLE_CONTEXT = getApplicationContext();
+		PluginFactory.setContext(getApplicationContext());
 
 		// Register the receiver for when the preferences change.
 		getApplicationContext().registerReceiver(prefReceiver,
@@ -221,5 +195,4 @@ public class HSService extends Service {
 		// Update button
 		ca.mcgill.hs.HSAndroid.updateButton();
 	}
-
 }

@@ -14,11 +14,11 @@ import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
+import ca.mcgill.hs.R;
 import ca.mcgill.hs.util.PreferenceFactory;
 
-public class GSMLogger extends InputPlugin {
-
-	public static class GSMLoggerPacket implements DataPacket {
+public final class GSMLogger extends InputPlugin {
+	public static class GSMPacket implements DataPacket {
 		final long time;
 		final int mcc;
 		final int mnc;
@@ -29,10 +29,10 @@ public class GSMLogger extends InputPlugin {
 		final int[] cids;
 		final int[] lacs;
 		final int[] rssis;
-		final static String PLUGIN_NAME = "GSMLogger";
-		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+		final static String PACKET_NAME = "GSMPacket";
+		final static int PACKET_ID = PACKET_NAME.hashCode();
 
-		public GSMLoggerPacket(final long time, final int mcc, final int mnc,
+		public GSMPacket(final long time, final int mcc, final int mnc,
 				final int cid, final int lac, final int rssi,
 				final int neighbors, final int[] cids, final int[] lacs,
 				final int[] rssis) {
@@ -50,36 +50,38 @@ public class GSMLogger extends InputPlugin {
 
 		@Override
 		public DataPacket clone() {
-			return new GSMLoggerPacket(time, mcc, mnc, cid, lac, rssi,
-					neighbors, cids, lacs, rssis);
+			return new GSMPacket(time, mcc, mnc, cid, lac, rssi, neighbors,
+					cids, lacs, rssis);
 		}
 
 		@Override
 		public int getDataPacketId() {
-			return GSMLoggerPacket.PLUGIN_ID;
+			return GSMPacket.PACKET_ID;
 		}
 
 		@Override
 		public String getInputPluginName() {
-			return GSMLoggerPacket.PLUGIN_NAME;
+			return GSMPacket.PACKET_NAME;
 		}
 
 	}
 
-	/**
-	 * Returns whether or not this InputPlugin has Preferences.
-	 * 
-	 * @return whether or not this InputPlugin has preferences.
-	 */
-	public static boolean hasPreferences() {
-		return true;
-	}
+	private static final String GSM_LOGGER_ENABLE_PREF = "gsmLoggerEnable";
 
-	// Boolean ON-OFF switch *Temporary only*
-	private boolean PLUGIN_ACTIVE;
+	public final static String PLUGIN_NAME = "GSMLogger";
+	public final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
-	// A String used for logging information to the android's logcat.
-	private static final String TAG = "GSMLogger";
+	// Keeps track of whether this plugin is enabled or not.
+	private static boolean pluginEnabled;
+
+	// The TelephonyManager required to receive information about the device.
+	private static TelephonyManager telephonyManager;
+
+	// A PhoneStateListener used to listen to phone signals.
+	private static PhoneStateListener phoneStateListener;
+
+	// The Context used for the plugins.
+	private static Context context;
 
 	/**
 	 * Returns the list of Preference objects for this InputPlugin.
@@ -92,21 +94,22 @@ public class GSMLogger extends InputPlugin {
 		final Preference[] prefs = new Preference[1];
 
 		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
-				"gsmLoggerEnable", "GSM Plugin",
-				"Enables or disables this plugin.", "GSMLogger is on.",
-				"GSMLogger is off.");
+				GSM_LOGGER_ENABLE_PREF, R.string.gsmlogger_enable_pref_label,
+				R.string.gsmlogger_enable_pref_summary,
+				R.string.gsmlogger_enable_pref_on,
+				R.string.gsmlogger_enable_pref_off);
 
 		return prefs;
 	}
 
-	// The TelephonyManager required to receive information about the device.
-	private final TelephonyManager tm;
-
-	// A PhoneStateListener used to listen to phone signals.
-	private PhoneStateListener psl;
-
-	// The Context used for the plugins.
-	private final Context context;
+	/**
+	 * Returns whether or not this InputPlugin has Preferences.
+	 * 
+	 * @return whether or not this InputPlugin has preferences.
+	 */
+	public static boolean hasPreferences() {
+		return true;
+	}
 
 	/**
 	 * This is the basic constructor for the GSMLogger plugin. It has to be
@@ -118,14 +121,15 @@ public class GSMLogger extends InputPlugin {
 	 * @param context
 	 *            the context in which this plugin is created.
 	 */
-	public GSMLogger(final TelephonyManager tm, final Context context) {
-		this.tm = tm;
-		this.context = context;
+	public GSMLogger(final Context context) {
+		GSMLogger.telephonyManager = (TelephonyManager) context
+				.getSystemService(Context.TELEPHONY_SERVICE);
+		GSMLogger.context = context;
 
 		final SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(context);
 
-		PLUGIN_ACTIVE = prefs.getBoolean("gsmLoggerEnable", false);
+		pluginEnabled = prefs.getBoolean(GSM_LOGGER_ENABLE_PREF, false);
 	}
 
 	/**
@@ -136,13 +140,13 @@ public class GSMLogger extends InputPlugin {
 		final SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(context);
 
-		final boolean new_PLUGIN_ACTIVE = prefs.getBoolean("gsmLoggerEnable",
-				false);
-		if (PLUGIN_ACTIVE && !new_PLUGIN_ACTIVE) {
+		final boolean pluginEnabledNew = prefs.getBoolean(
+				GSM_LOGGER_ENABLE_PREF, false);
+		if (pluginEnabled && !pluginEnabledNew) {
 			stopPlugin();
-			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
-		} else if (!PLUGIN_ACTIVE && new_PLUGIN_ACTIVE) {
-			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+			pluginEnabled = pluginEnabledNew;
+		} else if (!pluginEnabled && pluginEnabledNew) {
+			pluginEnabled = pluginEnabledNew;
 			startPlugin();
 		}
 	}
@@ -153,20 +157,20 @@ public class GSMLogger extends InputPlugin {
 	 * this plugin.
 	 */
 	public void startPlugin() {
-		if (!PLUGIN_ACTIVE) {
+		if (!pluginEnabled) {
 			return;
 		}
 		// Log.d(TAG, "Network Operator: " + tm.getNetworkOperator());
 		// Log.d(TAG, "Network Operator Name: " + tm.getNetworkOperatorName());
 		// Log.d(TAG, "Network Type: " + tm.getNetworkType());
 		// Log.d(TAG, "Phone Type: " + tm.getPhoneType());
-		if (tm.getPhoneType() == TelephonyManager.PHONE_TYPE_GSM
-				&& tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT) {
-			psl = new PhoneStateListener() {
+		if (telephonyManager.getPhoneType() == TelephonyManager.PHONE_TYPE_GSM
+				&& telephonyManager.getSimState() != TelephonyManager.SIM_STATE_ABSENT) {
+			phoneStateListener = new PhoneStateListener() {
 				private int rssi = -1;
 				private int mcc = -1;
 				private int mnc = -1;
-				private final TelephonyManager tmanager = tm;
+				private final TelephonyManager tmanager = telephonyManager;
 
 				public void logSignals(final GsmCellLocation cell) {
 					if (cell == null) {
@@ -198,8 +202,8 @@ public class GSMLogger extends InputPlugin {
 						i++;
 					}
 
-					write(new GSMLoggerPacket(time, mcc, mnc, cid, lac,
-							this.rssi, ns, cids, lacs, rssis));
+					write(new GSMPacket(time, mcc, mnc, cid, lac, this.rssi,
+							ns, cids, lacs, rssis));
 				}
 
 				@Override
@@ -217,7 +221,6 @@ public class GSMLogger extends InputPlugin {
 					case ServiceState.STATE_IN_SERVICE:
 					case ServiceState.STATE_EMERGENCY_ONLY:
 						final String op = serviceState.getOperatorNumeric();
-						// Log.d(TAG, "Operator Numeric Code: " + op);
 						if (op.length() > 3) {
 							try {
 								mcc = Integer.parseInt(op.substring(0, 3));
@@ -246,18 +249,20 @@ public class GSMLogger extends InputPlugin {
 						} else {
 							rssi = (-113 + 2 * asu);
 						}
-						logSignals((GsmCellLocation) tm.getCellLocation());
+						logSignals((GsmCellLocation) telephonyManager
+								.getCellLocation());
 					} else {
-						Log.d(TAG, "Signal Strength not for GSM.");
+						Log.d(PLUGIN_NAME, "Signal Strength not for GSM.");
 					}
 				}
 			};
-			tm.listen(psl, PhoneStateListener.LISTEN_SERVICE_STATE
-					| PhoneStateListener.LISTEN_CELL_LOCATION
-					| PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+			telephonyManager.listen(phoneStateListener,
+					PhoneStateListener.LISTEN_SERVICE_STATE
+							| PhoneStateListener.LISTEN_CELL_LOCATION
+							| PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 		} else {
 			Log
-					.i(TAG,
+					.i(PLUGIN_NAME,
 							"GSM Location Logging Unavailable! Wrong phone type or SIM card not present!");
 		}
 	}
@@ -266,11 +271,12 @@ public class GSMLogger extends InputPlugin {
 	 * Tells the phone to stop listening for available GSM signals.
 	 */
 	public void stopPlugin() {
-		if (!PLUGIN_ACTIVE) {
+		if (!pluginEnabled) {
 			return;
 		}
-		if (tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT) {
-			tm.listen(psl, PhoneStateListener.LISTEN_NONE);
+		if (telephonyManager.getSimState() != TelephonyManager.SIM_STATE_ABSENT) {
+			telephonyManager.listen(phoneStateListener,
+					PhoneStateListener.LISTEN_NONE);
 		}
 	}
 

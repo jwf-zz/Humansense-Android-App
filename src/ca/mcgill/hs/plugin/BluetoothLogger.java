@@ -59,8 +59,10 @@ public class BluetoothLogger extends InputPlugin {
 		final int neighbours;
 		final LinkedList<String> names;
 		final LinkedList<String> addresses;
-		final static String PLUGIN_NAME = "BluetoothLogger";
-		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+
+		public final static String PACKET_NAME = "BluetoothPacket";
+		public final static int PACKET_ID = BluetoothPacket.PACKET_NAME
+				.hashCode();
 
 		public BluetoothPacket(final long time, final int neighbours,
 				final LinkedList<String> names,
@@ -81,15 +83,29 @@ public class BluetoothLogger extends InputPlugin {
 
 		@Override
 		public int getDataPacketId() {
-			return BluetoothPacket.PLUGIN_ID;
+			return BluetoothLogger.PLUGIN_ID;
 		}
 
 		@Override
 		public String getInputPluginName() {
-			return BluetoothPacket.PLUGIN_NAME;
+			return BluetoothLogger.PLUGIN_NAME;
 		}
 
 	}
+
+	private static final String BLUETOOTH_DEFAULT_SCAN_INTERVAL = "60000";
+
+	private static final String BLUETOOTH_THREAD_TAG = "BluetoothThread";
+
+	private static final String BLUETOOTH_LOGGER_ENABLE_PREF = "bluetoothLoggerEnable";
+
+	private static final String BLUETOOTH_LOGGER_TIME_INTERVAL_PREF = "bluetoothLoggerTimeInterval";
+
+	private static final String FORCE_BLUETOOTH_ON_PREF = "forceBluetoothOn";
+
+	final static String PLUGIN_NAME = "BluetoothLogger";
+
+	final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
 	/**
 	 * Returns the list of Preference objects for this InputPlugin.
@@ -102,12 +118,14 @@ public class BluetoothLogger extends InputPlugin {
 		final Preference[] prefs = new Preference[3];
 
 		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
-				"bluetoothLoggerEnable", "BT Plugin",
-				"Enables or disables this plugin.", "BluetoothLogger is on.",
-				"BluetoothLogger is off.");
+				BLUETOOTH_LOGGER_ENABLE_PREF,
+				R.string.bluetoothlogger_enable_pref_label,
+				R.string.bluetoothlogger_enable_pref_summary,
+				R.string.bluetoothlogger_enable_pref_on,
+				R.string.bluetoothlogger_enable_pref_off);
 
 		prefs[1] = PreferenceFactory.getCheckBoxPreference(c,
-				"forceBluetoothOn",
+				FORCE_BLUETOOTH_ON_PREF,
 				R.string.bluetoothlogger_autoenable_pref_label,
 				R.string.bluetoothlogger_autoenable_pref_summary,
 				R.string.bluetoothlogger_autoenable_pref_on,
@@ -115,8 +133,9 @@ public class BluetoothLogger extends InputPlugin {
 
 		prefs[2] = PreferenceFactory.getListPreference(c,
 				R.array.bluetoothLoggerIntervalStrings,
-				R.array.bluetoothLoggerIntervalValues, "60000",
-				"bluetoothLoggerTimeInterval",
+				R.array.bluetoothLoggerIntervalValues,
+				BLUETOOTH_DEFAULT_SCAN_INTERVAL,
+				BLUETOOTH_LOGGER_TIME_INTERVAL_PREF,
 				R.string.bluetoothlogger_interval_pref,
 				R.string.bluetoothlogger_interval_pref_summary);
 
@@ -134,10 +153,10 @@ public class BluetoothLogger extends InputPlugin {
 	}
 
 	// The BluetoothAdapter used to start and stop discovery of devices.
-	private final BluetoothAdapter ba;
+	private final BluetoothAdapter adapter;
 
-	// Boolean ON-OFF switch *Temporary only*
-	private boolean PLUGIN_ACTIVE;
+	// Keeps track of whether this plugin is enabled or not.
+	private boolean pluginEnabled;
 
 	// The interval of time between two subsequent scans.
 	private int timeBetweenDiscoveries;
@@ -147,11 +166,11 @@ public class BluetoothLogger extends InputPlugin {
 
 	// The BluetoothLoggerReceiver from which we will get the bluetooth scan
 	// results.
-	private BluetoothLoggerReceiver blr;
+	private BluetoothLoggerReceiver loggerReceiver;
 
 	// The BluetoothDiscoveryListener used to know when the discovery of
 	// bluetooth devices is completed.
-	private BluetoothDiscoveryListener bdl;
+	private BluetoothDiscoveryListener discoveryListener;
 
 	// Lists holding results.
 	private final LinkedList<String> names;
@@ -183,9 +202,9 @@ public class BluetoothLogger extends InputPlugin {
 	 *            the required context to register the BluetoothLoggerReceiver.
 	 */
 	public BluetoothLogger(final Context context) {
-		this.ba = BluetoothAdapter.getDefaultAdapter();
-		if (ba != null) {
-			if (ba.isEnabled()) {
+		this.adapter = BluetoothAdapter.getDefaultAdapter();
+		if (adapter != null) {
+			if (adapter.isEnabled()) {
 				wasEnabled = true;
 			}
 		}
@@ -196,12 +215,14 @@ public class BluetoothLogger extends InputPlugin {
 		final SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(context);
 
-		forceBluetoothActivation = prefs.getBoolean("forceBluetoothOn", false);
+		forceBluetoothActivation = prefs.getBoolean(FORCE_BLUETOOTH_ON_PREF,
+				false);
 
 		timeBetweenDiscoveries = Integer.parseInt(prefs.getString(
-				"bluetoothLoggerTimeInterval", "60000"));
+				BLUETOOTH_LOGGER_TIME_INTERVAL_PREF,
+				BLUETOOTH_DEFAULT_SCAN_INTERVAL));
 
-		PLUGIN_ACTIVE = prefs.getBoolean("bluetoothLoggerEnable", false);
+		pluginEnabled = prefs.getBoolean(BLUETOOTH_LOGGER_ENABLE_PREF, false);
 	}
 
 	/**
@@ -211,32 +232,31 @@ public class BluetoothLogger extends InputPlugin {
 	 * @return the execution thread for this plugin.
 	 */
 	private Thread getExecutionThread() {
-		Log.i("BluetoothThread", "Starting execution thread");
+		Log.i(BLUETOOTH_THREAD_TAG, "Starting execution thread");
 		return new Thread() {
 			@Override
 			public void run() {
 				try {
 					sleep(timeBetweenDiscoveries);
-					if (ba != null) {
-						if (!ba.isEnabled()) {
+					if (adapter != null) {
+						if (!adapter.isEnabled()) {
 							if (forceBluetoothActivation) {
-								ba.enable();
+								adapter.enable();
 								isEnabling = true;
-								Log.i("BluetoothThread",
+								Log.i(BLUETOOTH_THREAD_TAG,
 										"Enabling Bluetooth Adapter");
 							}
-							while (!ba.isEnabled()) {
+							while (!adapter.isEnabled()) {
 							}
 							isEnabling = false;
 						}
-						Log.i("BluetoothThread", "Starting discovery");
-						ba.startDiscovery();
+						Log.i(BLUETOOTH_THREAD_TAG, "Starting discovery");
+						adapter.startDiscovery();
 					}
 				} catch (final InterruptedException e) {
 					if (expectedInterrupt) {
-						Log
-								.e("BluetoothThread",
-										"Expected thread interruption");
+						Log.e(BLUETOOTH_THREAD_TAG,
+								"Expected thread interruption");
 					} else {
 						e.printStackTrace();
 					}
@@ -249,15 +269,15 @@ public class BluetoothLogger extends InputPlugin {
 	 * Called when a device is found. Adds the name and address of the found
 	 * device to the lists of names/addresses found during this scan.
 	 * 
-	 * @param bd
+	 * @param device
 	 *            the BluetoothDevice that was found.
 	 */
-	private void onDeviceFound(final BluetoothDevice bd) {
-		if (bd.getName() == null) {
+	private void onDeviceFound(final BluetoothDevice device) {
+		if (device.getName() == null) {
 			return;
 		}
-		names.add(bd.getName());
-		addresses.add(bd.getAddress());
+		names.add(device.getName());
+		addresses.add(device.getAddress());
 	}
 
 	/**
@@ -271,39 +291,41 @@ public class BluetoothLogger extends InputPlugin {
 				.getDefaultSharedPreferences(context);
 
 		timeBetweenDiscoveries = Integer.parseInt(prefs.getString(
-				"bluetoothLoggerTimeInterval", "60000"));
+				BLUETOOTH_LOGGER_TIME_INTERVAL_PREF,
+				BLUETOOTH_DEFAULT_SCAN_INTERVAL));
 
-		forceBluetoothActivation = prefs.getBoolean("forceBluetoothOn", false);
+		forceBluetoothActivation = prefs.getBoolean(FORCE_BLUETOOTH_ON_PREF,
+				false);
 
-		final boolean new_PLUGIN_ACTIVE = prefs.getBoolean(
-				"bluetoothLoggerEnable", false);
-		if (PLUGIN_ACTIVE && !new_PLUGIN_ACTIVE) {
+		final boolean pluginEnabledNew = prefs.getBoolean(
+				BLUETOOTH_LOGGER_ENABLE_PREF, false);
+		if (pluginEnabled && !pluginEnabledNew) {
 			stopPlugin();
-			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
-		} else if (!PLUGIN_ACTIVE && new_PLUGIN_ACTIVE) {
-			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+			pluginEnabled = pluginEnabledNew;
+		} else if (!pluginEnabled && pluginEnabledNew) {
+			pluginEnabled = pluginEnabledNew;
 			startPlugin();
 		}
 	}
 
 	@Override
 	public void startPlugin() {
-		if (!PLUGIN_ACTIVE) {
+		if (!pluginEnabled) {
 			return;
 		}
-		if (ba == null) {
+		if (adapter == null) {
 			return; // Device does not support Bluetooth
 		}
 
-		blr = new BluetoothLoggerReceiver();
-		context.registerReceiver(blr, new IntentFilter(
+		loggerReceiver = new BluetoothLoggerReceiver();
+		context.registerReceiver(loggerReceiver, new IntentFilter(
 				BluetoothDevice.ACTION_FOUND));
-		Log.i("BluetoothLogger", "Registered logger receiver.");
+		Log.i(PLUGIN_NAME, "Registered logger receiver.");
 
-		bdl = new BluetoothDiscoveryListener();
-		context.registerReceiver(bdl, new IntentFilter(
+		discoveryListener = new BluetoothDiscoveryListener();
+		context.registerReceiver(discoveryListener, new IntentFilter(
 				BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
-		Log.i("BluetoothLogger", "Registered discovery listener.");
+		Log.i(PLUGIN_NAME, "Registered discovery listener.");
 
 		exec = getExecutionThread();
 		exec.start();
@@ -315,22 +337,22 @@ public class BluetoothLogger extends InputPlugin {
 	 * Bluetooth adapter if it was disabled when the service was started.
 	 */
 	public void stopPlugin() {
-		if (!PLUGIN_ACTIVE) {
+		if (!pluginEnabled) {
 			return;
 		}
-		if (ba == null) {
+		if (adapter == null) {
 			return;
 		}
 
 		expectedInterrupt = true;
 		exec.interrupt();
 
-		context.unregisterReceiver(blr);
-		Log.i("BluetoothLogger", "Unegistered receiver");
-		context.unregisterReceiver(bdl);
-		Log.i("BluetoothLogger", "Unegistered discovery listener");
+		context.unregisterReceiver(loggerReceiver);
+		Log.i(PLUGIN_NAME, "Unegistered receiver");
+		context.unregisterReceiver(discoveryListener);
+		Log.i(PLUGIN_NAME, "Unegistered discovery listener");
 
-		ba.cancelDiscovery();
+		adapter.cancelDiscovery();
 
 		if (!wasEnabled) {
 			if (isEnabling) {
@@ -340,14 +362,14 @@ public class BluetoothLogger extends InputPlugin {
 							final Intent intent) {
 						if (intent.getAction().equals(
 								BluetoothAdapter.ACTION_STATE_CHANGED)) {
-							ba.disable();
+							adapter.disable();
 						}
 					}
 				};
 				context.registerReceiver(disabler, new IntentFilter(
 						BluetoothAdapter.ACTION_STATE_CHANGED));
 			} else {
-				ba.disable();
+				adapter.disable();
 			}
 		}
 	}

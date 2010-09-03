@@ -29,6 +29,8 @@ LOCAL_PATH := $(JNI_DIR)
 
 LOCAL_MODULE    := libhumansense
 LOCAL_SRC_FILES := \
+	HSSensorManager.cpp \
+	HSSensorListener.cpp \
 	BuildTree.cpp \
 	Classifier.cpp \
 	ClassifyTrajectory.cpp \
@@ -37,9 +39,15 @@ LOCAL_SRC_FILES := \
 	Utils.cpp
 
 LOCAL_C_INCLUDES := \
-	$(LOCAL_PATH)/ANN
+	$(LOCAL_PATH)/ANN \
+	/diskless/local_space/jfrank8/android-master/hardware/libhardware/include \
+	/diskless/local_space/jfrank8/android-master/system/core/include \
+	/diskless/local_space/jfrank8/android-master/dalvik/libnativehelper/include \
+	/diskless/local_space/jfrank8/android-master/frameworks/base/include
 #	$(LOCAL_PATH)/../ext/astl/include \
-#	$(LOCAL_PATH)/../ext/bionic/libstdc++/include
+#	$(LOCAL_PATH)/../ext/bionic/libstdc++/include \
+
+LOCAL_LDLIBS += -lhardware -lcutils -L$(LOCAL_PATH)/../libs
 
 LOCAL_STATIC_LIBRARIES := libANN libcxcore libTisean
 

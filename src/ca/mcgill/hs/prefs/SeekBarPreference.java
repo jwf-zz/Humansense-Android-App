@@ -12,7 +12,11 @@ import android.widget.TextView;
 public class SeekBarPreference extends DialogPreference implements
 		SeekBar.OnSeekBarChangeListener {
 
-	private static final String androidns = "http://schemas.android.com/apk/res/android";
+	private static final String MAX_VALUE_ID = "max";
+	private static final String DEFAULT_VALUE_ID = "defaultValue";
+	private static final String DIALOG_TEXT_ID = "text";
+	private static final String DIALOG_MESSAGE_ID = "dialogMessage";
+	private static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
 
 	private SeekBar mSeekBar;
 	private TextView mSplashText, mValueText;
@@ -27,10 +31,10 @@ public class SeekBarPreference extends DialogPreference implements
 		super(context, attrs);
 		mContext = context;
 
-		mDialogMessage = attrs.getAttributeValue(androidns, "dialogMessage");
-		mSuffix = attrs.getAttributeValue(androidns, "text");
-		mDefault = attrs.getAttributeIntValue(androidns, "defaultValue", 0);
-		mMax = attrs.getAttributeIntValue(androidns, "max", 100);
+		mDialogMessage = attrs.getAttributeValue(ANDROID_NS, DIALOG_MESSAGE_ID);
+		mSuffix = attrs.getAttributeValue(ANDROID_NS, DIALOG_TEXT_ID);
+		mDefault = attrs.getAttributeIntValue(ANDROID_NS, DEFAULT_VALUE_ID, 0);
+		mMax = attrs.getAttributeIntValue(ANDROID_NS, MAX_VALUE_ID, 100);
 
 	}
 

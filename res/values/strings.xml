@@ -100,31 +100,76 @@
     <string name="set_preferences">Preferences</string>
     <string name="set_input_preferences">Input Plugin Preferences</string>
     <string name="set_output_preferences">Output Plugin Preferences</string>
-    <string name="wifilogger_interval_pref">Wi-Fi Logging Interval</string>
-    <string name="wifilogger_interval_pref_summary">The time interval between two subsequent scans.</string>
-    <string name="bluetoothlogger_autoenable_pref_label">BT Auto-Enable</string>
+    
+    <!--  BluetoothLogger plugin preferences -->
+    <string name="bluetoothlogger_enable_pref_label">Bluetooth Plugin</string>
+    <string name="bluetoothlogger_enable_pref_summary">Enables or disables this plugin.</string>
+    <string name="bluetoothlogger_enable_pref_on">Bluetooth Logging is on.</string>
+	<string name="bluetoothlogger_enable_pref_off">Bluetooth Logging is off.</string> 
+    <string name="bluetoothlogger_autoenable_pref_label">Bluetooth Auto-Enable</string>
     <string name="bluetoothlogger_autoenable_pref_summary">Auto-Enables the Bluetooth adapter when logging is started.</string>
     <string name="bluetoothlogger_autoenable_pref_on">Bluetooth will be Auto-Enabled when logging is started.</string>
 	<string name="bluetoothlogger_autoenable_pref_off">Bluetooth will not be Auto-Enabled when logging is started.</string> 
-    <string name="bluetoothlogger_interval_pref">BT Logging Interval</string>
+    <string name="bluetoothlogger_interval_pref">Bluetooth Logging Interval</string>
     <string name="bluetoothlogger_interval_pref_summary">The time interval between two subsequent scans.</string>
-    <string name="sensorlogger_interval_pref">Sensor Speed</string>
-    <string name="sensorlogger_interval_pref_summary">The logging speed of the accelerometer.</string>
+
+    <!--  GPSLogger plugin preferences -->
+    <string name="gpslogger_enable_pref_label">GPS Logging Plugin</string>
+    <string name="gpslogger_enable_pref_summary">Enables or disables this plugin.</string>
+    <string name="gpslogger_enable_pref_on">GPS Logging is on.</string>
+	<string name="gpslogger_enable_pref_off">GPS Logging is off.</string>
     <string name="gpslogger_interval_pref">GPS Logging Interval</string>
     <string name="gpslogger_interval_pref_summary">The time interval between two subsequent scans.</string>
     <string name="gpslogger_distance_pref">GPS Minimum Distance</string>
     <string name="gpslogger_distance_pref_summary">The minimum distance that has to be travelled between two subsequent scans.</string>
+    
+    <!--  GSMLogger plugin preferences -->
+    <string name="gsmlogger_enable_pref_label">GSM Logging Plugin</string>
+    <string name="gsmlogger_enable_pref_summary">Enables or disables this plugin.</string>
+    <string name="gsmlogger_enable_pref_on">GSM Logging is on.</string>
+	<string name="gsmlogger_enable_pref_off">GSM Logging is off.</string> 
+
+    <!--  SensorLogger plugin preferences -->
+    <string name="sensorlogger_enable_pref_label">Sensor Logging Plugin</string>
+    <string name="sensorlogger_enable_pref_summary">Enables or disables this plugin.</string>
+    <string name="sensorlogger_enable_pref_on">Sensor Logging is on.</string>
+	<string name="sensorlogger_enable_pref_off">Sensor Logging is off.</string> 
+    <string name="sensorlogger_interval_pref">Sensor Speed</string>
+    <string name="sensorlogger_interval_pref_summary">The logging speed of the accelerometer.</string>
+
+    <!--  WifiLogger plugin preferences -->
+    <string name="wifilogger_enable_pref_label">Wifi Logging Plugin</string>
+    <string name="wifilogger_enable_pref_summary">Enables or disables this plugin.</string>
+    <string name="wifilogger_enable_pref_on">Wifi Logging is on.</string>
+	<string name="wifilogger_enable_pref_off">Wifi Logging is off.</string> 
+    <string name="wifilogger_interval_pref">Wifi Logging Interval</string>
+    <string name="wifilogger_interval_pref_summary">The time interval between two subsequent scans.</string>
+
+	<!--  FileOutput plugin preferences -->
     <string name="fileoutput_buffersize_pref">Buffer Size</string>
     <string name="fileoutput_buffersizedefault_pref">4096</string>
     <string name="fileoutput_buffersize_pref_summary">The size of the BufferedOutputStream buffer.</string>
-    <string name="fileoutput_pluginname_pref">FileOutput Plugin</string>
-    <string name="fileoutput_pluginsummary_pref">Enables or disables this plugin.</string>
-    <string name="fileoutput_pluginenabled_pref">FileOutput is on.</string>
-    <string name="fileoutput_plugindisabled_pref">FileOutput is off.</string>
+    <string name="fileoutput_enable_pref_label">File Output Plugin</string>
+    <string name="fileoutput_enable_pref_summary">Enables or disables this plugin.</string>
+    <string name="fileoutput_enable_pref_on">File output is on.</string>
+    <string name="fileoutput_enable_pref_off">File output is off.</string>
     <string name="fileoutput_rolloverinterval_pref">File Rollover Interval</string>
     <string name="fileoutput_rolloverintervaldefault_pref">43200000</string>
     <string name="fileoutput_rolloverinterval_pref_summary">How often should new log files be started.</string>
+
+	<!--  ScreenOutput plugin preferences -->
+    <string name="screenoutput_enable_pref_label">Screen Output Plugin</string>
+    <string name="screenoutput_enable_pref_summary">Enables or disables this plugin.</string>
+    <string name="screenoutput_enable_pref_on">Screen output is on.</string>
+    <string name="screenoutput_enable_pref_off">Screen output is off.</string>
+
+	<!--  TestMagOutput plugin preferences -->
+    <string name="testmagoutput_enable_pref_label">TestMag Output Plugin</string>
+    <string name="testmagoutput_enable_pref_summary">Enables or disables this plugin.</string>
+    <string name="testmagoutput_enable_pref_on">TestMag output is on.</string>
+    <string name="testmagoutput_enable_pref_off">TestMag output is off.</string>
     
+    <!--  ClassifierOutput plugin preferences -->
     <string name="accelerometerLingeringThresholds">Lingering Power Threshold</string>
     <string name="accelerometerLingeringThresholdDefault">10</string>
     <string name="accelerometerLingeringThresholdSummary">The threshold for classifying activity as lingering.</string>
@@ -132,7 +177,7 @@
     <string name="accelerometerLingeringWindowDefault">25</string>
     <string name="accelerometerLingeringWindowSummary">The number of samples to consider for lingering classification.</string>
 
-    
+    <!--  Notification-related preferences -->    
     <string name="notification_prefs_cat">Notification Settings</string>
     <string name="notification_enable_title">Notifications</string>
     <string name="notification_enable_summary">Enables or disables notifications.\n(WARNING: Disabling notifications will reduce the effectiveness of activity recognition.)</string>

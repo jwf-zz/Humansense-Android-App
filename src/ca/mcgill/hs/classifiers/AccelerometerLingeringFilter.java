@@ -3,12 +3,15 @@ package ca.mcgill.hs.classifiers;
 public class AccelerometerLingeringFilter {
 
 	private static final String TAG = "AccelerometerLingeringFilter";
-	private final float threshold;
-	private final int windowSize;
+	private float threshold;
+	private int windowSize;
+
 	private int counter = 0;
 
 	private float sum = 0.0f;
-	private final float[] values;
+
+	private float[] values;
+
 	private boolean full = false;
 
 	public AccelerometerLingeringFilter(final float threshold,
@@ -16,6 +19,29 @@ public class AccelerometerLingeringFilter {
 		this.threshold = threshold;
 		this.windowSize = windowSize;
 		values = new float[windowSize];
+	}
+
+	public float getThreshold() {
+		return threshold;
+	}
+
+	public int getWindowSize() {
+		return windowSize;
+	}
+
+	public void setThreshold(final float threshold) {
+		this.threshold = threshold;
+	}
+
+	public void setWindowSize(final int windowSize) {
+		// If we change the size of the window, clear the values buffer.
+		if (this.windowSize != windowSize) {
+			values = new float[windowSize];
+			counter = 0;
+			full = false;
+		}
+		this.windowSize = windowSize;
+
 	}
 
 	/**

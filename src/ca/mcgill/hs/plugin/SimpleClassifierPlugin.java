@@ -23,12 +23,12 @@ import ca.mcgill.hs.R;
 import ca.mcgill.hs.classifiers.AccelerometerLingeringFilter;
 import ca.mcgill.hs.classifiers.LingeringNotificationWidget;
 import ca.mcgill.hs.classifiers.TimeDelayEmbeddingClassifier;
-import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
+import ca.mcgill.hs.plugin.SensorLogger.SensorPacket;
 import ca.mcgill.hs.util.PreferenceFactory;
 
-public class SimpleClassifierPlugin extends OutputPlugin {
-	private final class LoggerThread extends Thread {
-		public Handler mHandler;
+public final class SimpleClassifierPlugin extends OutputPlugin {
+	private final static class LoggerThread extends Thread {
+		private static Handler mHandler = null;
 
 		@Override
 		public void run() {
@@ -43,7 +43,10 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 					}
 					final int index = msg.arg1;
 					// final int timestamp = msg.arg2;
-					tdeClassifier.classify(index);
+					final float[] classProbs = tdeClassifier.classify(index);
+					for (int i = 0; classProbs != null && i < classProbs.length; i++) {
+						cumulativeClassProbs[i] += classProbs[i];
+					}
 					// Log.d(TAG,"ARV: Logging at timestamp: " + timestamp);
 				}
 			};
@@ -52,25 +55,36 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 		}
 	}
 
-	private final TimeDelayEmbeddingClassifier tdeClassifier;
+	private final static TimeDelayEmbeddingClassifier tdeClassifier = new TimeDelayEmbeddingClassifier();
 
-	private LoggerThread loggerThread;
+	private static LoggerThread loggerThread;
 
-	private boolean classifying = false;
+	private static boolean classifying = false;
 
-	private long timeLingering = 0;
-	private long timeMoving = 0;
+	private static long timeLingering = 0;
+	private static long timeMoving = 0;
+	private static long timeMovingWithoutStopping = 0;
+	private static float[] cumulativeClassProbs = null;
 
 	// Preference key for this plugin's state
 	private final static String PLUGIN_ACTIVE_KEY = "simpleClassifierEnabled";
 	private final static String ACCEL_THRESHOLD_KEY = "accelerometerThreshold";
+	private final static int ACCEL_THRESHOLD_DEFAULT = 100;
 	private final static String ACCEL_WINDOW_KEY = "accelerometerWindowSize";
+	private final static String ACCEL_WINDOW_DEFAULT = "25";
 
 	private final static String PLUGIN_NAME = "SimpleClassifierPlugin";
 
 	private static final int LOG_MESSAGE = 0;
-
 	private static final int QUIT_MESSAGE = 1;
+
+	// Keeps track of whether this plugin is enabled or not.
+	private static boolean pluginEnabled;
+
+	private static AccelerometerLingeringFilter lingeringFilter = null;
+	private static Context context = null;
+
+	private static int counter = 0;
 
 	/**
 	 * Returns the list of Preference objects for this OutputPlugin.
@@ -119,10 +133,8 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 				eventType = xpp.next();
 			}
 		} catch (final XmlPullParserException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (final IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return attrs;
@@ -137,32 +149,22 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 		return true;
 	}
 
-	private boolean PLUGIN_ACTIVE;
-
-	private AccelerometerLingeringFilter lingeringFilter = null;
-	private final Context context;
-
-	private int counter = 0;
-
-	public SimpleClassifierPlugin(final Context c) {
-		context = c;
+	public SimpleClassifierPlugin(final Context context) {
+		SimpleClassifierPlugin.context = context;
 
 		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(c);
-
-		tdeClassifier = new TimeDelayEmbeddingClassifier();
-
-		PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
+				.getDefaultSharedPreferences(context);
+		pluginEnabled = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
 	}
 
 	@Override
 	void onDataReceived(final DataPacket dp) {
-		if (!PLUGIN_ACTIVE || !classifying) {
+		if (!pluginEnabled || !classifying) {
 			return;
 		}
 
-		if (dp.getDataPacketId() == SensorLoggerPacket.PLUGIN_ID) {
-			final SensorLoggerPacket packet = (SensorLoggerPacket) dp;
+		if (dp.getDataPacketId() == SensorPacket.PACKET_ID) {
+			final SensorPacket packet = (SensorPacket) dp;
 			final float x = packet.x;
 			final float y = packet.y;
 			final float z = packet.z;
@@ -171,44 +173,54 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 					- SensorManager.STANDARD_GRAVITY;
 
 			final int index = tdeClassifier.addSample(m);
-			if (lingeringFilter.update(m)) {
+			final boolean moving = lingeringFilter.update(m);
+			if (moving) {
 				timeMoving += 1;
+				timeMovingWithoutStopping += 1;
 			} else {
 				timeLingering += 1;
+				timeMovingWithoutStopping = 0;
 			}
-			counter += 1;
 
 			/*
-			 * Classify every 10 samples.
+			 * Classify every 5 samples when moving consistently.
 			 */
-			if (counter % 25 == 0) {
+			if (timeMovingWithoutStopping % 5 == 4) {
 				// Update widget text
-				LingeringNotificationWidget.updateText("Lingering: "
-						+ timeLingering + "\nMoving: " + timeMoving);
-
-				final Message msg = loggerThread.mHandler.obtainMessage(
+				final Message msg = LoggerThread.mHandler.obtainMessage(
 						LOG_MESSAGE, index, (int) packet.time);
-				loggerThread.mHandler.sendMessage(msg);
+				LoggerThread.mHandler.sendMessage(msg);
+			}
+			if (counter >= 49) {
+				final StringBuffer buf = new StringBuffer();
+				buf.append("Lingering: " + timeLingering + "\nMoving: "
+						+ timeMoving);
+				for (int i = 0; i < cumulativeClassProbs.length; i++) {
+					buf.append("\nProb for model " + i + ": "
+							+ cumulativeClassProbs[i]);
+				}
+				LingeringNotificationWidget.updateText(buf.toString());
 				counter = 0;
 			}
+			counter += 1;
 		}
 	}
 
 	@Override
 	protected void onPluginStart() {
-		if (PLUGIN_ACTIVE) {
+		if (pluginEnabled) {
 			final Thread t = new Thread() {
 				@Override
 				public void run() {
 					final SharedPreferences prefs = PreferenceManager
 							.getDefaultSharedPreferences(context);
 					final float threshold = prefs.getInt(ACCEL_THRESHOLD_KEY,
-							100) / 100.0f;
+							ACCEL_THRESHOLD_DEFAULT) / 100.0f;
 
 					Log.d(PLUGIN_NAME, "Threshold is: " + threshold);
 
 					final int windowSize = Integer.parseInt(prefs.getString(
-							ACCEL_WINDOW_KEY, "25"));
+							ACCEL_WINDOW_KEY, ACCEL_WINDOW_DEFAULT));
 					final File modelsFile = new File(Environment
 							.getExternalStorageDirectory(), (String) context
 							.getResources().getText(R.string.model_ini_path));
@@ -218,6 +230,8 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 						tdeClassifier.loadModels(modelsFile);
 						lingeringFilter = new AccelerometerLingeringFilter(
 								threshold, windowSize);
+						cumulativeClassProbs = new float[tdeClassifier
+								.getNumModels()];
 						classifying = true;
 					} else {
 						// No Models.ini file found!
@@ -234,9 +248,9 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 	@Override
 	protected void onPluginStop() {
 		if (classifying) {
-			final Message msg = loggerThread.mHandler
+			final Message msg = LoggerThread.mHandler
 					.obtainMessage(QUIT_MESSAGE);
-			loggerThread.mHandler.sendMessage(msg);
+			LoggerThread.mHandler.sendMessage(msg);
 			classifying = false;
 			tdeClassifier.close();
 		}
@@ -250,15 +264,22 @@ public class SimpleClassifierPlugin extends OutputPlugin {
 		final SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(context);
 
-		final boolean new_PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY,
+		final boolean pluginEnabledNew = prefs.getBoolean(PLUGIN_ACTIVE_KEY,
 				false);
-		if (PLUGIN_ACTIVE && !new_PLUGIN_ACTIVE) {
+		if (pluginEnabled && !pluginEnabledNew) {
 			stopPlugin();
-			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
-		} else if (!PLUGIN_ACTIVE && new_PLUGIN_ACTIVE) {
-			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+			pluginEnabled = pluginEnabledNew;
+		} else if (!pluginEnabled && pluginEnabledNew) {
+			pluginEnabled = pluginEnabledNew;
 			startPlugin();
 		}
+
+		final float threshold = prefs.getInt(ACCEL_THRESHOLD_KEY,
+				ACCEL_THRESHOLD_DEFAULT) / 100.0f;
+		lingeringFilter.setThreshold(threshold);
+		final int windowSize = Integer.parseInt(prefs.getString(
+				ACCEL_WINDOW_KEY, ACCEL_WINDOW_DEFAULT));
+		lingeringFilter.setWindowSize(windowSize);
 	}
 
 }

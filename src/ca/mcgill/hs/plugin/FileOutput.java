@@ -20,10 +20,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
-import ca.mcgill.hs.plugin.GPSLogger.GPSLoggerPacket;
-import ca.mcgill.hs.plugin.GSMLogger.GSMLoggerPacket;
-import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
-import ca.mcgill.hs.plugin.WifiLogger.WifiLoggerPacket;
+import ca.mcgill.hs.plugin.GPSLogger.GPSPacket;
+import ca.mcgill.hs.plugin.GSMLogger.GSMPacket;
+import ca.mcgill.hs.plugin.SensorLogger.SensorPacket;
+import ca.mcgill.hs.plugin.WifiLogger.WifiPacket;
 import ca.mcgill.hs.serv.NewUploaderService;
 import ca.mcgill.hs.util.PreferenceFactory;
 
@@ -36,11 +36,11 @@ import ca.mcgill.hs.util.PreferenceFactory;
 public class FileOutput extends OutputPlugin {
 
 	// The preference manager for this plugin.
-	final SharedPreferences prefs;
+	private static SharedPreferences prefs;
 
 	// HashMap used for keeping file handles. There is one file associated with
 	// each input plugin connected.
-	private static final HashMap<Integer, DataOutputStream> fileHandles = new HashMap<Integer, DataOutputStream>();
+	private final static HashMap<Integer, DataOutputStream> fileHandles = new HashMap<Integer, DataOutputStream>();
 
 	// File Extensions to be added at the end of each file.
 	private static final String WIFI_EXT = "-wifiloc.log";
@@ -51,113 +51,50 @@ public class FileOutput extends OutputPlugin {
 	private static final String DEF_EXT = ".log";
 
 	// Size of BufferedOutputStream buffer
-	private static int BUFFER_SIZE;
+	private static int bufferSize;
 	private static final String BUFFER_SIZE_KEY = "fileOutputBufferSize";
 
 	// Rollover Interval pref key
-	private final static String ROLLOVER_INTERVAL_KEY = "fileOutputRolloverInterval";
+	private static final String ROLLOVER_INTERVAL_KEY = "fileOutputRolloverInterval";
 
 	// Boolean representing whether or not the plugin has been signalled to
 	// stop.
-	private Boolean PLUGIN_STOPPING;
+	private static boolean pluginStopping;
 
 	// Semaphore counter for the number of threads currently executing data
 	// read/write operations.
-	private int THREADS_WRITING;
+	private static int numThreadsWriting;
 
-	// Boolean ON-OFF switch *Temporary only*
-	private boolean PLUGIN_ACTIVE;
+	// Keeps track of whether this plugin is enabled or not.
+	private static boolean pluginEnabled;
 
 	// A boolean making sure we're not uselessly uploading.
-	private boolean hasRunOnce = false;
+	private static boolean hasRunOnce = false;
 
 	// Preference key for this plugin's state
-	private final static String PLUGIN_ACTIVE_KEY = "fileOutputEnabled";
+	private final static String FILE_OUTPUT_ENABLED_PREF = "fileOutputEnabled";
+
 	// Date format used in the log file names
-	private final static String LOG_DATE_FORMAT = "yy-MM-dd-HHmmss";
+	private final static SimpleDateFormat dfm = new SimpleDateFormat(
+			"yy-MM-dd-HHmmss");
 
 	// Timestamps used for file rollover.
-	private long initialTimestamp = -1;
+	private static long initialTimestamp = -1;
 
-	private long rolloverTimestamp = -1;
+	private static long rolloverTimestamp = -1;
 
-	private long ROLLOVER_INTERVAL;
-	private long currentTimeMillis;
+	private static long rolloverInterval;
+
+	private static long currentTimeMillis;
 
 	// The Context in which to use preferences.
-	private final Context context;
-
-	/**
-	 * This is the basic constructor for the FileOutput plugidatan. It has to be
-	 * instantiated before it is started, and needs to be passed a reference to
-	 * a Context.
-	 * 
-	 * @param context
-	 *            - the context in which this plugin is created.
-	 */
-	public FileOutput(final Context context) {
-		this.context = context;
-		PLUGIN_STOPPING = false;
-		THREADS_WRITING = 0;
-
-		prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-		PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
-		BUFFER_SIZE = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY,
-				(String) context.getResources().getText(
-						R.string.fileoutput_buffersizedefault_pref)));
-
-		ROLLOVER_INTERVAL = Integer.parseInt(prefs.getString(
-				ROLLOVER_INTERVAL_KEY, (String) context.getResources().getText(
-						R.string.fileoutput_rolloverintervaldefault_pref)));
-	}
-
-	/**
-	 * Returns the list of Preference objects for this OutputPlugin.
-	 * 
-	 * @param c
-	 *            the context for the generated Preferences.
-	 * @return an array of the Preferences of this object.
-	 */
-	public static Preference[] getPreferences(final Context c) {
-		final Preference[] prefs = new Preference[3];
-
-		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
-				PLUGIN_ACTIVE_KEY, R.string.fileoutput_pluginname_pref,
-				R.string.fileoutput_pluginsummary_pref,
-				R.string.fileoutput_pluginenabled_pref,
-				R.string.fileoutput_plugindisabled_pref);
-		prefs[1] = PreferenceFactory.getListPreference(c,
-				R.array.fileOutputPluginBufferSizeStrings,
-				R.array.fileOutputPluginBufferSizeValues, c.getResources()
-						.getText(R.string.fileoutput_buffersizedefault_pref),
-				BUFFER_SIZE_KEY, R.string.fileoutput_buffersize_pref,
-				R.string.fileoutput_buffersize_pref_summary);
-		prefs[2] = PreferenceFactory.getListPreference(c,
-				R.array.fileOutputPluginRolloverIntervalStrings,
-				R.array.fileOutputPluginRolloverIntervalValues,
-				c.getResources().getText(
-						R.string.fileoutput_rolloverintervaldefault_pref),
-				ROLLOVER_INTERVAL_KEY,
-				R.string.fileoutput_rolloverinterval_pref,
-				R.string.fileoutput_rolloverinterval_pref_summary);
-
-		return prefs;
-	}
-
-	/**
-	 * Returns whether or not this OutputPlugin has Preferences.
-	 * 
-	 * @return whether or not this OutputPlugin has preferences.
-	 */
-	public static boolean hasPreferences() {
-		return true;
-	}
+	private static Context context;
 
 	/**
 	 * Closes all open file handles.
 	 */
-	private void closeAll() {
+	private static synchronized void closeAll() {
+		// Retrieve the files from the hashmap and close them.
 		for (final Iterator<Integer> it = fileHandles.keySet().iterator(); it
 				.hasNext();) {
 			try {
@@ -221,6 +158,41 @@ public class FileOutput extends OutputPlugin {
 		}
 	}
 
+	private static synchronized DataOutputStream createFileForId(final int id,
+			final String extension) {
+		if (!fileHandles.containsKey(id)) {
+			try {
+				final File j = new File(Environment
+						.getExternalStorageDirectory(), (String) context
+						.getResources().getText(R.string.live_file_path));
+				if (!j.isDirectory()) {
+					if (!j.mkdirs()) {
+						Log.e("Output Dir",
+								"Could not create output directory!");
+						return null;
+					}
+				}
+
+				// Generate file name based on the plugin it came from and
+				// the current time.
+				final Date d = new Date(currentTimeMillis);
+				final File fh = new File(j, dfm.format(d) + extension);
+				if (!fh.exists()) {
+					fh.createNewFile();
+				}
+				Log.i("File Output", "File to write: " + fh.getName());
+				fileHandles.put(id, new DataOutputStream(
+						new BufferedOutputStream(new GZIPOutputStream(
+								new FileOutputStream(fh), bufferSize))));
+			} catch (final IOException e) {
+				Log.e("FileOutput", "Caught IOException");
+				e.printStackTrace();
+				return null;
+			}
+		}
+		return fileHandles.get(id);
+	}
+
 	/**
 	 * Parses and writes given BluetoothPacket to given DataOutputStream.
 	 * 
@@ -229,7 +201,8 @@ public class FileOutput extends OutputPlugin {
 	 * @param dos
 	 *            the DataOutputStream to write to.
 	 */
-	private void dataParse(final BluetoothPacket btp, final DataOutputStream dos) {
+	private static void dataParse(final BluetoothPacket btp,
+			final DataOutputStream dos) {
 		try {
 			dos.writeLong(btp.time);
 			dos.writeInt(btp.neighbours);
@@ -253,7 +226,7 @@ public class FileOutput extends OutputPlugin {
 	 * @param dos
 	 *            the DataOutputStream to write to.
 	 */
-	private void dataParse(final GPSLoggerPacket gpslp,
+	private static void dataParse(final GPSPacket gpslp,
 			final DataOutputStream dos) {
 		try {
 			dos.writeLong(gpslp.time);
@@ -278,7 +251,7 @@ public class FileOutput extends OutputPlugin {
 	 * @param dos
 	 *            the DataOutputStream to write to.
 	 */
-	private void dataParse(final GSMLoggerPacket gsmlp,
+	private static void dataParse(final GSMPacket gsmlp,
 			final DataOutputStream dos) {
 		try {
 			dos.writeLong(gsmlp.time);
@@ -288,7 +261,7 @@ public class FileOutput extends OutputPlugin {
 			dos.writeInt(gsmlp.lac);
 			dos.writeInt(gsmlp.rssi);
 			dos.writeInt(gsmlp.neighbors);
-			for (int i = gsmlp.neighbors - 1; i >= 0; i--) {
+			for (int i = 0; i < gsmlp.neighbors; i++) {
 				dos.writeInt(gsmlp.cids[i]);
 				dos.writeInt(gsmlp.lacs[i]);
 				dos.writeInt(gsmlp.rssis[i]);
@@ -307,7 +280,7 @@ public class FileOutput extends OutputPlugin {
 	 * @param dos
 	 *            the DataOutputStream to write to.
 	 */
-	private void dataParse(final SensorLoggerPacket slp,
+	private static void dataParse(final SensorPacket slp,
 			final DataOutputStream dos) {
 		try {
 			dos.writeLong(slp.time);
@@ -316,11 +289,11 @@ public class FileOutput extends OutputPlugin {
 			dos.writeFloat(slp.z);
 			dos.writeFloat(slp.m);
 			dos.writeFloat(slp.temperature);
-			for (final float f : slp.magfield) {
-				dos.writeFloat(f);
+			for (int i = 0; i < slp.magfield.length; i++) {
+				dos.writeFloat(slp.magfield[i]);
 			}
-			for (final float f : slp.orientation) {
-				dos.writeFloat(f);
+			for (int i = 0; i < slp.orientation.length; i++) {
+				dos.writeFloat(slp.orientation[i]);
 			}
 		} catch (final IOException e) {
 			Log
@@ -338,12 +311,12 @@ public class FileOutput extends OutputPlugin {
 	 * @param dos
 	 *            the DataOutputStream to write to.
 	 */
-	private void dataParse(final WifiLoggerPacket wlp,
+	private static void dataParse(final WifiPacket wlp,
 			final DataOutputStream dos) {
 		try {
 			dos.writeInt(wlp.neighbors);
 			dos.writeLong(wlp.timestamp);
-			for (int i = wlp.neighbors - 1; i >= 0; i--) {
+			for (int i = 0; i < wlp.neighbors; i++) {
 				dos.writeInt(wlp.levels[i]);
 				dos.writeUTF(wlp.SSIDs[i]);
 				dos.writeUTF(wlp.BSSIDs[i]);
@@ -366,20 +339,88 @@ public class FileOutput extends OutputPlugin {
 	 * 
 	 * @return the String representing the extension to add to the filename.
 	 */
-	private String getFileExtension(final DataPacket dp) {
-		if (dp.getDataPacketId() == WifiLoggerPacket.PLUGIN_ID) {
+	private static String getFileExtension(final DataPacket dp) {
+		if (dp.getDataPacketId() == WifiPacket.PACKET_ID) {
 			return WIFI_EXT;
-		} else if (dp.getDataPacketId() == GPSLoggerPacket.PLUGIN_ID) {
+		} else if (dp.getDataPacketId() == GPSPacket.PACKET_ID) {
 			return GPS_EXT;
-		} else if (dp.getDataPacketId() == SensorLoggerPacket.PLUGIN_ID) {
+		} else if (dp.getDataPacketId() == SensorPacket.PACKET_ID) {
 			return SENS_EXT;
-		} else if (dp.getDataPacketId() == GSMLoggerPacket.PLUGIN_ID) {
+		} else if (dp.getDataPacketId() == GSMPacket.PACKET_ID) {
 			return GSM_EXT;
-		} else if (dp.getDataPacketId() == BluetoothPacket.PLUGIN_ID) {
+		} else if (dp.getDataPacketId() == BluetoothPacket.PACKET_ID) {
 			return BT_EXT;
 		} else {
 			return DEF_EXT;
 		}
+	}
+
+	/**
+	 * Returns the list of Preference objects for this OutputPlugin.
+	 * 
+	 * @param c
+	 *            the context for the generated Preferences.
+	 * @return an array of the Preferences of this object.
+	 */
+	public static Preference[] getPreferences(final Context c) {
+		final Preference[] prefs = new Preference[3];
+
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
+				FILE_OUTPUT_ENABLED_PREF,
+				R.string.fileoutput_enable_pref_label,
+				R.string.fileoutput_enable_pref_summary,
+				R.string.fileoutput_enable_pref_on,
+				R.string.fileoutput_enable_pref_off);
+		prefs[1] = PreferenceFactory.getListPreference(c,
+				R.array.fileOutputPluginBufferSizeStrings,
+				R.array.fileOutputPluginBufferSizeValues, c.getResources()
+						.getText(R.string.fileoutput_buffersizedefault_pref),
+				BUFFER_SIZE_KEY, R.string.fileoutput_buffersize_pref,
+				R.string.fileoutput_buffersize_pref_summary);
+		prefs[2] = PreferenceFactory.getListPreference(c,
+				R.array.fileOutputPluginRolloverIntervalStrings,
+				R.array.fileOutputPluginRolloverIntervalValues,
+				c.getResources().getText(
+						R.string.fileoutput_rolloverintervaldefault_pref),
+				ROLLOVER_INTERVAL_KEY,
+				R.string.fileoutput_rolloverinterval_pref,
+				R.string.fileoutput_rolloverinterval_pref_summary);
+
+		return prefs;
+	}
+
+	/**
+	 * Returns whether or not this OutputPlugin has Preferences.
+	 * 
+	 * @return whether or not this OutputPlugin has preferences.
+	 */
+	public static boolean hasPreferences() {
+		return true;
+	}
+
+	/**
+	 * This is the basic constructor for the FileOutput plugidatan. It has to be
+	 * instantiated before it is started, and needs to be passed a reference to
+	 * a Context.
+	 * 
+	 * @param context
+	 *            - the context in which this plugin is created.
+	 */
+	public FileOutput(final Context context) {
+		FileOutput.context = context;
+		pluginStopping = false;
+		numThreadsWriting = 0;
+
+		prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+		pluginEnabled = prefs.getBoolean(FILE_OUTPUT_ENABLED_PREF, false);
+		bufferSize = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY,
+				(String) context.getResources().getText(
+						R.string.fileoutput_buffersizedefault_pref)));
+
+		rolloverInterval = Integer.parseInt(prefs.getString(
+				ROLLOVER_INTERVAL_KEY, (String) context.getResources().getText(
+						R.string.fileoutput_rolloverintervaldefault_pref)));
 	}
 
 	/**
@@ -393,19 +434,19 @@ public class FileOutput extends OutputPlugin {
 	 *            the DataPacket received.
 	 */
 	@Override
-	void onDataReceived(final DataPacket dp) {
-		if (!PLUGIN_ACTIVE || PLUGIN_STOPPING) {
+	final void onDataReceived(final DataPacket dp) {
+		if (!pluginEnabled || pluginStopping) {
 			return;
 		}
 
-		THREADS_WRITING++;
+		numThreadsWriting++;
 		final int id = dp.getDataPacketId();
 
 		// Record system time
 		currentTimeMillis = System.currentTimeMillis();
 
 		// Check to see if files need to be rolled over
-		if (currentTimeMillis >= rolloverTimestamp && ROLLOVER_INTERVAL != -1) {
+		if (currentTimeMillis >= rolloverTimestamp && rolloverInterval != -1) {
 			initialTimestamp = currentTimeMillis;
 
 			// If files need to be rolled over, close all currently open
@@ -416,61 +457,26 @@ public class FileOutput extends OutputPlugin {
 				hasRunOnce = true;
 			}
 			Log.i("ROLLOVER", "Creating rollover timestamp.");
-			rolloverTimestamp = currentTimeMillis + ROLLOVER_INTERVAL;
+			rolloverTimestamp = currentTimeMillis + rolloverInterval;
 		}
-
-		synchronized (fileHandles) {
-			try {
-				if (!fileHandles.containsKey(id)) {
-					final File j = new File(Environment
-							.getExternalStorageDirectory(), (String) context
-							.getResources().getText(R.string.live_file_path));
-					if (!j.isDirectory()) {
-						if (!j.mkdirs()) {
-							Log.e("Output Dir",
-									"Could not create output directory!");
-							return;
-						}
-					}
-
-					// Generate file name based on the plugin it came from and
-					// the current time.
-					final Date d = new Date(currentTimeMillis);
-					final SimpleDateFormat dfm = new SimpleDateFormat(
-							LOG_DATE_FORMAT);
-					final File fh = new File(j, dfm.format(d)
-							+ getFileExtension(dp));
-					if (!fh.exists()) {
-						fh.createNewFile();
-					}
-					Log.i("File Output", "File to write: " + fh.getName());
-					fileHandles.put(id, new DataOutputStream(
-							new BufferedOutputStream(new GZIPOutputStream(
-									new FileOutputStream(fh), BUFFER_SIZE))));
-				}
-			} catch (final IOException e) {
-				Log.e("FileOutput", "Caught IOException");
-				e.printStackTrace();
-			}
+		DataOutputStream dos = fileHandles.get(id);
+		if (dos == null) {
+			dos = createFileForId(id, getFileExtension(dp));
 		}
-
 		// Choose correct dataParse method based on the format of the data
 		// received.
-		final DataOutputStream dos = fileHandles.get(id);
-		if (id == SensorLoggerPacket.PLUGIN_ID) {
-			dataParse((SensorLoggerPacket) dp, dos);
-		} else if (id == WifiLoggerPacket.PLUGIN_ID) {
-			dataParse((WifiLoggerPacket) dp, dos);
-		} else if (id == GSMLoggerPacket.PLUGIN_ID) {
-			dataParse((GSMLoggerPacket) dp, dos);
-		} else if (id == GPSLoggerPacket.PLUGIN_ID) {
-			dataParse((GPSLoggerPacket) dp, dos);
-		} else if (id == SensorLoggerPacket.PLUGIN_ID) {
-			dataParse((SensorLoggerPacket) dp, dos);
-		} else if (id == BluetoothPacket.PLUGIN_ID) {
+		if (id == SensorPacket.PACKET_ID) {
+			dataParse((SensorPacket) dp, dos);
+		} else if (id == WifiPacket.PACKET_ID) {
+			dataParse((WifiPacket) dp, dos);
+		} else if (id == GSMPacket.PACKET_ID) {
+			dataParse((GSMPacket) dp, dos);
+		} else if (id == GPSPacket.PACKET_ID) {
+			dataParse((GPSPacket) dp, dos);
+		} else if (id == BluetoothPacket.PACKET_ID) {
 			dataParse((BluetoothPacket) dp, dos);
 		}
-		THREADS_WRITING--;
+		numThreadsWriting--;
 	}
 
 	/**
@@ -478,10 +484,10 @@ public class FileOutput extends OutputPlugin {
 	 */
 	@Override
 	protected void onPluginStop() {
-		PLUGIN_STOPPING = true;
+		pluginStopping = true;
 
 		// Wait until all threads have finished writing.
-		while (THREADS_WRITING != 0) {
+		while (numThreadsWriting != 0) {
 		}
 
 		closeAll();
@@ -492,25 +498,22 @@ public class FileOutput extends OutputPlugin {
 	 */
 	@Override
 	public void onPreferenceChanged() {
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-
-		final boolean new_PLUGIN_ACTIVE = prefs.getBoolean(PLUGIN_ACTIVE_KEY,
-				false);
-		if (PLUGIN_ACTIVE && !new_PLUGIN_ACTIVE) {
+		final boolean pluginEnabledNew = prefs.getBoolean(
+				FILE_OUTPUT_ENABLED_PREF, false);
+		if (pluginEnabled && !pluginEnabledNew) {
 			stopPlugin();
-			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
-		} else if (!PLUGIN_ACTIVE && new_PLUGIN_ACTIVE) {
-			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+			pluginEnabled = pluginEnabledNew;
+		} else if (!pluginEnabled && pluginEnabledNew) {
+			pluginEnabled = pluginEnabledNew;
 			startPlugin();
 		}
 
-		ROLLOVER_INTERVAL = Integer.parseInt(prefs.getString(
+		rolloverInterval = Integer.parseInt(prefs.getString(
 				ROLLOVER_INTERVAL_KEY, (String) context.getResources().getText(
 						R.string.fileoutput_rolloverintervaldefault_pref)));
-		rolloverTimestamp = initialTimestamp + ROLLOVER_INTERVAL;
+		rolloverTimestamp = initialTimestamp + rolloverInterval;
 
-		BUFFER_SIZE = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY,
+		bufferSize = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY,
 				(String) context.getResources().getText(
 						R.string.fileoutput_buffersizedefault_pref)));
 	}

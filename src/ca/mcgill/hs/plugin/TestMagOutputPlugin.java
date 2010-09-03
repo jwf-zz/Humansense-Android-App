@@ -6,41 +6,48 @@ import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import ca.mcgill.hs.R;
 import ca.mcgill.hs.graph.NewActivityNotificationLauncher;
-import ca.mcgill.hs.plugin.SensorLogger.SensorLoggerPacket;
+import ca.mcgill.hs.plugin.SensorLogger.SensorPacket;
 import ca.mcgill.hs.util.PreferenceFactory;
 
-public class TestMagOutputPlugin extends OutputPlugin {
+public final class TestMagOutputPlugin extends OutputPlugin {
 
-	// Boolean ON-OFF switch *Temporary only*
-	private final boolean PLUGIN_ACTIVE;
+	public static final String PLUGIN_NAME = "TestMagOutput";
+	public static final int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
-	private final float[] magValues;
-	private final int[] magActivities;
+	private static final String TESTMAG_OUTPUT_ENABLE_PREF = "testMagOutputEnable";
 
-	private int index;
+	// Keeps track of whether this plugin is enabled or not.
+	private static boolean pluginEnabled;
 
-	private final int maxIndex;
-	private final Context c;
-	private long startTimestamp;
-	private long endTimestamp;
+	private static final int MAX_INDEX = 100;
 
-	public TestMagOutputPlugin(final Context c, final int maxindex) {
-		this.c = c;
+	private static final float[] magValues = new float[MAX_INDEX];
 
-		maxIndex = maxindex;
-		magValues = new float[maxIndex];
-		magActivities = new int[maxIndex];
+	private static int[] magActivities = new int[MAX_INDEX];
+
+	private static int index;
+	private static SharedPreferences prefs;
+	private static Context context;
+
+	private static long startTimestamp;
+
+	private static long endTimestamp;
+
+	private static void arrayFull() {
+		Log.i(PLUGIN_NAME, "Array is full.");
+
+		final Intent i = new Intent(context,
+				NewActivityNotificationLauncher.class);
+
+		NewActivityNotificationLauncher.setStartTimestamp(startTimestamp);
+		NewActivityNotificationLauncher.setEndTimestamp(endTimestamp);
+		NewActivityNotificationLauncher.setMagValues(magValues, magActivities);
+
+		context.startService(i);
 
 		index = 0;
-
-		Log.i("TEST", "Max Index: " + maxIndex);
-		Log.i("TEST", "Tester is AWN.");
-
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(c);
-
-		PLUGIN_ACTIVE = prefs.getBoolean("testMagOutputEnable", false);
 	}
 
 	/**
@@ -50,14 +57,16 @@ public class TestMagOutputPlugin extends OutputPlugin {
 	 *            the context for the generated Preferences.
 	 * @return an array of the Preferences of this object.
 	 */
-	public static Preference[] getPreferences(final Context c) {
+	public static Preference[] getPreferences(final Context context) {
+		TestMagOutputPlugin.context = context;
 		final Preference[] prefs = new Preference[1];
 
-		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
-				"testMagOutputEnable", "TestMag Plugin",
-				"Enables or disables this plugin.", "TestMag is on.",
-				"TestMag is off.");
-
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(context,
+				TESTMAG_OUTPUT_ENABLE_PREF,
+				R.string.testmagoutput_enable_pref_label,
+				R.string.testmagoutput_enable_pref_summary,
+				R.string.testmagoutput_enable_pref_on,
+				R.string.testmagoutput_enable_pref_off);
 		return prefs;
 	}
 
@@ -70,35 +79,31 @@ public class TestMagOutputPlugin extends OutputPlugin {
 		return true;
 	}
 
-	private void arrayFull() {
-		Log.i("TEST", "Logger is FOOL.");
-
-		final Intent i = new Intent(c, NewActivityNotificationLauncher.class);
-
-		NewActivityNotificationLauncher.setStartTimestamp(startTimestamp);
-		NewActivityNotificationLauncher.setEndTimestamp(endTimestamp);
-		NewActivityNotificationLauncher.setMagValues(magValues, magActivities);
-
-		c.startService(i);
-
+	public TestMagOutputPlugin(final Context context) {
 		index = 0;
+
+		Log.i(PLUGIN_NAME, "Max Index: " + MAX_INDEX);
+
+		prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+		pluginEnabled = prefs.getBoolean(TESTMAG_OUTPUT_ENABLE_PREF, false);
 	}
 
 	@Override
-	void onDataReceived(final DataPacket dp) {
-		if (!PLUGIN_ACTIVE) {
+	void onDataReceived(final DataPacket packet) {
+		if (!pluginEnabled) {
 			return;
 		}
 		final long timestamp = System.currentTimeMillis();
-		if (dp.getClass() == SensorLoggerPacket.class) {
-			if (index >= maxIndex) {
+		if (packet.getClass() == SensorPacket.class) {
+			if (index >= MAX_INDEX) {
 				endTimestamp = timestamp;
 				arrayFull();
 			}
 			if (index == 0) {
 				startTimestamp = timestamp;
 			}
-			magValues[index] = ((SensorLoggerPacket) dp).m;
+			magValues[index] = ((SensorPacket) packet).m;
 			magActivities[index] = 0x0;
 			index++;
 		}

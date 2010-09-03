@@ -17,22 +17,44 @@ import ca.mcgill.hs.R;
 import ca.mcgill.hs.util.PreferenceFactory;
 
 /**
- * An InputPlugin which gets data from the available GPS signals around.
+ * An InputPlugin which gets data from the available Wifi signals around.
  * 
  * @author Cicerone Cojocaru, Jonathan Pitre
  * 
  */
-public class WifiLogger extends InputPlugin {
+public final class WifiLogger extends InputPlugin {
 
-	public static class WifiLoggerPacket implements DataPacket {
+	/**
+	 * Taken from Jordan Frank
+	 * (hsandroidv1.ca.mcgill.cs.humansense.hsandroid.service) and modified for
+	 * this plugin.
+	 */
+	private final class WifiLoggerReceiver extends BroadcastReceiver {
+
+		private final WifiManager wifi;
+
+		public WifiLoggerReceiver(final WifiManager wifi) {
+			super();
+			this.wifi = wifi;
+		}
+
+		@Override
+		public void onReceive(final Context c, final Intent intent) {
+			Log.i(PLUGIN_NAME, "Received Wifi Scan Results.");
+			final List<ScanResult> results = wifi.getScanResults();
+			processResults(results);
+		}
+	}
+
+	public final static class WifiPacket implements DataPacket {
 
 		final int neighbors;
 		final long timestamp;
 		final int[] levels;
 		final String[] SSIDs;
 		final String[] BSSIDs;
-		final static String PLUGIN_NAME = "WifiLogger";
-		final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+		final static String PACKET_NAME = "WifiPacket";
+		final static int PACKET_ID = PACKET_NAME.hashCode();
 
 		/**
 		 * Constructor for this DataPacket.
@@ -48,7 +70,7 @@ public class WifiLogger extends InputPlugin {
 		 * @param BSSID
 		 *            the BSSID of each access point.
 		 */
-		public WifiLoggerPacket(final int neighbors, final long timestamp,
+		public WifiPacket(final int neighbors, final long timestamp,
 				final int[] level, final String[] SSID, final String[] BSSID) {
 			this.neighbors = neighbors;
 			this.timestamp = timestamp;
@@ -59,47 +81,29 @@ public class WifiLogger extends InputPlugin {
 
 		@Override
 		public DataPacket clone() {
-			return new WifiLoggerPacket(neighbors, timestamp, levels, SSIDs,
-					BSSIDs);
+			return new WifiPacket(neighbors, timestamp, levels, SSIDs, BSSIDs);
 		}
 
 		@Override
 		public int getDataPacketId() {
-			return WifiLoggerPacket.PLUGIN_ID;
+			return WifiPacket.PACKET_ID;
 		}
 
 		@Override
 		public String getInputPluginName() {
-			return WifiLoggerPacket.PLUGIN_NAME;
+			return WifiPacket.PACKET_NAME;
 		}
 	}
 
-	/**
-	 * Taken from Jordan Frank
-	 * (hsandroidv1.ca.mcgill.cs.humansense.hsandroid.service) and modified for
-	 * this plugin.
-	 */
-	private class WifiLoggerReceiver extends BroadcastReceiver {
+	private static final String WIFI_INTERVAL_DEFAULT = "30000";
+	private static final String WIFI_INTERVAL_PREF = "wifiIntervalPreference";
+	private static final String WIFI_LOGGER_ENABLE_PREF = "wifiLoggerEnable";
 
-		private final WifiManager wifi;
-
-		public WifiLoggerReceiver(final WifiManager wifi) {
-			super();
-			this.wifi = wifi;
-		}
-
-		@Override
-		public void onReceive(final Context c, final Intent intent) {
-			Log.i(TAG, "Received Wifi Scan Results.");
-			final List<ScanResult> results = wifi.getScanResults();
-			processResults(results);
-		}
-	}
-
-	public static final String TAG = "WifiLogger";
+	final static String PLUGIN_NAME = "WifiLogger";
+	final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
 	// Boolean ON-OFF switch *Temporary only*
-	private static boolean PLUGIN_ACTIVE;
+	private static boolean pluginEnabled;
 
 	// The Thread for requesting scans.
 	private static Thread wifiLoggerThread;
@@ -108,7 +112,7 @@ public class WifiLogger extends InputPlugin {
 	private static boolean threadRunning = false;
 
 	private static WifiManager.WifiLock wifiLock;
-	private static PowerManager.WakeLock wl;
+	private static PowerManager.WakeLock wakeLock;
 
 	/**
 	 * Returns the list of Preference objects for this InputPlugin.
@@ -121,14 +125,15 @@ public class WifiLogger extends InputPlugin {
 		final Preference[] prefs = new Preference[2];
 
 		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
-				"wifiLoggerEnable", "Wi-Fi Plugin",
-				"Enables or disables this plugin.", "WifiLogger is on.",
-				"WifiLogger is off.");
+				WIFI_LOGGER_ENABLE_PREF, R.string.wifilogger_enable_pref_label,
+				R.string.wifilogger_enable_pref_summary,
+				R.string.wifilogger_enable_pref_on,
+				R.string.wifilogger_enable_pref_off);
 
 		prefs[1] = PreferenceFactory.getListPreference(c,
 				R.array.wifiLoggerIntervalStrings,
-				R.array.wifiLoggerIntervalValues, "30000",
-				"wifiIntervalPreference", R.string.wifilogger_interval_pref,
+				R.array.wifiLoggerIntervalValues, WIFI_INTERVAL_DEFAULT,
+				WIFI_INTERVAL_PREF, R.string.wifilogger_interval_pref,
 				R.string.wifilogger_interval_pref_summary);
 
 		return prefs;
@@ -144,16 +149,16 @@ public class WifiLogger extends InputPlugin {
 	}
 
 	// A WifiManager used to request scans.
-	private final WifiManager wm;
+	private final WifiManager wifiManager;
 
 	// The interval of time between two subsequent scans.
 	private static int sleepIntervalMillisecs;
 
 	// The WifiLoggerReceiver from which we will get the Wifi scan results.
-	private static WifiLoggerReceiver wlr;
+	private static WifiLoggerReceiver loggerReceiver;
 
 	// The Context in which the WifiLoggerReceiver will be registered.
-	private final Context context;
+	private static Context context;
 
 	// Keeps track of whether a scan is in progress
 	private static boolean scanning = false;
@@ -167,27 +172,27 @@ public class WifiLogger extends InputPlugin {
 	 * instantiated before it is started, and needs to be passed a reference to
 	 * a WifiManager and a Context.
 	 * 
-	 * @param wm
-	 *            - the WifiManager for this WifiLogger.
 	 * @param context
 	 *            - the context in which this plugin is created.
 	 */
-	public WifiLogger(final WifiManager wm, final Context context) {
-		this.wm = wm;
-		this.context = context;
-		wifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_SCAN_ONLY, TAG);
+	public WifiLogger(final Context context) {
+		WifiLogger.context = context;
+		wifiManager = (WifiManager) context
+				.getSystemService(Context.WIFI_SERVICE);
+		wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_SCAN_ONLY,
+				PLUGIN_NAME);
 		wifiLock.setReferenceCounted(false);
 		final PowerManager pm = (PowerManager) context
 				.getSystemService(Context.POWER_SERVICE);
-		wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, TAG);
-		wl.setReferenceCounted(false);
+		wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, PLUGIN_NAME);
+		wakeLock.setReferenceCounted(false);
 
 		final SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(context);
 		sleepIntervalMillisecs = Integer.parseInt(prefs.getString(
-				"wifiIntervalPreference", "30000"));
+				WIFI_INTERVAL_PREF, WIFI_INTERVAL_DEFAULT));
 
-		PLUGIN_ACTIVE = prefs.getBoolean("wifiLoggerEnable", false);
+		pluginEnabled = prefs.getBoolean(WIFI_LOGGER_ENABLE_PREF, false);
 	}
 
 	/**
@@ -198,15 +203,15 @@ public class WifiLogger extends InputPlugin {
 		final SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(context);
 		sleepIntervalMillisecs = Integer.parseInt(prefs.getString(
-				"wifiIntervalPreference", "30000"));
+				WIFI_INTERVAL_PREF, WIFI_INTERVAL_DEFAULT));
 
-		final boolean new_PLUGIN_ACTIVE = prefs.getBoolean("wifiLoggerEnable",
-				false);
-		if (PLUGIN_ACTIVE && !new_PLUGIN_ACTIVE) {
+		final boolean pluginEnabledNew = prefs.getBoolean(
+				WIFI_LOGGER_ENABLE_PREF, false);
+		if (pluginEnabled && !pluginEnabledNew) {
 			stopPlugin();
-			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
-		} else if (!PLUGIN_ACTIVE && new_PLUGIN_ACTIVE) {
-			PLUGIN_ACTIVE = new_PLUGIN_ACTIVE;
+			pluginEnabled = pluginEnabledNew;
+		} else if (!pluginEnabled && pluginEnabledNew) {
+			pluginEnabled = pluginEnabledNew;
 			startPlugin();
 		}
 	}
@@ -230,11 +235,11 @@ public class WifiLogger extends InputPlugin {
 			i++;
 		}
 
-		write(new WifiLoggerPacket(numResults, timestamp, levels, SSIDs, BSSIDs));
+		write(new WifiPacket(numResults, timestamp, levels, SSIDs, BSSIDs));
 		if (scanPending) {
 			scanPending = false;
-			Log.i(TAG, "Initiating Pending Wifi Scan.");
-			wm.startScan();
+			Log.i(PLUGIN_NAME, "Initiating Pending Wifi Scan.");
+			wifiManager.startScan();
 		} else {
 			scanning = false;
 		}
@@ -246,7 +251,7 @@ public class WifiLogger extends InputPlugin {
 	 * network connections. This method must be overridden in all input plugins.
 	 */
 	public void startPlugin() {
-		if (!PLUGIN_ACTIVE) {
+		if (!pluginEnabled) {
 			return;
 		}
 
@@ -255,25 +260,25 @@ public class WifiLogger extends InputPlugin {
 		}
 		// wl.acquire();
 
-		wlr = new WifiLoggerReceiver(wm);
-		context.registerReceiver(wlr, new IntentFilter(
+		loggerReceiver = new WifiLoggerReceiver(wifiManager);
+		context.registerReceiver(loggerReceiver, new IntentFilter(
 				WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-		Log.i(TAG, "Registered receiver.");
+		Log.i(PLUGIN_NAME, "Registered receiver.");
 
 		wifiLoggerThread = new Thread() {
 			@Override
 			public void run() {
 				try {
 					while (threadRunning) {
-						if (!wm.pingSupplicant()) {
+						if (!wifiManager.pingSupplicant()) {
 							Log
-									.d(TAG,
+									.d(PLUGIN_NAME,
 											"Uh-Oh, Supplicant isn't responding to requests.");
 						}
 						if (!scanning) {
 							scanning = true;
-							Log.i(TAG, "Initiating Wifi Scan.");
-							wm.startScan();
+							Log.i(PLUGIN_NAME, "Initiating Wifi Scan.");
+							wifiManager.startScan();
 						} else {
 							scanPending = true;
 						}
@@ -281,7 +286,7 @@ public class WifiLogger extends InputPlugin {
 					}
 				} catch (final InterruptedException e) {
 					Log
-							.e(TAG,
+							.e(PLUGIN_NAME,
 									"Logging thread terminated due to InterruptedException.");
 				}
 			}
@@ -295,13 +300,13 @@ public class WifiLogger extends InputPlugin {
 	 * not.
 	 */
 	public void stopPlugin() {
-		if (!PLUGIN_ACTIVE) {
+		if (!pluginEnabled) {
 			return;
 		}
 		if (threadRunning) {
 			threadRunning = false;
-			context.unregisterReceiver(wlr);
-			Log.i(TAG, "Unegistered receiver.");
+			context.unregisterReceiver(loggerReceiver);
+			Log.i(PLUGIN_NAME, "Unegistered receiver.");
 		}
 		if (wifiLock.isHeld()) {
 			wifiLock.release();

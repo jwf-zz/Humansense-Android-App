@@ -2,22 +2,20 @@ package ca.mcgill.hs.plugin;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import android.content.Context;
 
 public final class PluginFactory {
 	private static Context context = null;
 
+	private static final Map<Class<? extends OutputPlugin>, OutputPlugin> outputPlugins = new HashMap<Class<? extends OutputPlugin>, OutputPlugin>();
 	private final static Class<?>[] outputPluginClasses = { FileOutput.class,
 			ScreenOutput.class, TestMagOutputPlugin.class,
 			SimpleClassifierPlugin.class, LocationClusterer.class };
 
+	private static final Map<Class<? extends InputPlugin>, InputPlugin> inputPlugins = new HashMap<Class<? extends InputPlugin>, InputPlugin>();
 	private final static Class<?>[] inputPluginClasses = {
 			BluetoothLogger.class, GPSLogger.class, GSMLogger.class,
 			SensorLogger.class, WifiLogger.class };
-
-	private static final Map<Class<? extends OutputPlugin>, OutputPlugin> outputPlugins = new HashMap<Class<? extends OutputPlugin>, OutputPlugin>();
-	private static final Map<Class<? extends InputPlugin>, InputPlugin> inputPlugins = new HashMap<Class<? extends InputPlugin>, InputPlugin>();
 
 	/**
 	 * Creates a new Input Plugin or returns the already-created plugin. This

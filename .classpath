@@ -4,5 +4,6 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="lib" path="ext/httpcomponents-client-4.1-alpha2/lib/httpmime-4.1-alpha2.jar"/>
+	<classpathentry kind="lib" path="libs/ostermillerutils_1_07_00.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

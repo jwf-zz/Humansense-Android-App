@@ -145,6 +145,12 @@
     <string name="wifilogger_interval_pref">Wifi Logging Interval</string>
     <string name="wifilogger_interval_pref_summary">The time interval between two subsequent scans.</string>
 
+    <!--  LocationClusterer plugin preferences -->
+    <string name="locationclusterer_enable_pref_label">Location Clustering Plugin</string>
+    <string name="locationclusterer_enable_pref_summary">Enables or disables this plugin.</string>
+    <string name="locationclusterer_enable_pref_on">Location Clustering is on.</string>
+	<string name="locationclusterer_enable_pref_off">Location Clustering is off.</string> 
+
 	<!--  FileOutput plugin preferences -->
     <string name="fileoutput_buffersize_pref">Buffer Size</string>
     <string name="fileoutput_buffersizedefault_pref">4096</string>

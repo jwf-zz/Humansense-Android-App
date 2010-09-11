@@ -1,30 +1,23 @@
 package ca.mcgill.hs.plugin;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.Context;
 
 public final class PluginFactory {
 	private static Context context = null;
 
-	// Input Plugins
-	private static BluetoothLogger bluetoothLogger = null;
-	private static GPSLogger gpsLogger = null;
-	private static GSMLogger gsmLogger = null;
-	private static SensorLogger sensorLogger = null;
-	private static WifiLogger wifiLogger = null;
-	private static FileOutput fileOutput = null;
-
-	// Output Plugins
-	private static ScreenOutput screenOutput = null;
-	private static SimpleClassifierPlugin simpleClassifier = null;
-	private static TestMagOutputPlugin testMagGraph = null;
-
 	private final static Class<?>[] outputPluginClasses = { FileOutput.class,
 			ScreenOutput.class, TestMagOutputPlugin.class,
-			SimpleClassifierPlugin.class };
+			SimpleClassifierPlugin.class, LocationClusterer.class };
 
 	private final static Class<?>[] inputPluginClasses = {
 			BluetoothLogger.class, GPSLogger.class, GSMLogger.class,
 			SensorLogger.class, WifiLogger.class };
+
+	private static final Map<Class<? extends OutputPlugin>, OutputPlugin> outputPlugins = new HashMap<Class<? extends OutputPlugin>, OutputPlugin>();
+	private static final Map<Class<? extends InputPlugin>, InputPlugin> inputPlugins = new HashMap<Class<? extends InputPlugin>, InputPlugin>();
 
 	/**
 	 * Creates a new Input Plugin or returns the already-created plugin. This
@@ -37,32 +30,15 @@ public final class PluginFactory {
 	 */
 	public static InputPlugin getInputPlugin(
 			final Class<? extends InputPlugin> type) {
-		InputPlugin plugin = null;
-		if (type.equals(BluetoothLogger.class)) {
-			if (bluetoothLogger == null) {
-				bluetoothLogger = new BluetoothLogger(context);
+		InputPlugin plugin = inputPlugins.get(type);
+		if (plugin == null) {
+			try {
+				plugin = type.getConstructor(Context.class)
+						.newInstance(context);
+			} catch (final Exception e) {
+				e.printStackTrace();
 			}
-			plugin = bluetoothLogger;
-		} else if (type.equals(GPSLogger.class)) {
-			if (gpsLogger == null) {
-				gpsLogger = new GPSLogger(context);
-			}
-			plugin = gpsLogger;
-		} else if (type.equals(GSMLogger.class)) {
-			if (gsmLogger == null) {
-				gsmLogger = new GSMLogger(context);
-			}
-			plugin = gsmLogger;
-		} else if (type.equals(WifiLogger.class)) {
-			if (wifiLogger == null) {
-				wifiLogger = new WifiLogger(context);
-			}
-			plugin = wifiLogger;
-		} else if (type.equals(SensorLogger.class)) {
-			if (sensorLogger == null) {
-				sensorLogger = new SensorLogger(context);
-			}
-			plugin = sensorLogger;
+			inputPlugins.put(type, plugin);
 		}
 		return plugin;
 	}
@@ -83,27 +59,15 @@ public final class PluginFactory {
 	 */
 	public static OutputPlugin getOutputPlugin(
 			final Class<? extends OutputPlugin> type) {
-		OutputPlugin plugin = null;
-		if (type.equals(FileOutput.class)) {
-			if (fileOutput == null) {
-				fileOutput = new FileOutput(context);
+		OutputPlugin plugin = outputPlugins.get(type);
+		if (plugin == null) {
+			try {
+				plugin = type.getConstructor(Context.class)
+						.newInstance(context);
+			} catch (final Exception e) {
+				e.printStackTrace();
 			}
-			plugin = fileOutput;
-		} else if (type.equals(ScreenOutput.class)) {
-			if (screenOutput == null) {
-				screenOutput = new ScreenOutput(context);
-			}
-			plugin = screenOutput;
-		} else if (type.equals(SimpleClassifierPlugin.class)) {
-			if (simpleClassifier == null) {
-				simpleClassifier = new SimpleClassifierPlugin(context);
-			}
-			plugin = simpleClassifier;
-		} else if (type.equals(TestMagOutputPlugin.class)) {
-			if (testMagGraph == null) {
-				testMagGraph = new TestMagOutputPlugin(context);
-			}
-			plugin = testMagGraph;
+			outputPlugins.put(type, plugin);
 		}
 		return plugin;
 	}

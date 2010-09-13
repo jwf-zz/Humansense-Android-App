@@ -115,7 +115,7 @@ public class GPSLocation extends Location {
 		Observation observation = null;
 		final Cursor cursor = db
 				.rawQuery(
-						"SELECT strftime('%s',timestamp,'localtime')-strftime('%S',timestamp,'localtime')+strftime('%f',timestamp,'localtime'),latitude_weights,latitude_average,longitude_average FROM "
+						"SELECT strftime('%s',timestamp)-strftime('%S',timestamp)+strftime('%f',timestamp),latitude_weights,latitude_average,longitude_average FROM "
 								+ GPSLocationSet.LOCATIONS_TABLE
 								+ " WHERE location_id=" + getId() + ";", null);
 		try {

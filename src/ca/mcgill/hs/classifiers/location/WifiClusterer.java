@@ -1,13 +1,13 @@
 package ca.mcgill.hs.classifiers.location;
 
-import java.io.File;
+import android.content.Context;
 
 public class WifiClusterer {
 	private final WifiLocationSet locations;
 	private final MotionStateClusterer pool;
 
-	public WifiClusterer(final File dbFile) {
-		locations = new WifiLocationSet(dbFile);
+	public WifiClusterer(final Context context) {
+		locations = new WifiLocationSet(context);
 		pool = new MotionStateClusterer(locations);
 	}
 
@@ -21,8 +21,7 @@ public class WifiClusterer {
 	// Returns a list the same length as timestamps that contains the votes
 	// for each event. A positive value indicates motion, while a negative value
 	// indicates stationarity.
-	public void cluster(final double timestamp,
-			final WifiObservation observation) {
-		pool.addObservation(timestamp, observation);
+	public void cluster(final WifiObservation observation) {
+		pool.addObservation(observation.getTimeStamp(), observation);
 	}
 }

@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Debug;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -115,13 +116,13 @@ public class HSAndroid extends Activity {
 		serviceSwitch.setOnClickListener(new View.OnClickListener() {
 			public void onClick(final View v) {
 				if (!HSService.isRunning()) { // NOT RUNNING
-					// Debug.startMethodTracing("hsandroid");
+					Debug.startMethodTracing("hsandroid");
 					startService(serviceIntent);
 					serviceSwitch.setText(R.string.stop_label);
 				} else { // RUNNING
 					stopService(serviceIntent);
 					serviceSwitch.setText(R.string.start_label);
-					// Debug.stopMethodTracing();
+					Debug.stopMethodTracing();
 				}
 			}
 		});

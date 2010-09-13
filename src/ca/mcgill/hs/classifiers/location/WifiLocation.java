@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
+import android.util.Log;
 
 public class WifiLocation extends Location {
 
@@ -21,6 +22,18 @@ public class WifiLocation extends Location {
 	 * have a finite distance between them.
 	 */
 	public static final double ETA = 0.5;
+
+	private static final String TAG = "WifiLocation";
+
+	/**
+	 * Computes the distance between two observations.
+	 * 
+	 * @param observation
+	 *            The second observation.
+	 * @return The distance between two observations.
+	 */
+
+	private SQLiteStatement distStmt;
 
 	public WifiLocation(final SQLiteDatabase db, final double timestamp) {
 		super(db, timestamp);
@@ -52,61 +65,67 @@ public class WifiLocation extends Location {
 		for (final Entry<Integer, Integer> entry : observation.measurements
 				.entrySet()) {
 			final int wap_id = entry.getKey();
-			final ContentValues vals = new ContentValues();
-			vals.put("location_id", getId());
-			vals.put("wap_id", wap_id);
-			db.insertWithOnConflict(WifiLocationSet.OBSERVATIONS_TABLE, null,
-					vals, SQLiteDatabase.CONFLICT_IGNORE);
-			/*
-			 * db.execSQL("INSERT OR IGNORE INTO " +
-			 * WifiLocationSet.OBSERVATIONS_TABLE + " VALUES (" + getId() + ","
-			 * + wap_id + ",0,0,0);");
-			 */
+			ensureObservationExists(wap_id);
+
 		}
+
 		for (final Entry<Integer, Integer> entry : observation.measurements
 				.entrySet()) {
 			final int strength = entry.getValue();
 			final int wap_id = entry.getKey();
-			final ContentValues vals = new ContentValues();
-			vals.put("strength", strength);
-			final String[] whereVals = { "" + getId(), "" + wap_id };
-			db.update(WifiLocationSet.OBSERVATIONS_TABLE, vals,
-					"location_id=? AND wap_id=?", whereVals);
-			// db.execSQL("UPDATE " + WifiLocationSet.OBSERVATIONS_TABLE
-			// + " SET strength=" + strength + " WHERE location_id="
-			// + getId() + " AND wap_id=" + wap_id + ";");
+			updateStrength(wap_id, strength);
 		}
-
-		final Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM "
-				+ WifiLocationSet.OBSERVATIONS_TABLE + " WHERE location_id="
-				+ getId() + ";", null);
-		cursor.moveToNext();
-		num_observations = cursor.getInt(0);
+		// Invalidate any cached distances
+		invalidateDistances();
+		updateNumObservations();
 	}
 
-	/**
-	 * Computes the distance between two observations.
-	 * 
-	 * @param observation
-	 *            The second observation.
-	 * @return The distance between two observations.
-	 */
 	@Override
 	public double distanceFrom(final Location other) {
 		final WifiLocation location = (WifiLocation) other;
 		double dist = 0.0;
 		int num_common = 0;
-		final Cursor cursor = db
+
+		// Check to see if the distance has been cached
+		final String[] params = { Integer.toString(this.getId()),
+				Integer.toString(location.getId()) };
+		Cursor cursor = db.rawQuery("SELECT distance FROM "
+				+ LocationSet.NEIGHBOURS_TABLE
+				+ " WHERE location_id1=? AND location_id2=?", params);
+		try {
+			cursor.moveToNext();
+			dist = cursor.getDouble(0);
+		} finally {
+			cursor.close();
+		}
+		if (dist >= 0.0) {
+			Log.d(TAG, "Caching works; Marvelous!!!");
+			return dist;
+		}
+		// final Cursor cursor = db
+		// .rawQuery(
+		// "SELECT o1.average_strength,o2.average_strength FROM observations AS o1 "
+		// + "JOIN observations AS o2 USING (wap_id) "
+		// + "WHERE o1.location_id=" + this.getId()
+		// + " AND o2.location_id=" + location.getId()
+		// + ";", null);
+		cursor = db
 				.rawQuery(
-						"SELECT o1.average_strength,o2.average_strength FROM observations AS o1 "
-								+ "JOIN observations AS o2 USING (wap_id) "
-								+ "WHERE o1.location_id=" + this.getId()
-								+ " AND o2.location_id=" + location.getId()
-								+ ";", null);
-		while (cursor.moveToNext()) {
-			final double part = cursor.getDouble(0) - cursor.getDouble(1);
-			dist += part * part;
-			num_common += 1;
+						"SELECT o1.average_strength,o2.average_strength FROM "
+								+ WifiLocationSet.OBSERVATIONS_TABLE
+								+ " AS o1 " + "JOIN "
+								+ WifiLocationSet.OBSERVATIONS_TABLE
+								+ " AS o2 USING (wap_id) "
+								+ "WHERE o1.location_id=? AND o2.location_id=?",
+						params);
+		try {
+			while (cursor.moveToNext()) {
+				final double part = cursor.getDouble(0) - cursor.getDouble(1);
+				dist += part * part;
+				num_common += 1;
+			}
+		} finally {
+			cursor.close();
 		}
 
 		if ((double) num_common
@@ -115,8 +134,26 @@ public class WifiLocation extends Location {
 			dist = Double.POSITIVE_INFINITY;
 		} else {
 			dist = Math.sqrt((1.0 / num_common) * dist);
+			final Object[] params2 = { dist, this.getId(), location.getId() };
+			// Log.d(TAG, "Executing: " + "UPDATE " +
+			// LocationSet.NEIGHBOURS_TABLE
+			// + " SET distance=" + params2[0] + " WHERE location_id1="
+			// + params2[1] + " AND location_id2=" + params2[2]);
+			db
+					.execSQL(
+							"UPDATE "
+									+ LocationSet.NEIGHBOURS_TABLE
+									+ " SET distance=? WHERE location_id1=? AND location_id2=?",
+							params2);
 		}
 		return dist;
+	}
+
+	private void ensureObservationExists(final int wap_id) {
+		final Object[] params = { getId(), wap_id };
+		db.execSQL("INSERT OR IGNORE INTO "
+				+ WifiLocationSet.OBSERVATIONS_TABLE + " VALUES (?,?,0,0,0)",
+				params);
 	}
 
 	/**
@@ -127,20 +164,33 @@ public class WifiLocation extends Location {
 	 * @return The average strength of this observation at the specified WAP ID.
 	 */
 	public double getAvgStrength(final int wap_id) {
+		double avgStrength = 0.0;
+		final String[] params = { Integer.toString(getId()),
+				Integer.toString(wap_id) };
 		final Cursor cursor = db.rawQuery("SELECT strength,count FROM "
-				+ WifiLocationSet.OBSERVATIONS_TABLE + " WHERE location_id="
-				+ getId() + " AND wap_id=" + wap_id + ";", null);
-		cursor.moveToNext();
-		return (double) cursor.getInt(0) / (double) cursor.getInt(1);
+				+ WifiLocationSet.OBSERVATIONS_TABLE
+				+ " WHERE location_id=? AND wap_id=?", params);
+		try {
+			cursor.moveToNext();
+			avgStrength = (double) cursor.getInt(0) / (double) cursor.getInt(1);
+		} finally {
+			cursor.close();
+		}
+		return avgStrength;
 	}
 
 	public Set<Integer> getObservableWAPs() {
 		final Set<Integer> wap_ids = new HashSet<Integer>();
+		final String[] params = { Integer.toString(getId()) };
 		final Cursor cursor = db.rawQuery("SELECT wap_id FROM "
-				+ WifiLocationSet.OBSERVATIONS_TABLE + " WHERE location_id="
-				+ getId() + ";", null);
-		while (cursor.moveToNext()) {
-			wap_ids.add(cursor.getInt(0));
+				+ WifiLocationSet.OBSERVATIONS_TABLE + " WHERE location_id=?",
+				params);
+		try {
+			while (cursor.moveToNext()) {
+				wap_ids.add(cursor.getInt(0));
+			}
+		} finally {
+			cursor.close();
 		}
 		return wap_ids;
 	}
@@ -149,22 +199,29 @@ public class WifiLocation extends Location {
 	public Observation getObservations() {
 		final WifiObservation observation = new WifiObservation(getTimestamp(),
 				35);
+		final String[] params = { Integer.toString(getId()) };
 		final Cursor cursor = db.rawQuery("SELECT wap_id,strength,count FROM "
-				+ WifiLocationSet.OBSERVATIONS_TABLE + " WHERE location_id="
-				+ getId() + ";", null);
-		while (cursor.moveToNext()) {
-			observation.addObservation(cursor.getInt(0), cursor.getInt(1));
+				+ WifiLocationSet.OBSERVATIONS_TABLE + " WHERE location_id=?",
+				params);
+		try {
+			while (cursor.moveToNext()) {
+				observation.addObservation(cursor.getInt(0), cursor.getInt(1));
+			}
+		} finally {
+			cursor.close();
 		}
 		return observation;
 	}
 
+	private void invalidateDistances() {
+		final Object[] params = { getId() };
+		db.execSQL("UPDATE " + LocationSet.NEIGHBOURS_TABLE
+				+ " SET distance=-1.0 WHERE location_id1=?", params);
+	}
+
 	public int numObservations() {
 		if (num_observations < 0) {
-			final Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM "
-					+ WifiLocationSet.OBSERVATIONS_TABLE
-					+ " WHERE location_id=" + getId() + ";", null);
-			cursor.moveToNext();
-			num_observations = cursor.getInt(0);
+			updateNumObservations();
 		}
 		return num_observations;
 	}
@@ -186,5 +243,24 @@ public class WifiLocation extends Location {
 		}
 		sb.append("\n");
 		return sb.toString();
+	}
+
+	private void updateNumObservations() {
+		final String[] params = { new Integer(getId()).toString() };
+		final Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM "
+				+ WifiLocationSet.OBSERVATIONS_TABLE + " WHERE location_id=?",
+				params);
+		try {
+			cursor.moveToNext();
+			num_observations = cursor.getInt(0);
+		} finally {
+			cursor.close();
+		}
+	}
+
+	private void updateStrength(final int wap_id, final int strength) {
+		final Object[] params = { strength, getId(), wap_id };
+		db.execSQL("UPDATE " + WifiLocationSet.OBSERVATIONS_TABLE
+				+ " SET strength=? WHERE location_id=? AND wap_id=?", params);
 	}
 }

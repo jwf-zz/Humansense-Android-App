@@ -3,6 +3,8 @@ package ca.mcgill.hs.classifiers.location;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import android.util.Log;
+
 public class MotionStateClusterer {
 
 	// Contains the timestamp for the observation as well as the index in the
@@ -16,6 +18,8 @@ public class MotionStateClusterer {
 			this.index = index;
 		}
 	}
+
+	private static final String TAG = "MotionStateClusterer";
 
 	private final SignificantLocationClusterer slClusterer;
 	private final LocationSet locations;
@@ -141,14 +145,15 @@ public class MotionStateClusterer {
 		// pool_size + " points.");
 
 		if (location != null) {
-			slClusterer.addNewLocation(location);
+			final int cluster_id = slClusterer.addNewLocation(location);
+			Log.d(TAG, "WifiClusterer thinks we're in location: " + cluster_id);
 			previouslyMoving = false;
-		} else {
+			// } else {
+			// previouslyMoving = true;
+			// }
+		} else if (!previouslyMoving && clustered_points == 0) {
 			previouslyMoving = true;
 		}
-		// else if (!previouslyMoving && clustered_points == 0) {
-		// previouslyMoving = true;
-		// }
 
 		// if (avg != null) {
 		// slClusterer.addNeighborPoint(avg);

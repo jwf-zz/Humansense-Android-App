@@ -8,14 +8,17 @@ import android.database.sqlite.SQLiteDatabase;
 
 public abstract class LocationSet {
 
+	protected static class PairOfInts {
+		public int int1;
+		public int int2;
+	}
+
 	public static final String LOCATIONS_TABLE = "locations";
-	public static final String OBSERVATIONS_TABLE = "observations";
-	public static final String WAPS_TABLE = "waps";
 	public static final String NEIGHBOURS_TABLE = "neighbours";
 	public static final String LABELS_TABLE = "labels";
 	public static final String CLUSTERS_TABLE = "clusters";
-	public static final String SQLITE_DATE_FORMAT = "'%Y-%m-%d %H:%M:%f'";
 
+	public static final String SQLITE_DATE_FORMAT = "'%Y-%m-%d %H:%M:%f'";
 	/**
 	 * Delta from the paper. This value represents the percentage of the points
 	 * in the pool that must neighbours of a point for it to be considered to be
@@ -50,14 +53,19 @@ public abstract class LocationSet {
 				+ newId);
 		db.execSQL("UPDATE " + CLUSTERS_TABLE + " SET cluster_id=" + newId
 				+ " WHERE cluster_id=" + oldId + ";");
+
 	}
 
 	public Collection<Integer> getAllClusters() {
 		final Collection<Integer> clusters = new LinkedList<Integer>();
 		final Cursor cursor = db.rawQuery("SELECT DISTINCT cluster_id FROM "
 				+ CLUSTERS_TABLE + ";", null);
-		while (cursor.moveToNext()) {
-			clusters.add(cursor.getInt(0));
+		try {
+			while (cursor.moveToNext()) {
+				clusters.add(cursor.getInt(0));
+			}
+		} finally {
+			cursor.close();
 		}
 		return clusters;
 	}
@@ -66,8 +74,12 @@ public abstract class LocationSet {
 		final Collection<Integer> locations = new LinkedList<Integer>();
 		final Cursor cursor = db.rawQuery("SELECT location_id FROM "
 				+ LOCATIONS_TABLE + ";", null);
-		while (cursor.moveToNext()) {
-			locations.add(cursor.getInt(0));
+		try {
+			while (cursor.moveToNext()) {
+				locations.add(cursor.getInt(0));
+			}
+		} finally {
+			cursor.close();
 		}
 		return locations;
 	}
@@ -83,8 +95,12 @@ public abstract class LocationSet {
 		final Cursor cursor = db.rawQuery("SELECT cluster_id FROM "
 				+ CLUSTERS_TABLE + " WHERE location_id=" + location_id + ";",
 				null);
-		if (cursor.moveToNext()) {
-			cluster_id = cursor.getInt(0);
+		try {
+			if (cursor.moveToNext()) {
+				cluster_id = cursor.getInt(0);
+			}
+		} finally {
+			cursor.close();
 		}
 		return cluster_id;
 	}
@@ -113,8 +129,12 @@ public abstract class LocationSet {
 		final Cursor cursor = db.rawQuery("SELECT DISTINCT cluster_id FROM "
 				+ CLUSTERS_TABLE + " WHERE location_id IN ("
 				+ location_ids.toString() + ");", null);
-		while (cursor.moveToNext()) {
-			clusters.add(cursor.getInt(0));
+		try {
+			while (cursor.moveToNext()) {
+				clusters.add(cursor.getInt(0));
+			}
+		} finally {
+			cursor.close();
 		}
 		return clusters;
 	}
@@ -123,11 +143,15 @@ public abstract class LocationSet {
 
 	public Collection<Integer> getLocationsForCluster(final int cluster_id) {
 		final Collection<Integer> ids = new LinkedList<Integer>();
+		final String[] params = { Integer.toString(cluster_id) };
 		final Cursor cursor = db.rawQuery("SELECT location_id FROM "
-				+ CLUSTERS_TABLE + " WHERE cluster_id=" + cluster_id + ";",
-				null);
-		while (cursor.moveToNext()) {
-			ids.add(cursor.getInt(0));
+				+ CLUSTERS_TABLE + " WHERE cluster_id=?", params);
+		try {
+			while (cursor.moveToNext()) {
+				ids.add(cursor.getInt(0));
+			}
+		} finally {
+			cursor.close();
 		}
 		return ids;
 	}
@@ -136,8 +160,12 @@ public abstract class LocationSet {
 		int cluster_id = -1;
 		final Cursor cursor = db.rawQuery("SELECT MAX(cluster_id) FROM "
 				+ CLUSTERS_TABLE + ";", null);
-		if (cursor.moveToNext()) {
-			cluster_id = cursor.getInt(0) + 1;
+		try {
+			if (cursor.moveToNext()) {
+				cluster_id = cursor.getInt(0) + 1;
+			}
+		} finally {
+			cursor.close();
 		}
 		return cluster_id;
 	}

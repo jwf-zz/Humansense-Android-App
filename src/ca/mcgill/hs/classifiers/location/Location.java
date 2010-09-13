@@ -5,11 +5,14 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 
 public abstract class Location {
 
+	private static final String TAG = "Location";
 	/**
 	 * Locations can be merged, this keeps track of how many locations have been
 	 * merged to create this current one
@@ -58,8 +61,14 @@ public abstract class Location {
 		if (id == getId()) {
 			return;
 		}
-		db.execSQL("INSERT OR IGNORE INTO " + LocationSet.NEIGHBOURS_TABLE
-				+ " VALUES (" + getId() + "," + id + ");");
+		final ContentValues values = new ContentValues();
+		values.put("location_id1", getId());
+		values.put("location_id2", id);
+		values.put("distance", -1.0);
+		db.insertWithOnConflict(LocationSet.NEIGHBOURS_TABLE, null, values,
+				SQLiteDatabase.CONFLICT_IGNORE);
+		// db.execSQL("INSERT OR IGNORE INTO " + LocationSet.NEIGHBOURS_TABLE
+		// + " VALUES (" + getId() + "," + id + ")");
 	}
 
 	/**
@@ -69,12 +78,23 @@ public abstract class Location {
 	 *            A set of the point's neighbours.
 	 */
 	public void addNeighbours(final Collection<Integer> ids) {
-		for (final int id : ids) {
-			if (id == getId()) {
-				continue;
+		final SQLiteStatement stmt = db
+				.compileStatement("INSERT OR IGNORE INTO "
+						+ LocationSet.NEIGHBOURS_TABLE + " VALUES (?,?,-1.0)");
+		try {
+			stmt.bindLong(1, getId());
+			for (final int id : ids) {
+				if (id == getId()) {
+					continue;
+				}
+				stmt.bindLong(2, id);
+				stmt.execute();
+				// db.execSQL("INSERT OR IGNORE INTO "
+				// + LocationSet.NEIGHBOURS_TABLE + " VALUES (" + getId()
+				// + "," + id + ")");
 			}
-			db.execSQL("INSERT OR IGNORE INTO " + LocationSet.NEIGHBOURS_TABLE
-					+ " VALUES (" + getId() + "," + id + ");");
+		} finally {
+			stmt.close();
 		}
 	}
 
@@ -112,11 +132,20 @@ public abstract class Location {
 	 */
 	public List<Integer> getNeighbours() {
 		final List<Integer> neighbours = new LinkedList<Integer>();
-		final Cursor cursor = db.rawQuery("SELECT location_id2 FROM "
-				+ LocationSet.NEIGHBOURS_TABLE + " WHERE location_id1="
-				+ getId() + ";", null);
-		while (cursor.moveToNext()) {
-			neighbours.add(cursor.getInt(0));
+		final String[] columns = { "location_id2" };
+		final String[] params = { Integer.toString(getId()) };
+		final Cursor cursor = db.query(LocationSet.NEIGHBOURS_TABLE, columns,
+				"location_id1=?", params, null, null, null);
+
+		// db.rawQuery("SELECT location_id2 FROM "
+		// + LocationSet.NEIGHBOURS_TABLE + " WHERE location_id1=?",
+		// params);
+		try {
+			while (cursor.moveToNext()) {
+				neighbours.add(cursor.getInt(0));
+			}
+		} finally {
+			cursor.close();
 		}
 		return neighbours;
 	}
@@ -130,13 +159,22 @@ public abstract class Location {
 	 */
 	public double getTimestamp() {
 		if (timestamp < 0) {
-			final Cursor cursor = db
-					.rawQuery(
-							"SELECT strftime('%s',timestamp,'localtime')-strftime('%S',timestamp,'localtime')+strftime('%f',timestamp,'localtime') FROM "
-									+ LocationSet.LOCATIONS_TABLE
-									+ " WHERE location_id=" + getId(), null);
-			cursor.moveToNext();
-			return cursor.getDouble(0);
+			final String[] params = { Integer.toString(getId()) };
+			final String[] columns = { "strftime('%s',timestamp)-strftime('%S',timestamp)+strftime('%f',timestamp)" };
+			final Cursor cursor = db.query(LocationSet.LOCATIONS_TABLE,
+					columns, "location_id=?", params, null, null, null);
+
+			// final Cursor cursor = db
+			// .rawQuery(
+			// "SELECT strftime('%s',timestamp)-strftime('%S',timestamp)+strftime('%f',timestamp) FROM "
+			// + LocationSet.LOCATIONS_TABLE
+			// + " WHERE location_id=?", params);
+			try {
+				cursor.moveToNext();
+				timestamp = cursor.getDouble(0);
+			} finally {
+				cursor.close();
+			}
 		}
 		return timestamp;
 	}
@@ -148,9 +186,13 @@ public abstract class Location {
 	 *            A neighbouring point.
 	 */
 	public void removeNeighbour(final int id) {
+		final String[] params = { Integer.toString(getId()),
+				Integer.toString(id) };
+		// db.delete(LocationSet.NEIGHBOURS_TABLE,
+		// "location_id1=? AND location_id2=?", params);
 		db.execSQL("DELETE FROM " + LocationSet.NEIGHBOURS_TABLE
-				+ " WHERE location_id1=" + getId() + " AND location_id2=" + id
-				+ ";");
+				+ " WHERE location_id1=? AND location_id2=?", params);
+
 	}
 
 	/**
@@ -160,18 +202,35 @@ public abstract class Location {
 	 *            A set of the point's neighbours.
 	 */
 	public void removeNeighbours(final Collection<Integer> neighboursToRemove) {
-		for (final int id : neighboursToRemove) {
-			db.execSQL("DELETE FROM " + LocationSet.NEIGHBOURS_TABLE
-					+ " WHERE location_id1=" + getId() + " AND location_id2="
-					+ id + ";");
+		final SQLiteStatement stmt = db.compileStatement("DELETE FROM "
+				+ LocationSet.NEIGHBOURS_TABLE
+				+ " WHERE location_id1=? AND location_id2=?");
+		try {
+			stmt.bindLong(1, getId());
+			for (final int id : neighboursToRemove) {
+				stmt.bindLong(2, id);
+				stmt.execute();
+				// db.execSQL("DELETE FROM " + LocationSet.NEIGHBOURS_TABLE
+				// + " WHERE location_id1=" + getId()
+				// + " AND location_id2=" + id);
+			}
+		} finally {
+			stmt.close();
 		}
+
 	}
 
 	public void setTimestamp(final double timestamp) {
 		this.timestamp = timestamp;
+		// final ContentValues values = new ContentValues();
+		// values.put("timestamp", "strftime(" + LocationSet.SQLITE_DATE_FORMAT
+		// + "," + timestamp + ",'unixepoch')");
+		// final String[] whereArgs = { Integer.toString(getId()) };
+		// db.update(LocationSet.LOCATIONS_TABLE, values, "location_id=?",
+		// whereArgs);
+		final Object[] params = { timestamp, getId() };
 		db.execSQL("UPDATE " + LocationSet.LOCATIONS_TABLE
 				+ " SET timestamp=strftime(" + LocationSet.SQLITE_DATE_FORMAT
-				+ "," + timestamp + ",'unixepoch','localtime') "
-				+ "WHERE location_id=" + getId() + ";");
+				+ ",?,'unixepoch') " + "WHERE location_id=?", params);
 	}
 }

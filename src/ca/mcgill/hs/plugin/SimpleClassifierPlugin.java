@@ -27,7 +27,7 @@ import ca.mcgill.hs.plugin.SensorLogger.SensorPacket;
 import ca.mcgill.hs.util.PreferenceFactory;
 
 public final class SimpleClassifierPlugin extends OutputPlugin {
-	private final static class LoggerThread extends Thread {
+	private final static class ClassifierThread extends Thread {
 		private static Handler mHandler = null;
 
 		@Override
@@ -57,7 +57,7 @@ public final class SimpleClassifierPlugin extends OutputPlugin {
 
 	private final static TimeDelayEmbeddingClassifier tdeClassifier = new TimeDelayEmbeddingClassifier();
 
-	private static LoggerThread loggerThread;
+	private static ClassifierThread classifierThread;
 
 	private static boolean classifying = false;
 
@@ -187,10 +187,14 @@ public final class SimpleClassifierPlugin extends OutputPlugin {
 			 */
 			if (timeMovingWithoutStopping % 5 == 4) {
 				// Update widget text
-				final Message msg = LoggerThread.mHandler.obtainMessage(
+				final Message msg = ClassifierThread.mHandler.obtainMessage(
 						LOG_MESSAGE, index, (int) packet.time);
-				LoggerThread.mHandler.sendMessage(msg);
+				ClassifierThread.mHandler.sendMessage(msg);
 			}
+
+			/*
+			 * Update the widget text every 50 samples.
+			 */
 			if (counter >= 49) {
 				final StringBuffer buf = new StringBuffer();
 				buf.append("Lingering: " + timeLingering + "\nMoving: "
@@ -225,8 +229,8 @@ public final class SimpleClassifierPlugin extends OutputPlugin {
 							.getExternalStorageDirectory(), (String) context
 							.getResources().getText(R.string.model_ini_path));
 					if (modelsFile.canRead()) {
-						loggerThread = new LoggerThread();
-						loggerThread.start();
+						classifierThread = new ClassifierThread();
+						classifierThread.start();
 						tdeClassifier.loadModels(modelsFile);
 						lingeringFilter = new AccelerometerLingeringFilter(
 								threshold, windowSize);
@@ -248,9 +252,9 @@ public final class SimpleClassifierPlugin extends OutputPlugin {
 	@Override
 	protected void onPluginStop() {
 		if (classifying) {
-			final Message msg = LoggerThread.mHandler
+			final Message msg = ClassifierThread.mHandler
 					.obtainMessage(QUIT_MESSAGE);
-			LoggerThread.mHandler.sendMessage(msg);
+			ClassifierThread.mHandler.sendMessage(msg);
 			classifying = false;
 			tdeClassifier.close();
 		}

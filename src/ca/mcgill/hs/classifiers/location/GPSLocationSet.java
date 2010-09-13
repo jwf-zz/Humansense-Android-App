@@ -58,8 +58,12 @@ public class GPSLocationSet extends LocationSet {
 				+ " AND longitude_average > " + (lon - GPSLocation.EPS)
 				+ " AND longitude_average < " + (lon + GPSLocation.EPS) + ";",
 				null);
-		while (cursor.moveToNext()) {
-			possibleNeighbours.add(cursor.getInt(0));
+		try {
+			while (cursor.moveToNext()) {
+				possibleNeighbours.add(cursor.getInt(0));
+			}
+		} finally {
+			cursor.close();
 		}
 		// DebugHelper.out.println("Adding " + possibleNeighbours.size() +
 		// " possible neighbours.");
@@ -105,14 +109,13 @@ public class GPSLocationSet extends LocationSet {
 		db.execSQL("CREATE TABLE " + LOCATIONS_TABLE + " ( "
 				+ "location_id	INTEGER PRIMARY KEY AUTOINCREMENT, "
 				+ "timestamp 		TEXT DEFAULT (strftime(" + SQLITE_DATE_FORMAT
-				+ ",'now', 'localtime')), "
-				+ "latitude_total		FLOAT NOT NULL DEFAULT 0, "
+				+ ",'now')), " + "latitude_total		FLOAT NOT NULL DEFAULT 0, "
 				+ "latitude_weights	FLOAT NOT NULL DEFAULT 0, "
 				+ "latitude_average	FLOAT NOT NULL DEFAULT 0, "
 				+ "longitude_total	FLOAT NOT NULL DEFAULT 0, "
 				+ "longitude_weights	FLOAT NOT NULL DEFAULT 0, "
 				+ "longitude_average	FLOAT NOT NULL DEFAULT 0, " +
-				// "timestamp		DATETIME DEFAULT datetime('now','localtime')) , "
+				// "timestamp		DATETIME DEFAULT datetime('now')) , "
 				// +
 				"num_merged  INTEGER NOT NULL DEFAULT 1 " + ");");
 		db

@@ -1,11 +1,14 @@
 package ca.mcgill.hs.plugin;
 
-import java.io.File;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.classifiers.location.GPSClusterer;
 import ca.mcgill.hs.classifiers.location.WifiClusterer;
@@ -14,7 +17,44 @@ import ca.mcgill.hs.plugin.WifiLogger.WifiPacket;
 import ca.mcgill.hs.util.PreferenceFactory;
 
 public class LocationClusterer extends OutputPlugin {
+	class WifiObservationConsumer implements Runnable {
+		private final BlockingQueue<WifiObservation> queue;
+		private boolean stopped;
+
+		WifiObservationConsumer(final BlockingQueue<WifiObservation> q) {
+			queue = q;
+			stopped = false;
+		}
+
+		void consume(final WifiObservation observation) {
+			if (observation == null) {
+				return;
+			}
+			synchronized (wifiClusterer) {
+				if (!stopped) {
+					wifiClusterer.cluster(observation);
+				}
+			}
+		}
+
+		public void run() {
+			try {
+				while (!stopped) {
+					consume(queue.poll(1L, TimeUnit.SECONDS));
+				}
+			} catch (final InterruptedException ex) {
+				// Do nothing.
+			}
+		}
+
+		public void stop() {
+			stopped = true;
+		}
+	}
+
 	private static final String LOCATION_CLUSTERER_ENABLED_PREF = "locationClustererEnabledPref";
+
+	private static final String TAG = "LocationClusterer";
 
 	// The preference manager for this plugin.
 	private static SharedPreferences prefs;
@@ -23,6 +63,9 @@ public class LocationClusterer extends OutputPlugin {
 	private static boolean pluginEnabled;
 
 	private static Context context;
+
+	private static final BlockingQueue<WifiObservation> wifiObservationQueue = new LinkedBlockingQueue<WifiObservation>();
+	private static WifiObservationConsumer wifiObservationConsumer = null;
 
 	/**
 	 * Returns the list of Preference objects for this OutputPlugin.
@@ -92,33 +135,44 @@ public class LocationClusterer extends OutputPlugin {
 		}
 		if (dp.getDataPacketId() == WifiPacket.PACKET_ID) {
 			final WifiPacket packet = (WifiPacket) dp;
-			final WifiObservation observation = new WifiObservation(
-					packet.timestamp, packet.neighbors);
+			final double timestamp = packet.timestamp / 1000.0;
+			final WifiObservation observation = new WifiObservation(timestamp,
+					packet.neighbors);
 			for (int i = 0; i < packet.neighbors; i++) {
 				observation.addObservation(packet.BSSIDs[i].hashCode(),
 						packet.levels[i]);
 			}
-			wifiClusterer.cluster(packet.timestamp, observation);
+			wifiObservationQueue.add(observation);
 		}
 	}
 
 	@Override
 	protected void onPluginStart() {
-		wifiClusterer = new WifiClusterer(new File(context
-				.getExternalFilesDir(null), "wificlusters.db"));
-		gpsClusterer = new GPSClusterer(new File(context
-				.getExternalFilesDir(null), "gpsclusters.db"));
+		// wifiClusterer = new WifiClusterer(new File(context
+		// .getExternalFilesDir(null), "wificlusters.db"));
+		// gpsClusterer = new GPSClusterer(new File(context
+		// .getExternalFilesDir(null), "gpsclusters.db"));
+		Log.d(TAG, context.getDatabasePath("wificlusters.db").getPath());
+		wifiClusterer = new WifiClusterer(context);
+		gpsClusterer = new GPSClusterer(context
+				.getDatabasePath("gpsclusters.db"));
+		wifiObservationConsumer = new WifiObservationConsumer(
+				wifiObservationQueue);
+		new Thread(wifiObservationConsumer).start();
 	}
 
 	@Override
 	protected void onPluginStop() {
-		if (wifiClusterer != null) {
-			wifiClusterer.close();
-			wifiClusterer = null;
-		}
-		if (gpsClusterer != null) {
-			gpsClusterer.close();
-			wifiClusterer = null;
+		synchronized (wifiClusterer) {
+			wifiObservationConsumer.stop();
+			if (wifiClusterer != null) {
+				wifiClusterer.close();
+				wifiClusterer = null;
+			}
+			if (gpsClusterer != null) {
+				gpsClusterer.close();
+				wifiClusterer = null;
+			}
 		}
 	}
 

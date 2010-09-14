@@ -45,7 +45,7 @@ public class GPSLocationSet extends LocationSet {
 	}
 
 	@Override
-	public void add(final Location loc) {
+	public int add(final Location loc) {
 		final GPSLocation location = (GPSLocation) loc;
 
 		// Now get potential neighbours
@@ -86,6 +86,7 @@ public class GPSLocationSet extends LocationSet {
 			}
 		}
 		location.removeNeighbours(neighboursToRemove);
+		return location.getId();
 	}
 
 	@Override

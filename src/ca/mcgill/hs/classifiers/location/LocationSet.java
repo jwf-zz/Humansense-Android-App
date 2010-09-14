@@ -34,7 +34,7 @@ public abstract class LocationSet {
 	 * @param point
 	 *            The point to be added to the set.
 	 */
-	public abstract void add(Location point);
+	public abstract int add(Location point);
 
 	public void addToCluster(final int locationId, final int clusterId) {
 		DebugHelper.out.println("\tAdding " + locationId + " to cluster "

@@ -6,6 +6,7 @@
     
     <!--  Widget Strings -->
     <string name="lingering_notification_widget_name">Lingering Notification</string>
+    <string name="location_status_widget_name">Location Status</string>
     
     <!--  Notification Strings -->
     <string name="notification_ticker">Humansense</string>

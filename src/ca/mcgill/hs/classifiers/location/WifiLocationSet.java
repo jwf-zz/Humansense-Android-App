@@ -2,19 +2,23 @@ package ca.mcgill.hs.classifiers.location;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedList;
+import java.util.HashSet;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
-import android.os.Debug;
 import android.util.Log;
 import ca.mcgill.hs.util.LRUCache;
 
@@ -29,6 +33,102 @@ public final class WifiLocationSet extends LocationSet {
 
 		@Override
 		public void onCreate(final SQLiteDatabase db) {
+			// /* Locations Table */
+			// db.execSQL("DROP TABLE IF EXISTS " + LOCATIONS_TABLE);
+			// db.execSQL("CREATE TABLE " + LOCATIONS_TABLE + " ( "
+			// + "location_id	INTEGER PRIMARY KEY AUTOINCREMENT, "
+			// + "timestamp 		TEXT, "
+			// + "num_merged  INTEGER NOT NULL DEFAULT 1 " + ");");
+			//
+			// /* WAPs Table */
+			// db.execSQL("DROP TABLE IF EXISTS " + WAPS_TABLE);
+			// db.execSQL("CREATE TABLE " + WAPS_TABLE + " ( "
+			// + "wap_id	INTEGER NOT NULL PRIMARY KEY, " + "BSSID	TEXT, "
+			// + "SSID  	TEXT " + ");");
+			//
+			// /* Observations Table */
+			// db.execSQL("DROP TABLE IF EXISTS " + OBSERVATIONS_TABLE);
+			// db.execSQL("CREATE TABLE " + OBSERVATIONS_TABLE + " ( "
+			// + "location_id INTEGER NOT NULL REFERENCES "
+			// + LOCATIONS_TABLE + ", "
+			// + "wap_id INTEGER NOT NULL REFERENCES " + WAPS_TABLE + ", "
+			// + "strength INTEGER NOT NULL DEFAULT 0, "
+			// + "count INTEGER NOT NULL DEFAULT 0, "
+			// + "average_strength FLOAT NOT NULL DEFAULT 0 " + ");");
+			// db.execSQL("CREATE UNIQUE INDEX idx_" + OBSERVATIONS_TABLE
+			// + "_wap_id ON " + OBSERVATIONS_TABLE
+			// + " (wap_id,location_id);");
+			// db
+			// .execSQL("CREATE TRIGGER update_signal_strengths AFTER UPDATE ON "
+			// + OBSERVATIONS_TABLE
+			// + " FOR EACH ROW "
+			// + "BEGIN "
+			// + "UPDATE "
+			// + OBSERVATIONS_TABLE
+			// +
+			// " SET strength=OLD.strength+NEW.strength, count=OLD.count+1, average_strength=(OLD.strength+NEW.strength)/(OLD.count+1) WHERE location_id=NEW.location_id AND wap_id=NEW.wap_id; "
+			// + "END;");
+			//
+			// /* Neighbours Table */
+			// db.execSQL("DROP TABLE IF EXISTS " + NEIGHBOURS_TABLE);
+			// db.execSQL("CREATE TABLE " + NEIGHBOURS_TABLE + " ( "
+			// + "location_id1 INTEGER NOT NULL REFERENCES "
+			// + LOCATIONS_TABLE + ", "
+			// + "location_id2 INTEGER NOT NULL REFERENCES "
+			// + LOCATIONS_TABLE + ", "
+			// + "distance FLOAT NOT NULL DEFAULT -1.0 " + ");");
+			// db.execSQL("CREATE UNIQUE INDEX idx_" + NEIGHBOURS_TABLE
+			// + "_loc1_loc2 ON " + NEIGHBOURS_TABLE
+			// + " (location_id1,location_id2);");
+			// db
+			// .execSQL("CREATE TRIGGER add_symmetric_neighbour AFTER INSERT ON "
+			// + NEIGHBOURS_TABLE
+			// + " FOR EACH ROW "
+			// + "BEGIN "
+			// + "INSERT INTO "
+			// + NEIGHBOURS_TABLE
+			// + " VALUES (NEW.location_id2, NEW.location_id1, NEW.distance); "
+			// + "END;");
+			// db
+			// .execSQL("CREATE TRIGGER remove_symmetric_neighbour AFTER DELETE ON "
+			// + NEIGHBOURS_TABLE
+			// + " FOR EACH ROW "
+			// + "BEGIN "
+			// + "DELETE FROM "
+			// + NEIGHBOURS_TABLE
+			// +
+			// " WHERE location_id1=OLD.location_id2 AND location_id2=OLD.location_id1; "
+			// + "END;");
+			// db
+			// .execSQL("CREATE TRIGGER symmetrize_distance AFTER UPDATE ON "
+			// + NEIGHBOURS_TABLE
+			// + " FOR EACH ROW "
+			// + "BEGIN "
+			// + "UPDATE "
+			// + NEIGHBOURS_TABLE
+			// + " SET distance=NEW.distance "
+			// +
+			// "WHERE location_id1=OLD.location_id2 and location_id2=OLD.location_id1; "
+			// + "END;");
+			//
+			// /* Labels Table */
+			// db.execSQL("DROP TABLE IF EXISTS " + LABELS_TABLE);
+			// db.execSQL("CREATE TABLE " + LABELS_TABLE + " ( "
+			// + "label_id	INTEGER NOT NULL PRIMARY KEY, "
+			// + "label		TEXT NOT NULL " + ");");
+			//
+			// /* Clusters Table */
+			// db.execSQL("DROP TABLE IF EXISTS " + CLUSTERS_TABLE);
+			// db.execSQL("CREATE TABLE " + CLUSTERS_TABLE + " ( "
+			// + "location_id	INTEGER NOT NULL PRIMARY KEY REFERENCES "
+			// + LOCATIONS_TABLE + ", " + "cluster_id		INTEGER NOT NULL, "
+			// + "label_id		INTEGER REFERENCES " + LABELS_TABLE + " "
+			// + ");");
+			// db.execSQL("CREATE UNIQUE INDEX idx_" + CLUSTERS_TABLE
+			// + "_cluster_to_locations ON " + CLUSTERS_TABLE
+			// + " (cluster_id,location_id);");
+
+			/*** NOW WITHOUT FOREIGN KEY CONSTRAINTS ***/
 			/* Locations Table */
 			db.execSQL("DROP TABLE IF EXISTS " + LOCATIONS_TABLE);
 			db.execSQL("CREATE TABLE " + LOCATIONS_TABLE + " ( "
@@ -45,64 +145,65 @@ public final class WifiLocationSet extends LocationSet {
 			/* Observations Table */
 			db.execSQL("DROP TABLE IF EXISTS " + OBSERVATIONS_TABLE);
 			db.execSQL("CREATE TABLE " + OBSERVATIONS_TABLE + " ( "
-					+ "location_id INTEGER NOT NULL REFERENCES "
-					+ LOCATIONS_TABLE + ", "
-					+ "wap_id INTEGER NOT NULL REFERENCES " + WAPS_TABLE + ", "
+					+ "location_id INTEGER NOT NULL, "
+					+ "wap_id INTEGER NOT NULL, "
 					+ "strength INTEGER NOT NULL DEFAULT 0, "
 					+ "count INTEGER NOT NULL DEFAULT 0, "
 					+ "average_strength FLOAT NOT NULL DEFAULT 0 " + ");");
 			db.execSQL("CREATE UNIQUE INDEX idx_" + OBSERVATIONS_TABLE
 					+ "_wap_id ON " + OBSERVATIONS_TABLE
 					+ " (wap_id,location_id);");
-			db
-					.execSQL("CREATE TRIGGER update_signal_strengths AFTER UPDATE ON "
-							+ OBSERVATIONS_TABLE
-							+ " FOR EACH ROW "
-							+ "BEGIN "
-							+ "UPDATE "
-							+ OBSERVATIONS_TABLE
-							+ " SET strength=OLD.strength+NEW.strength, count=OLD.count+1, average_strength=(OLD.strength+NEW.strength)/(OLD.count+1) WHERE location_id=NEW.location_id AND wap_id=NEW.wap_id; "
-							+ "END;");
+			// db
+			// .execSQL("CREATE TRIGGER update_signal_strengths AFTER UPDATE OF strength ON "
+			// + OBSERVATIONS_TABLE
+			// + " FOR EACH ROW "
+			// + "BEGIN "
+			// + "UPDATE "
+			// + OBSERVATIONS_TABLE
+			// +
+			// " SET strength=OLD.strength+NEW.strength, count=OLD.count+1, average_strength=(OLD.strength+NEW.strength)/(OLD.count+1) WHERE location_id=NEW.location_id AND wap_id=NEW.wap_id; "
+			// + "END;");
 
 			/* Neighbours Table */
 			db.execSQL("DROP TABLE IF EXISTS " + NEIGHBOURS_TABLE);
 			db.execSQL("CREATE TABLE " + NEIGHBOURS_TABLE + " ( "
-					+ "location_id1 INTEGER NOT NULL REFERENCES "
-					+ LOCATIONS_TABLE + ", "
-					+ "location_id2 INTEGER NOT NULL REFERENCES "
-					+ LOCATIONS_TABLE + ", "
-					+ "distance FLOAT NOT NULL DEFAULT -1.0 " + ");");
+					+ "location_id1 INTEGER NOT NULL, "
+					+ "location_id2 INTEGER NOT NULL "
+					// + "distance FLOAT NOT NULL DEFAULT -1.0 "
+					+ ");");
 			db.execSQL("CREATE UNIQUE INDEX idx_" + NEIGHBOURS_TABLE
 					+ "_loc1_loc2 ON " + NEIGHBOURS_TABLE
 					+ " (location_id1,location_id2);");
-			db
-					.execSQL("CREATE TRIGGER add_symmetric_neighbour AFTER INSERT ON "
-							+ NEIGHBOURS_TABLE
-							+ " FOR EACH ROW "
-							+ "BEGIN "
-							+ "INSERT INTO "
-							+ NEIGHBOURS_TABLE
-							+ " VALUES (NEW.location_id2, NEW.location_id1, NEW.distance); "
-							+ "END;");
-			db
-					.execSQL("CREATE TRIGGER remove_symmetric_neighbour AFTER DELETE ON "
-							+ NEIGHBOURS_TABLE
-							+ " FOR EACH ROW "
-							+ "BEGIN "
-							+ "DELETE FROM "
-							+ NEIGHBOURS_TABLE
-							+ " WHERE location_id1=OLD.location_id2 AND location_id2=OLD.location_id1; "
-							+ "END;");
-			db
-					.execSQL("CREATE TRIGGER symmetrize_distance AFTER UPDATE ON "
-							+ NEIGHBOURS_TABLE
-							+ " FOR EACH ROW "
-							+ "BEGIN "
-							+ "UPDATE "
-							+ NEIGHBOURS_TABLE
-							+ " SET distance=NEW.distance "
-							+ "WHERE location_id1=OLD.location_id2 and location_id2=OLD.location_id1; "
-							+ "END;");
+			// db
+			// .execSQL("CREATE TRIGGER add_symmetric_neighbour AFTER INSERT ON "
+			// + NEIGHBOURS_TABLE
+			// + " FOR EACH ROW "
+			// + "BEGIN "
+			// + "INSERT INTO "
+			// + NEIGHBOURS_TABLE
+			// + " VALUES (NEW.location_id2, NEW.location_id1, NEW.distance); "
+			// + "END;");
+			// db
+			// .execSQL("CREATE TRIGGER remove_symmetric_neighbour AFTER DELETE ON "
+			// + NEIGHBOURS_TABLE
+			// + " FOR EACH ROW "
+			// + "BEGIN "
+			// + "DELETE FROM "
+			// + NEIGHBOURS_TABLE
+			// +
+			// " WHERE location_id1=OLD.location_id2 AND location_id2=OLD.location_id1; "
+			// + "END;");
+			// db
+			// .execSQL("CREATE TRIGGER symmetrize_distance AFTER UPDATE OF distance ON "
+			// + NEIGHBOURS_TABLE
+			// + " FOR EACH ROW "
+			// + "BEGIN "
+			// + "UPDATE "
+			// + NEIGHBOURS_TABLE
+			// + " SET distance=NEW.distance "
+			// +
+			// "WHERE location_id1=OLD.location_id2 and location_id2=OLD.location_id1; "
+			// + "END;");
 
 			/* Labels Table */
 			db.execSQL("DROP TABLE IF EXISTS " + LABELS_TABLE);
@@ -113,9 +214,8 @@ public final class WifiLocationSet extends LocationSet {
 			/* Clusters Table */
 			db.execSQL("DROP TABLE IF EXISTS " + CLUSTERS_TABLE);
 			db.execSQL("CREATE TABLE " + CLUSTERS_TABLE + " ( "
-					+ "location_id	INTEGER NOT NULL PRIMARY KEY REFERENCES "
-					+ LOCATIONS_TABLE + ", " + "cluster_id		INTEGER NOT NULL, "
-					+ "label_id		INTEGER REFERENCES " + LABELS_TABLE + " "
+					+ "location_id	INTEGER NOT NULL PRIMARY KEY, "
+					+ "cluster_id	INTEGER NOT NULL, " + "label_id		INTEGER "
 					+ ");");
 			db.execSQL("CREATE UNIQUE INDEX idx_" + CLUSTERS_TABLE
 					+ "_cluster_to_locations ON " + CLUSTERS_TABLE
@@ -132,6 +232,30 @@ public final class WifiLocationSet extends LocationSet {
 	public static final String OBSERVATIONS_TABLE = "observations";
 
 	public static final String WAPS_TABLE = "waps";
+
+	/** Fast & simple file copy. */
+	public static void copy(final File source, final File dest)
+			throws IOException {
+		FileChannel in = null, out = null;
+		try {
+			in = new FileInputStream(source).getChannel();
+			out = new FileOutputStream(dest).getChannel();
+
+			final long size = in.size();
+			final MappedByteBuffer buf = in.map(FileChannel.MapMode.READ_ONLY,
+					0, size);
+
+			out.write(buf);
+
+		} finally {
+			if (in != null) {
+				in.close();
+			}
+			if (out != null) {
+				out.close();
+			}
+		}
+	}
 
 	// private Map<Integer,WifiLocation> locationCache = new
 	// HashMap<Integer,WifiLocation>();
@@ -150,37 +274,41 @@ public final class WifiLocationSet extends LocationSet {
 
 	private static final String TAG = "WifiLocationSet";
 
-	// Maximum neighbours to consider for clustering.
-	public static final int MAX_NEIGHBOURS = 500;
-
 	private final WifiDatabaseHelper dbHelper;
 
+	SQLiteStatement retrieveNumMergedStmt = null;
+
 	public WifiLocationSet(final Context context) {
-		dbHelper = new WifiDatabaseHelper(context, "wificlusters.db", null, 2);
+		// try {
+		// copy(
+		// new File("/sdcard/hsandroidapp/data/wificlusters.db"),
+		// new File(
+		// "/data/data/ca.mcgill.hs/databases/wificlusters.db"));
+		// } catch (final IOException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+
+		dbHelper = new WifiDatabaseHelper(context, "wificlusters.db", null, 1);
 		db = dbHelper.getWritableDatabase();
 
 		// Uncomment for in-memory database
 		// db = SQLiteDatabase.create(null);
 
 		// uncomment to recreate databases
-		// dbHelper.onCreate(db);
+		dbHelper.onCreate(db);
 
-		/*
-		 * final boolean dbExists = dbFile.exists(); db =
-		 * SQLiteDatabase.openOrCreateDatabase(dbFile.getName(), null);
-		 * Log.d(TAG, "Opening Database at " + dbFile.getPath()); if (!dbExists)
-		 * { final long startTime = System.currentTimeMillis();
-		 * createDatabase(db); System.out.println("Took " +
-		 * (System.currentTimeMillis() - startTime) + "ms to create database");
-		 */
+		retrieveNumMergedStmt = db.compileStatement("SELECT num_merged FROM "
+				+ LocationSet.LOCATIONS_TABLE + " WHERE location_id=?");
 	}
 
 	@Override
-	public void add(final Location loc) {
+	public int add(final Location loc) {
 		final WifiLocation location = (WifiLocation) loc;
-		if (location.getId() == 50) {
-			Debug.stopMethodTracing();
-		}
+		final int location_id = location.getId();
+		// if (location.getId() == 50) {
+		// Debug.stopMethodTracing();
+		// }
 		// Now get potential neighbours
 
 		// Compute a threshold for minumum number of waps that must be common to
@@ -191,7 +319,8 @@ public final class WifiLocationSet extends LocationSet {
 		final Integer temp_threshold = (int) (location.numObservations() * WifiLocation.ETA);
 		// DebugHelper.out.println("Id is: " + location.location_id +
 		// ", Threshold is: " + temp_threshold);
-		final Collection<Integer> possibleNeighbours = new LinkedList<Integer>();
+		final Collection<Integer> possibleNeighbours = new HashSet<Integer>(
+				(int) (temp_threshold / 0.75f) + 1);
 
 		// final String table = OBSERVATIONS_TABLE + " as o1 " + "JOIN "
 		// + OBSERVATIONS_TABLE + " as o2 USING (wap_id)";
@@ -207,11 +336,11 @@ public final class WifiLocationSet extends LocationSet {
 
 		final String[] params = { Integer.toString(location.getId()) };
 		final Cursor cursor = db.rawQuery("SELECT o2.location_id FROM "
-				+ OBSERVATIONS_TABLE + " as o1 " + "JOIN " + OBSERVATIONS_TABLE
-				+ " as o2 USING (wap_id) WHERE o1.location_id=? "
-				+ "GROUP BY o2.location_id HAVING COUNT(o2.location_id) > "
-				+ temp_threshold + " ORDER BY o2.location_id DESC LIMIT "
-				+ MAX_NEIGHBOURS, params);
+				+ OBSERVATIONS_TABLE + " AS o1 " + "JOIN " + OBSERVATIONS_TABLE
+				+ " AS o2 USING (wap_id) JOIN " + LOCATIONS_TABLE
+				+ " AS l USING (location_id) WHERE o1.location_id=? "
+				+ "GROUP BY o2.location_id HAVING SUM(l.num_merged) > "
+				+ temp_threshold, params);
 		try {
 			while (cursor.moveToNext()) {
 				possibleNeighbours.add(cursor.getInt(0));
@@ -219,28 +348,43 @@ public final class WifiLocationSet extends LocationSet {
 		} finally {
 			cursor.close();
 		}
+		// Remove myself from myself's neighbours.
+		try {
+			possibleNeighbours.remove(location_id);
+		} catch (final IndexOutOfBoundsException e) {
+			// Ignore.
+		}
 		Log.d(TAG, "Adding " + possibleNeighbours.size()
 				+ " possible neighbours.");
-		location.addNeighbours(possibleNeighbours);
+		// location.addNeighbours(possibleNeighbours);
 
 		// Add 'o' as a neighbour to 'obs' if they are close, else remove 'obs'
 		// as a neighbour of 'o'. Note that we assumed 'obs' was 'o''s neighbour
 		// earlier; now we adjust that assumption.
 
-		final Collection<Integer> neighboursToRemove = new LinkedList<Integer>();
-		for (final Integer neighbour_id : location.getNeighbours()) {
+		final Collection<Integer> neighboursToRemove = new HashSet<Integer>();
+		for (final Integer neighbour_id : possibleNeighbours) {
 
-			final WifiLocation obs = (WifiLocation) getLocation(neighbour_id);
-			final double dist = location.distanceFrom(obs);
-			// DebugHelper.out.println("\tDistance between " + location.getId()
-			// + " and " + neighbour_id + " is " + dist);
+			final WifiLocation neighbour = (WifiLocation) getLocation(neighbour_id);
+			final double dist = location.distanceFrom(neighbour);
+			DebugHelper.out.println("\tDistance between " + location.getId()
+					+ " and " + neighbour_id + " is " + dist);
+
+			// TODO: Get merging right.
+			// if (dist < WifiLocation.MERGE_DIST) {
+			// mergeLocations(location, neighbour);
+			// return neighbour_id;
+			// }
 			if (dist > 0 && dist < WifiLocation.EPS) {
-				obs.addNeighbour(neighbour_id);
+				// Add myself as a neighbour of my neighbour.
+				neighbour.addNeighbour(location_id);
 			} else {
 				neighboursToRemove.add(neighbour_id);
 			}
 		}
-		location.removeNeighbours(neighboursToRemove);
+		possibleNeighbours.removeAll(neighboursToRemove);
+		location.addNeighbours(possibleNeighbours);
+		return location_id;
 	}
 
 	@Override
@@ -252,9 +396,15 @@ public final class WifiLocationSet extends LocationSet {
 		try {
 			if (db != null) {
 				dumpDBToFile();
+				final File dbFile = new File(db.getPath());
 				db.close(); // Close the database handle
 				dbHelper.close();
+				copy(dbFile, new File("/sdcard/hsandroidapp/data/"
+						+ dbFile.getName()));
+
 			}
+		} catch (final IOException e) {
+			e.printStackTrace();
 		} finally {
 			db = null;
 		}
@@ -317,6 +467,32 @@ public final class WifiLocationSet extends LocationSet {
 		return WINDOW_LENGTH;
 	}
 
+	/**
+	 * Merges the location src into dst, removing src and updating the
+	 * num_merged for dst.
+	 * 
+	 * @param src
+	 *            Location to be merged
+	 * @param dst
+	 *            Location that will hold the merged locations.
+	 */
+	private void mergeLocations(final WifiLocation src, final WifiLocation dst) {
+		final int src_id = src.getId();
+		final int dst_id = dst.getId();
+		Log.d(TAG, "MERGING LOCATIONS " + src_id + " and " + dst_id);
+		dst.addObservation(src.getObservations());
+		dst.setNumMerged(dst.getNumMerged() + src.getNumMerged());
+		final String[] params = { Integer.toString(src_id) };
+		db.execSQL("DELETE FROM " + WifiLocationSet.OBSERVATIONS_TABLE
+				+ " WHERE location_id=?", params);
+		db.execSQL("DELETE FROM " + LocationSet.NEIGHBOURS_TABLE
+				+ " WHERE location_id1=?", params);
+		db.execSQL("DELETE FROM " + LocationSet.LOCATIONS_TABLE
+				+ " WHERE location_id=?", params);
+		// Remove from the cache.
+		locationCache.put(src_id, null);
+	}
+
 	@Override
 	public Location newLocation(final double timestamp) {
 		return new WifiLocation(db, timestamp);
@@ -325,6 +501,11 @@ public final class WifiLocationSet extends LocationSet {
 	@Override
 	public float pctOfWindowRequiredToBeStationary() {
 		return DELTA;
+	}
+
+	public int retrieveNumMerged(final int location_id) {
+		retrieveNumMergedStmt.bindLong(0, location_id);
+		return (int) retrieveNumMergedStmt.simpleQueryForLong();
 	}
 
 	@Override

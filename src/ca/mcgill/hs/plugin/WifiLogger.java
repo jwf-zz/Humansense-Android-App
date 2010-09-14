@@ -40,7 +40,7 @@ public final class WifiLogger extends InputPlugin {
 
 		@Override
 		public void onReceive(final Context c, final Intent intent) {
-			Log.i(PLUGIN_NAME, "Received Wifi Scan Results.");
+			// Log.d(PLUGIN_NAME, "Received Wifi Scan Results.");
 			final List<ScanResult> results = wifi.getScanResults();
 			processResults(results);
 		}
@@ -238,7 +238,7 @@ public final class WifiLogger extends InputPlugin {
 		write(new WifiPacket(numResults, timestamp, levels, SSIDs, BSSIDs));
 		if (scanPending) {
 			scanPending = false;
-			Log.i(PLUGIN_NAME, "Initiating Pending Wifi Scan.");
+			// Log.d(PLUGIN_NAME, "Initiating Pending Wifi Scan.");
 			wifiManager.startScan();
 		} else {
 			scanning = false;
@@ -277,7 +277,7 @@ public final class WifiLogger extends InputPlugin {
 						}
 						if (!scanning) {
 							scanning = true;
-							Log.i(PLUGIN_NAME, "Initiating Wifi Scan.");
+							// Log.d(PLUGIN_NAME, "Initiating Wifi Scan.");
 							wifiManager.startScan();
 						} else {
 							scanPending = true;

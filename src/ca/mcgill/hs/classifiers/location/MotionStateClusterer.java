@@ -1,12 +1,15 @@
 package ca.mcgill.hs.classifiers.location;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.util.Log;
 
 public class MotionStateClusterer {
-
 	// Contains the timestamp for the observation as well as the index in the
 	// distance matrix for that observation.
 	private static final class Tuple {
@@ -19,10 +22,14 @@ public class MotionStateClusterer {
 		}
 	}
 
+	private static final String RESET_MOVEMENT_STATE_TIMER_NAME = "reset movement state timer";
+
 	private static final String TAG = "MotionStateClusterer";
 
 	private final SignificantLocationClusterer slClusterer;
 	private final LocationSet locations;
+	private Timer resetMovementTimer;
+	private int current_cluster = -1;
 
 	// Maintain a queue of the Tuples for the observations that are
 	// currently being clustered.
@@ -50,6 +57,10 @@ public class MotionStateClusterer {
 	// True if the current window was labelled as stationary.
 	// private boolean curStationaryStatus = false;
 
+	private final SimpleDateFormat dfm = new SimpleDateFormat("HH:mm:ss");
+
+	private int timerDelay = 1000 * 10; // 10 seconds;
+
 	public MotionStateClusterer(final LocationSet locations) {
 		TIME_BASED_WINDOW = locations.usesTimeBasedWindow();
 		WINDOW_LENGTH = locations.getWindowLength();
@@ -66,6 +77,7 @@ public class MotionStateClusterer {
 		}
 		slClusterer = new SignificantLocationClusterer(locations);
 		this.locations = locations;
+		resetMovementTimer = new Timer(RESET_MOVEMENT_STATE_TIMER_NAME);
 	}
 
 	// Adds a new observation to the pool, does some clustering, and then
@@ -141,20 +153,40 @@ public class MotionStateClusterer {
 				status += 1; // Vote for motion.
 			}
 		}
-		// DebugHelper.out.println("Clustered " + clustered_points + " of " +
-		// pool_size + " points.");
+		Log.d(TAG, "Clustered " + clustered_points + " of " + pool_size
+				+ " points.");
 
 		if (location != null) {
-			final int cluster_id = slClusterer.addNewLocation(location);
-			Log.d(TAG, "WifiClusterer thinks we're in location: " + cluster_id);
-			previouslyMoving = false;
+			current_cluster = slClusterer.addNewLocation(location);
+			Log.d(TAG, "WifiClusterer thinks we're in location: "
+					+ current_cluster);
+			if (current_cluster > 0) {
+				// Set the timer, so that we will still update once in a while
+				resetMovementTimer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						previouslyMoving = true;
+					}
+
+				}, timerDelay);
+				timerDelay *= 2;
+				previouslyMoving = false;
+			}
 			// } else {
 			// previouslyMoving = true;
 			// }
 		} else if (!previouslyMoving && clustered_points == 0) {
+			current_cluster = -1;
+			timerDelay = 10 * 1000;
 			previouslyMoving = true;
+			resetMovementTimer.cancel();
+			resetMovementTimer.purge();
+			resetMovementTimer = new Timer(RESET_MOVEMENT_STATE_TIMER_NAME);
 		}
-
+		final Date d = new Date(System.currentTimeMillis());
+		LocationStatusWidget.updateText("Update at: " + dfm.format(d)
+				+ "\nClustered " + clustered_points + " of " + pool_size
+				+ " points.\nCurrently in location: " + current_cluster + "\n");
 		// if (avg != null) {
 		// slClusterer.addNeighborPoint(avg);
 		// }
@@ -194,11 +226,6 @@ public class MotionStateClusterer {
 				pool.removeFirst();
 			}
 		}
-	}
-
-	public void dumpClusterDetails(final String filename) {
-		slClusterer.dumpToFile(filename);
-		return;
 	}
 
 	// Returns the first available index in the distance matrix.

@@ -1,14 +1,7 @@
 package ca.mcgill.hs.classifiers.location;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-
-import com.Ostermiller.util.CSVPrinter;
 
 public class SignificantLocationClusterer {
 
@@ -38,16 +31,16 @@ public class SignificantLocationClusterer {
 	 * Adds all the cluster IDs of <tt>point</tt>'s neighbours to the set passed
 	 * as parameter.
 	 * 
-	 * @param point
+	 * @param location
 	 *            The point whose neighbours' clusters must be added.
 	 * @param clustersToMerge
 	 *            The set of clusters.
 	 */
-	private void addNeighbouringClusters(final Location point,
+	private void addNeighbouringClusters(final Location location,
 			final Collection<Integer> clustersToMerge) {
 		DebugHelper.out
 				.println("\tAdding neighbouring clusters into merge set.");
-		final Collection<Integer> clusterIds = pool.getClusterIds(point
+		final Collection<Integer> clusterIds = pool.getClusterIds(location
 				.getNeighbours());
 		if (!clusterIds.isEmpty()) {
 			DebugHelper.out.print("\t\tClusters to merge:");
@@ -80,15 +73,18 @@ public class SignificantLocationClusterer {
 	/**
 	 * Adds a neighbour point to the pool of observed points.
 	 * 
-	 * @param point
-	 *            The point to be added.
+	 * @param location
+	 *            The new location to be added.
 	 */
-	public int addNewLocation(final Location point) {
-		pool.cacheLocation(point);
+	public int addNewLocation(Location location) {
+		pool.cacheLocation(location);
 
 		// Add the point to the pool, compute neighbours.
-		pool.add(point);
-		return assignToCluster(point);
+		final int new_id = pool.add(location);
+		if (new_id != location.getId()) {
+			location = pool.getLocation(new_id);
+		}
+		return assignToCluster(location);
 	}
 
 	public int assignToCluster(final Location location) {
@@ -96,21 +92,23 @@ public class SignificantLocationClusterer {
 		// System.exit(0);
 		// }
 		int cluster_id = -1;
-		DebugHelper.out.println("Considering new location " + location.getId()
+		DebugHelper.out.println("Clustering location " + location.getId()
 				+ " with timestamp " + location.getTimestamp());
 
 		// The neighbours of the point.
 		final Collection<Integer> neighbour_ids = location.getNeighbours();
+		final int num_neighbours = location.getNumNeighbours();
 
 		// The list of cluster to merge.
 		final Collection<Integer> clustersToMerge = new HashSet<Integer>();
 
 		// Determine whether or not to make a new set.
-		if (neighbour_ids.size() >= MIN_PTS) {
+		if (num_neighbours >= MIN_PTS) {
 			cluster_id = createNewCluster(location); // create a new cluster
-			DebugHelper.out.println("\tLocation has " + neighbour_ids.size()
+			DebugHelper.out.println("\tLocation has " + num_neighbours
 					+ " neighbours, so adding to a new cluster " + cluster_id
 					+ ".");
+
 			// add the cluster to the list of clusters to merge
 			clustersToMerge.add(cluster_id);
 
@@ -120,8 +118,8 @@ public class SignificantLocationClusterer {
 			// add neighbours to new cluster
 			addNeighboursToCluster(location, cluster_id);
 		} else {
-			DebugHelper.out.println("\tLocation only has "
-					+ neighbour_ids.size() + " neighbours, so not clustering.");
+			DebugHelper.out.println("\tLocation only has " + num_neighbours
+					+ " neighbours, so not clustering.");
 		}
 
 		DebugHelper.out.println("\tChecking neighbours...");
@@ -132,7 +130,7 @@ public class SignificantLocationClusterer {
 				// If the neighbour is not already in a cluster, check if it now
 				// has enough neighbours to form a cluster.
 				final Location neighbour = pool.getLocation(neighbour_id);
-				if (neighbour.getNeighbours().size() >= MIN_PTS) {
+				if (neighbour.getNumNeighbours() >= MIN_PTS) {
 					DebugHelper.out.println("\tNeighbour " + neighbour_id
 							+ " now has enough neighbours to form a cluster.");
 					final int cid = createNewCluster(neighbour);
@@ -177,42 +175,6 @@ public class SignificantLocationClusterer {
 		DebugHelper.out.println("\tAdded " + point.getId() + " to new cluster "
 				+ clusterID);
 		return clusterID;
-	}
-
-	public void dumpToFile(final String filename) {
-		try {
-			final Map<Integer, Integer> clusterIds = new HashMap<Integer, Integer>();
-			int counter = 1;
-
-			final CSVPrinter printer = new CSVPrinter(new FileOutputStream(
-					filename));
-			final Collection<Integer> locations = pool.getAllLocations();
-			for (final int location_id : locations) {
-				final Location location = pool.getLocation(location_id);
-				final long timestamp = (long) (1000L * location.getTimestamp());
-				printer.print("" + timestamp);
-				final int cluster_id = pool.getClusterId(location_id);
-				if (cluster_id == -1) {
-					printer.print("0");
-				} else {
-					Integer remappedId = clusterIds.get(cluster_id);
-					if (remappedId == null) {
-						clusterIds.put(cluster_id, counter);
-						remappedId = counter;
-						counter += 1;
-					}
-
-					printer.print(remappedId.toString());
-				}
-				printer.println();
-			}
-			printer.close();
-		} catch (final FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-
 	}
 
 	@Override

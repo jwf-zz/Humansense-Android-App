@@ -15,8 +15,6 @@ import ca.mcgill.hs.util.PreferenceFactory;
 /**
  * An InputPlugin which gets data from the phone's available sensors.
  * 
- * @author Cicerone Cojocaru, Jonathan Pitre
- * 
  */
 public class SensorLogger extends InputPlugin implements SensorEventListener {
 	public static class SensorPacket implements DataPacket {
@@ -66,10 +64,11 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 
 	private static final String SENSOR_LOGGER_INTERVAL_PREF = "sensorIntervalPreference";
 	private static final String SENSOR_LOGGER_DEFAULT_INTERVAL = "0";
-	private static final String SENSOR_LOGGER_ENABLE_PREF = "sensorLoggerEnable";
+	private static final String SENSOR_LOGGER_ENABLE_PREF = "sensorLoggerEnablePreference";
 
 	final static String PLUGIN_NAME = "SensorLogger";
 	final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+	private static final String SENSOR_LOGGER_CALCULATE_ORIENTATION = "calculateOrientationPreference";
 
 	/**
 	 * Returns the list of Preference objects for this InputPlugin.
@@ -79,7 +78,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	 * @return an array of the Preferences of this object.
 	 */
 	public static Preference[] getPreferences(final Context c) {
-		final Preference[] prefs = new Preference[2];
+		final Preference[] prefs = new Preference[3];
 
 		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
 				SENSOR_LOGGER_ENABLE_PREF,
@@ -95,6 +94,12 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 				R.string.sensorlogger_interval_pref,
 				R.string.sensorlogger_interval_pref_summary);
 
+		prefs[2] = PreferenceFactory.getCheckBoxPreference(c,
+				SENSOR_LOGGER_CALCULATE_ORIENTATION,
+				R.string.sensorlogger_orientation_pref,
+				R.string.sensorlogger_orientation_pref_summary,
+				R.string.sensorlogger_orientation_pref_on,
+				R.string.sensorlogger_orientation_pref_off);
 		return prefs;
 	}
 
@@ -116,7 +121,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	// A boolean checking whether or not we are logging at a given moment.
 	private boolean logging = false;
 	// The speed at which the accelerometer will log.
-	private final int loggingSpeed;
+	private int loggingSpeed;
 	// Offset for timestamps
 	private long timestamp_offset = 0;
 	// Variables used to write out the sensor data received.
@@ -129,6 +134,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	private final float[] orientation = { 0.0f, 0.0f, 0.0f };
 
 	private final SharedPreferences prefs;
+	private boolean calculateOrientation;
 
 	/**
 	 * This is the basic constructor for the SensorLogger plugin. It has to be
@@ -145,7 +151,8 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 		prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		loggingSpeed = Integer.parseInt(prefs.getString(
 				SENSOR_LOGGER_INTERVAL_PREF, SENSOR_LOGGER_DEFAULT_INTERVAL));
-
+		calculateOrientation = prefs.getBoolean(
+				SENSOR_LOGGER_CALCULATE_ORIENTATION, false);
 		pluginEnabled = prefs.getBoolean(SENSOR_LOGGER_ENABLE_PREF, false);
 	}
 
@@ -182,13 +189,33 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	 */
 	@Override
 	public void onPreferenceChanged() {
+		boolean restartPlugin = false;
+		final int newLoggingSpeed = Integer.parseInt(prefs.getString(
+				SENSOR_LOGGER_INTERVAL_PREF, SENSOR_LOGGER_DEFAULT_INTERVAL));
+		if (newLoggingSpeed != loggingSpeed) {
+			loggingSpeed = newLoggingSpeed;
+			restartPlugin = true;
+		}
+		calculateOrientation = prefs.getBoolean(
+				SENSOR_LOGGER_CALCULATE_ORIENTATION, false);
+		if (!calculateOrientation) {
+			orientation[0] = 0.0f;
+			orientation[1] = 0.0f;
+			orientation[2] = 0.0f;
+		}
 		final boolean pluginActiveNew = prefs.getBoolean(
 				SENSOR_LOGGER_ENABLE_PREF, false);
 		if (pluginEnabled && !pluginActiveNew) {
 			stopPlugin();
 			pluginEnabled = pluginActiveNew;
+			restartPlugin = false;
 		} else if (!pluginEnabled && pluginActiveNew) {
 			pluginEnabled = pluginActiveNew;
+			startPlugin();
+			restartPlugin = false;
+		}
+		if (restartPlugin) {
+			stopPlugin();
 			startPlugin();
 		}
 	}
@@ -212,7 +239,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 				temperature = event.values[0];
 				break;
 			case Sensor.TYPE_ACCELEROMETER:
-				if (magfieldUpdated) {
+				if (calculateOrientation && magfieldUpdated) {
 					magfieldUpdated = false;
 					final int matrix_size = 16;
 					final float[] R = new float[matrix_size];

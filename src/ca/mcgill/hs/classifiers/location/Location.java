@@ -6,8 +6,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import android.database.Cursor;
+import android.database.CursorIndexOutOfBoundsException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.util.Log;
 
 public abstract class Location {
 
@@ -224,6 +226,9 @@ public abstract class Location {
 			try {
 				cursor.moveToNext();
 				timestamp = cursor.getDouble(0);
+			} catch (final CursorIndexOutOfBoundsException e) {
+				Log.e(TAG, "UNABLE TO GET TIMESTAMP FOR LOCATION " + getId());
+				e.printStackTrace();
 			} finally {
 				cursor.close();
 			}
@@ -249,6 +254,9 @@ public abstract class Location {
 		db.execSQL("DELETE FROM " + LocationSet.NEIGHBOURS_TABLE
 				+ " WHERE location_id1=? AND location_id2=?", new String[] {
 				Integer.toString(getId()), Integer.toString(id) });
+		db.execSQL("DELETE FROM " + LocationSet.NEIGHBOURS_TABLE
+				+ " WHERE location_id2=? AND location_id1=?", new String[] {
+				Integer.toString(getId()), Integer.toString(id) });
 		num_neighbours = -1;
 	}
 
@@ -267,14 +275,17 @@ public abstract class Location {
 				+ " WHERE location_id1=? AND location_id2=?");
 		try {
 			db.beginTransaction();
-			stmt.bindLong(1, getId());
 			for (final int id : neighboursToRemove) {
 				try {
 					neighbours.remove(id);
 				} catch (final IndexOutOfBoundsException e) {
 					// Ignore
 				}
+				stmt.bindLong(1, getId());
 				stmt.bindLong(2, id);
+				stmt.execute();
+				stmt.bindLong(1, id);
+				stmt.bindLong(2, getId());
 				stmt.execute();
 				// db.execSQL("DELETE FROM " + LocationSet.NEIGHBOURS_TABLE
 				// + " WHERE location_id1=" + getId()

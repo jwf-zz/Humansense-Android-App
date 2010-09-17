@@ -37,8 +37,6 @@ public abstract class LocationSet {
 	public abstract int add(Location point);
 
 	public void addToCluster(final int locationId, final int clusterId) {
-		DebugHelper.out.println("\tAdding " + locationId + " to cluster "
-				+ clusterId);
 		db.execSQL("REPLACE INTO " + CLUSTERS_TABLE + " VALUES (" + locationId
 				+ "," + clusterId + ", NULL);");
 	}
@@ -53,7 +51,6 @@ public abstract class LocationSet {
 				+ newId);
 		db.execSQL("UPDATE " + CLUSTERS_TABLE + " SET cluster_id=" + newId
 				+ " WHERE cluster_id=" + oldId + ";");
-
 	}
 
 	public Collection<Integer> getAllClusters() {

@@ -3,6 +3,14 @@ package ca.mcgill.hs.classifiers.location;
 import java.util.Collection;
 import java.util.HashSet;
 
+/**
+ * This class clusters a set of locations, which are really points at which the
+ * user was stationary for a brief period of time, into places where the user
+ * visits regularly.
+ * 
+ * @author jfrank8
+ * 
+ */
 public class SignificantLocationClusterer {
 
 	// Delta from the paper. This value represents the percentage of the points
@@ -63,7 +71,7 @@ public class SignificantLocationClusterer {
 	private void addNeighboursToCluster(final Location point,
 			final int clusterId) {
 		for (final int neighbour_id : point.getNeighbours()) {
-			DebugHelper.out.print("\tAdding neighbour " + neighbour_id
+			DebugHelper.out.println("\tAdding neighbour " + neighbour_id
 					+ " to cluster " + clusterId + ": ");
 			pool.addToCluster(neighbour_id, clusterId);
 		}
@@ -91,23 +99,26 @@ public class SignificantLocationClusterer {
 		// if (location.getId() > 4) {
 		// System.exit(0);
 		// }
-		int cluster_id = -1;
-		DebugHelper.out.println("Clustering location " + location.getId()
+		final int location_id = location.getId();
+		int cluster_id = pool.getClusterId(location_id);
+		DebugHelper.out.println("Clustering location " + location_id
 				+ " with timestamp " + location.getTimestamp());
 
 		// The neighbours of the point.
 		final Collection<Integer> neighbour_ids = location.getNeighbours();
 		final int num_neighbours = location.getNumNeighbours();
+		final int num_merged = location.getNumMerged();
 
 		// The list of cluster to merge.
 		final Collection<Integer> clustersToMerge = new HashSet<Integer>();
 
 		// Determine whether or not to make a new set.
-		if (num_neighbours >= MIN_PTS) {
+		if (cluster_id < 0 && num_merged + num_neighbours >= MIN_PTS) {
 			cluster_id = createNewCluster(location); // create a new cluster
 			DebugHelper.out.println("\tLocation has " + num_neighbours
-					+ " neighbours, so adding to a new cluster " + cluster_id
-					+ ".");
+					+ " neighbours, and consists of " + num_merged
+					+ " merged locations, so adding to a new cluster "
+					+ cluster_id + ".");
 
 			// add the cluster to the list of clusters to merge
 			clustersToMerge.add(cluster_id);
@@ -117,9 +128,13 @@ public class SignificantLocationClusterer {
 
 			// add neighbours to new cluster
 			addNeighboursToCluster(location, cluster_id);
+		} else if (cluster_id >= 0) {
+			DebugHelper.out.println("\tLocation is already in a cluster.");
+			clustersToMerge.add(cluster_id);
 		} else {
 			DebugHelper.out.println("\tLocation only has " + num_neighbours
-					+ " neighbours, so not clustering.");
+					+ " neighbours, and consists of " + num_merged
+					+ " merged locations, so not clustering.");
 		}
 
 		DebugHelper.out.println("\tChecking neighbours...");

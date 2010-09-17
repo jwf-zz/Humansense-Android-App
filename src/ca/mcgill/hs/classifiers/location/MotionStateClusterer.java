@@ -1,5 +1,9 @@
 package ca.mcgill.hs.classifiers.location;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,6 +25,8 @@ public class MotionStateClusterer {
 			this.index = index;
 		}
 	}
+
+	private BufferedWriter outputLog = null;
 
 	private static final String RESET_MOVEMENT_STATE_TIMER_NAME = "reset movement state timer";
 
@@ -78,6 +84,17 @@ public class MotionStateClusterer {
 		slClusterer = new SignificantLocationClusterer(locations);
 		this.locations = locations;
 		resetMovementTimer = new Timer(RESET_MOVEMENT_STATE_TIMER_NAME);
+
+		final Date d = new Date(System.currentTimeMillis());
+		final SimpleDateFormat dfm = new SimpleDateFormat("yy-MM-dd-HHmmss");
+		final File f = new File("/sdcard/hsandroidapp/data/recent/"
+				+ dfm.format(d) + "-clusters.log");
+		try {
+			outputLog = new BufferedWriter(new FileWriter(f));
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	// Adds a new observation to the pool, does some clustering, and then
@@ -187,9 +204,39 @@ public class MotionStateClusterer {
 		LocationStatusWidget.updateText("Update at: " + dfm.format(d)
 				+ "\nClustered " + clustered_points + " of " + pool_size
 				+ " points.\nCurrently in location: " + current_cluster + "\n");
+		try {
+			if (outputLog != null) {
+				outputLog.write(dfm.format(d) + "," + current_cluster + "\n");
+			}
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
 		// if (avg != null) {
 		// slClusterer.addNeighborPoint(avg);
 		// }
+	}
+
+	public void close() {
+		try {
+			if (outputLog != null) {
+				Log.d(TAG, "Computing Statistics");
+				final File f = new File("/sdcard/hsandroidapp/clusters.dat");
+				BufferedWriter statsDmp = null;
+				try {
+					statsDmp = new BufferedWriter(new FileWriter(f, false));
+					statsDmp.write(slClusterer.toString());
+					statsDmp.flush();
+				} catch (final IOException e) {
+					e.printStackTrace();
+				} finally {
+					statsDmp.close();
+				}
+
+				outputLog.close();
+			}
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	// Deletes the oldest observation from the pool and returns the index

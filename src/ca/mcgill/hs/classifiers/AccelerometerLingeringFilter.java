@@ -2,7 +2,9 @@ package ca.mcgill.hs.classifiers;
 
 public class AccelerometerLingeringFilter {
 
+	@SuppressWarnings("unused")
 	private static final String TAG = "AccelerometerLingeringFilter";
+
 	private float threshold;
 	private int windowSize;
 

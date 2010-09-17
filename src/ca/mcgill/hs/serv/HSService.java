@@ -4,6 +4,8 @@ import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.util.Log;
+import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.DataPacket;
 import ca.mcgill.hs.plugin.InputPlugin;
 import ca.mcgill.hs.plugin.OutputPlugin;
@@ -51,6 +54,8 @@ public class HSService extends Service {
 			preferencesChangedIntentReceived();
 		}
 	};
+
+	private static final String TAG = "HSService";
 
 	/**
 	 * Populates the list of output plugins.
@@ -123,6 +128,28 @@ public class HSService extends Service {
 		}
 	}
 
+	private Notification getServiceStartedNotification() {
+		final int icon = R.drawable.notification_icon;
+		final CharSequence tickerText = getResources().getString(
+				R.string.started_notification_text);
+		final long when = System.currentTimeMillis();
+		final Context context = getApplicationContext();
+		final CharSequence contentTitle = getResources().getString(
+				R.string.started_notification_title);
+		// message title
+		final CharSequence contentText = getResources().getString(
+				R.string.started_notification_content);
+
+		final Intent notificationIntent = new Intent(this, HSService.class);
+		final PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+				notificationIntent, 0);
+		final Notification notification = new Notification(icon, tickerText,
+				when);
+		notification.setLatestEventInfo(context, contentTitle, contentText,
+				contentIntent);
+		return notification;
+	}
+
 	@Override
 	// Unused
 	public IBinder onBind(final Intent intent) {
@@ -135,6 +162,7 @@ public class HSService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		Log.d(TAG, "onCreate()");
 	}
 
 	/**
@@ -143,7 +171,7 @@ public class HSService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-
+		stopForeground(true);
 		for (final InputPlugin plugin : inputPluginList) {
 			plugin.stopPlugin();
 		}
@@ -163,10 +191,15 @@ public class HSService extends Service {
 	 */
 	@Override
 	public void onStart(final Intent intent, final int startId) {
+		super.onStart(intent, startId);
 		if (isRunning) {
 			return;
 		}
-		super.onStart(intent, startId);
+
+		// Start as foreground service so we don't get killed on low memory.
+		final int notification_id = getResources().getString(
+				R.string.started_notification_text).hashCode();
+		startForeground(notification_id, getServiceStartedNotification());
 
 		PluginFactory.setContext(getApplicationContext());
 

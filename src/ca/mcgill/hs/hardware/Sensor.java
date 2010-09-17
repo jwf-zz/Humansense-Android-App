@@ -4,6 +4,10 @@ import java.io.FileDescriptor;
 
 import android.os.Bundle;
 
+/**
+ * An attempt at building our own sensor interface, in hopes of retreiving
+ * sensor readings at a more regular frequency than is provided by the APIs.
+ */
 public class Sensor {
 
 	static {

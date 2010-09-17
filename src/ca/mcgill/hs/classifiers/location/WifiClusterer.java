@@ -15,6 +15,7 @@ public class WifiClusterer {
 	 * Close must be called or we leave the database in a bad state.
 	 */
 	public void close() {
+		pool.close();
 		locations.close();
 	}
 

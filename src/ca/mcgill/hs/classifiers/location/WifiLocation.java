@@ -10,6 +10,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
+/**
+ * A location characterized by observable wifi base stations and the measured
+ * signal strength corresponding to each base station. Distance is computed by
+ * measuring the difference between signal strengths for base stations that are
+ * common to both locations, with a requirement that the locations have a
+ * substantial fraction of the base stations in common.
+ */
 public class WifiLocation extends Location {
 
 	/** Epsilon from the paper, maximum distance between neighbouring points. */

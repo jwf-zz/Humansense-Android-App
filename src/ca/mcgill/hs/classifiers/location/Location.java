@@ -11,6 +11,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
+/**
+ * Represents a location, not necessarily physical, but characterized by a set
+ * of observations, and a means for computing distances based on these
+ * observations. Locations are stored in a database, tagged with a timestamp,
+ * and maintain a list of neighbours.
+ */
 public abstract class Location {
 
 	private static final String TAG = "Location";

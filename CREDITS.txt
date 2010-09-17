@@ -1,0 +1,9 @@
+Authors:
+
+Main Author:
+	Jordan Frank <jordan.frank@cs.mcgill.ca>
+
+Substantial contributors:
+	Jonathan Pitre <jonathan.pitre@gmail.com>
+	Cicerone Cojocaru <cicerone.cojocaru@mail.mcgill.ca>
+ 

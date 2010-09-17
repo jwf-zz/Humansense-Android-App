@@ -51,18 +51,22 @@ import ca.mcgill.hs.prefs.HSAndroidPreferences;
  * 
  * If the service was already started, then it will simply update the list of
  * files and resume its operations.
- * 
- * @authors Cicerone Cojocaru, Jonathan Pitre
  */
 public class NewUploaderService extends Service {
+	private static final String TAG = "HSUploaderService";
 
-	// Intent for when the auto-upload option was changed.
+	// Intent for when the auto-upload option is changed.
 	public static final String AUTO_UPLOAD_CHANGED_INTENT = "ca.mcgill.hs.HSAndroidApp.AUTO_UPLOAD_CHANGED_INTENT";
+
+	// Intent for when the wifi-only option is changed.
 	public static final String WIFI_ONLY_CHANGED_INTENT = "ca.mcgill.hs.HSAndroidApp.WIFI_ONLY_CHANGED_INTENT";
 
 	// Intent for when a new file is ready to be uploaded.
 	public static final String FILE_ADDED_INTENT = "ca.mcgill.hs.HSAndroidApp.FILE_ADDED_INTENT";
 
+	/**
+	 * URL for uploading data files.
+	 */
 	public static final String UPLOAD_URL = "http://www.cs.mcgill.ca/~jfrank8/humansense/uploader.php";
 
 	private boolean connectionReceiverRegistered = false;
@@ -73,11 +77,6 @@ public class NewUploaderService extends Service {
 	private final BroadcastReceiver connectReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
-			/*
-			 * if (((NetworkInfo) intent
-			 * .getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO))
-			 * .getDetailedState().toString().equals("CONNECTED")) {
-			 */
 			if (((NetworkInfo) intent
 					.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO))
 					.isConnected()) {
@@ -102,11 +101,8 @@ public class NewUploaderService extends Service {
 		}
 	};
 
-	/* STATE BOOLEANS */
-	// This boolean indicates whether or not this service was started or not.
+	// Keep track of whether the service has been started or not.
 	private static boolean started = false;
-
-	private static final String TAG = "HSUploaderService";
 
 	/* LIST OF FILES */
 	private static final LinkedList<String> fileList = new LinkedList<String>();
@@ -166,8 +162,10 @@ public class NewUploaderService extends Service {
 		automatic = prefs.getBoolean(
 				HSAndroidPreferences.AUTO_UPLOAD_DATA_PREF, false);
 
-		// If auto uploading has just been turned off and we were waiting, kill
-		// the timer and stop the service.
+		/*
+		 * If auto uploading has just been turned off and we were waiting, kill
+		 * the timer and stop the service.
+		 */
 		if (!automatic) {
 			if (waiting) {
 				timerKill();
@@ -180,7 +178,7 @@ public class NewUploaderService extends Service {
 	 * Determines whether or not the phone is able to upload data over the
 	 * internet.
 	 * 
-	 * @return true if it is possible to upload, false otherwise.
+	 * @return True if it is possible to upload, false otherwise.
 	 */
 	private boolean canUpload() {
 		if (connectivityMgr == null
@@ -204,9 +202,9 @@ public class NewUploaderService extends Service {
 	 * Helper method for making toasts.
 	 * 
 	 * @param message
-	 *            the text to toast.
+	 *            The text to toast.
 	 * @param duration
-	 *            the duration of the toast.
+	 *            The duration of the toast.
 	 */
 	private void makeToast(final String message, final int duration) {
 		final Toast slice = Toast.makeText(getBaseContext(), getResources()
@@ -313,12 +311,12 @@ public class NewUploaderService extends Service {
 	}
 
 	/**
-	 * Called whenever the file upload is complete. Toasts user if upload was
+	 * Called whenever the file upload is complete. Notifies user if upload was
 	 * manual.
 	 */
 	private void onUploadComplete() {
 		notificationMgr.cancel(NOTIFICATION_ID);
-		// If we are on automatic uploading, do not toast the user.
+		// If we are on automatic uploading, do not notify the user.
 		if (!automatic) {
 			switch (FINAL_ERROR_CODE) {
 			case NO_ERROR_CODE:
@@ -421,11 +419,13 @@ public class NewUploaderService extends Service {
 
 		final String[] files = path.list();
 
-		if (files.length == 0) {
+		if (files == null || files.length == 0) {
 			return;
 		} else {
-			// Add all files to a map so that we can keep track of which files
-			// were supposed to upload as the list is cleared.
+			/*
+			 * Add all files to a map so that we can keep track of which files
+			 * were supposed to upload as the list is cleared.
+			 */
 			for (final String s : files) {
 				if (!fileMap.containsKey(s)) {
 					fileMap.put(s, null);
@@ -439,8 +439,8 @@ public class NewUploaderService extends Service {
 	 * Uploads the specified file to the server.
 	 * 
 	 * @param fileName
-	 *            the file to upload
-	 * @return a code indicating the result of the upload.
+	 *            The file to upload
+	 * @return A code indicating the result of the upload.
 	 */
 	private int uploadFile(final String fileName) {
 		TEMP_ERROR_CODE = NO_ERROR_CODE;

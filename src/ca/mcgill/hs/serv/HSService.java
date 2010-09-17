@@ -20,21 +20,20 @@ import ca.mcgill.hs.plugin.OutputPlugin;
 import ca.mcgill.hs.plugin.PluginFactory;
 import ca.mcgill.hs.util.PreferenceFactory;
 
+/**
+ * The main service that runs in the background and manages the plugins.
+ */
 public class HSService extends Service {
 
-	private static boolean isRunning;
+	private static final String TAG = "HSService";
 
-	// If true then performance timing information will be logged
-	private static final boolean PERF_COUNTERS = false;
+	private static boolean isRunning;
 
 	// Lists of the plugins currently enabled.
 	private static final LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
 
 	private static final LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
-	// Some variables for calculating performance metrics
-	private static long timeSpentInOnDataReady = 0L;
 
-	private static int numCallsToOnDataReady = 0;
 	// A simple static array of the input plugin class names.
 	public static final Class<? extends InputPlugin>[] inputPluginClasses = PluginFactory
 			.getInputPluginClassList();
@@ -55,8 +54,6 @@ public class HSService extends Service {
 		}
 	};
 
-	private static final String TAG = "HSService";
-
 	/**
 	 * Populates the list of output plugins.
 	 */
@@ -69,7 +66,7 @@ public class HSService extends Service {
 	/**
 	 * Returns a boolean indicating if the service is running or not.
 	 * 
-	 * @return true if the service is running and false otherwise.
+	 * @return True if the service is running and false otherwise.
 	 */
 	public static boolean isRunning() {
 		return isRunning;
@@ -79,30 +76,14 @@ public class HSService extends Service {
 	 * Called when there is a DataPacket available from an InputPlugin.
 	 * 
 	 * @param dp
-	 *            the DataPacket that is ready to be received.
+	 *            The DataPacket that is ready to be received.
 	 * @param source
-	 *            the InputPlugin that created the DataPacket.
+	 *            The InputPlugin that created the DataPacket.
 	 */
 	public static void onDataReady(final DataPacket dp, final InputPlugin source) {
-		final long currentTime;
-		if (PERF_COUNTERS) {
-			currentTime = System.currentTimeMillis();
-		}
 		for (final OutputPlugin op : outputPluginList) {
 			op.onDataReady(dp.clone());
 			tpe.execute(op);
-		}
-		if (PERF_COUNTERS) {
-			timeSpentInOnDataReady += (System.currentTimeMillis() - currentTime);
-			numCallsToOnDataReady += 1;
-			if (numCallsToOnDataReady % 1000 == 0) {
-				final float avgTime = (float) timeSpentInOnDataReady
-						/ (float) numCallsToOnDataReady;
-				Log.d("PERFORMANCE:", "Average time for onDataReady is "
-						+ avgTime + " milliseconds");
-				timeSpentInOnDataReady = 0L;
-				numCallsToOnDataReady = 0;
-			}
 		}
 	}
 
@@ -136,7 +117,6 @@ public class HSService extends Service {
 		final Context context = getApplicationContext();
 		final CharSequence contentTitle = getResources().getString(
 				R.string.started_notification_title);
-		// message title
 		final CharSequence contentText = getResources().getString(
 				R.string.started_notification_content);
 
@@ -151,8 +131,8 @@ public class HSService extends Service {
 	}
 
 	@Override
-	// Unused
 	public IBinder onBind(final Intent intent) {
+		// Unused
 		return null;
 	}
 
@@ -201,6 +181,7 @@ public class HSService extends Service {
 				R.string.started_notification_text).hashCode();
 		startForeground(notification_id, getServiceStartedNotification());
 
+		// Set up our plugin factory.
 		PluginFactory.setContext(getApplicationContext());
 
 		// Register the receiver for when the preferences change.
@@ -225,7 +206,6 @@ public class HSService extends Service {
 
 		isRunning = true;
 
-		// Update button
 		ca.mcgill.hs.HSAndroid.updateButton();
 	}
 }

@@ -74,8 +74,8 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	 * Returns the list of Preference objects for this InputPlugin.
 	 * 
 	 * @param c
-	 *            the context for the generated Preferences.
-	 * @return an array of the Preferences of this object.
+	 *            The context for the generated Preferences.
+	 * @return An array of the Preferences of this object.
 	 */
 	public static Preference[] getPreferences(final Context c) {
 		final Preference[] prefs = new Preference[3];
@@ -137,12 +137,10 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	private boolean calculateOrientation;
 
 	/**
-	 * This is the basic constructor for the SensorLogger plugin. It has to be
-	 * instantiated before it is started, and needs to be passed a reference to
-	 * a SensorManager.
+	 * This is the basic constructor for the SensorLogger plugin.
 	 * 
-	 * @param gpsm
 	 * @param context
+	 *            The application context.
 	 */
 	public SensorLogger(final Context context) {
 		sensorManager = (SensorManager) context
@@ -172,15 +170,16 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 
 	/**
 	 * This method gets called automatically whenever a sensor's accuracy has
-	 * changed.
+	 * changed. We currently ignore this event.
 	 * 
-	 * @param event
-	 *            the SensorEvent detailing the change in sensor data.
+	 * @param sensor
+	 *            The SensorEvent detailing the change in sensor data.
 	 * @param accuracy
-	 *            the new accuracy.
+	 *            The new accuracy.
 	 * 
-	 * @override
+	 * 
 	 */
+	@Override
 	public void onAccuracyChanged(final Sensor sensor, final int accuracy) {
 	}
 

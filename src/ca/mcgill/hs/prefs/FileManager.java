@@ -24,6 +24,10 @@ import android.widget.SimpleAdapter;
 import android.widget.Toast;
 import ca.mcgill.hs.R;
 
+/**
+ * Provides a simple file manager for a preference panel. Shows file names with
+ * checkboxes next to them.
+ */
 public class FileManager extends ListActivity {
 
 	public class CheckboxFileListAdapter extends SimpleAdapter {
@@ -170,6 +174,9 @@ public class FileManager extends ListActivity {
 				+ (String) getBaseContext().getResources().getText(
 						R.string.recent_file_path);
 		final File path = new File(pathName);
+		if (!path.exists()) {
+			path.mkdirs();
+		}
 
 		/*
 		 * Collect all of the files in the unuploaded directory
@@ -180,12 +187,13 @@ public class FileManager extends ListActivity {
 		 * Build a map for each unuploaded file. The Boolean parameter is never
 		 * used.
 		 */
-		for (final String s : files) {
-			final Map<String, Boolean> item = new HashMap<String, Boolean>();
-			item.put(s, false);
-			listItems.add(item);
+		if (files != null) {
+			for (final String s : files) {
+				final Map<String, Boolean> item = new HashMap<String, Boolean>();
+				item.put(s, false);
+				listItems.add(item);
+			}
 		}
-
 		/*
 		 * The titles of the columns in our view. In our case we have a column
 		 * of checkboxes, and a column of file names. However, these titles are

@@ -8,8 +8,6 @@ import java.util.HashSet;
  * user was stationary for a brief period of time, into places where the user
  * visits regularly.
  * 
- * @author jfrank8
- * 
  */
 public class SignificantLocationClusterer {
 

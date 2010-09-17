@@ -14,8 +14,15 @@ import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.util.Log;
 import ca.mcgill.hs.util.LRUCache;
 
+/**
+ * Manages a set of Wifi-based Location fingerprints
+ */
 public final class WifiLocationSet extends LocationSet {
 
+	/**
+	 * Handles the creation and updating of the schema for the wifi location
+	 * database.
+	 */
 	private static class WifiDatabaseHelper extends SQLiteOpenHelper {
 
 		public WifiDatabaseHelper(final Context context, final String name,
@@ -78,107 +85,6 @@ public final class WifiLocationSet extends LocationSet {
 			db.execSQL("CREATE UNIQUE INDEX idx_" + CLUSTERS_TABLE
 					+ "_cluster_to_locations ON " + CLUSTERS_TABLE
 					+ " (cluster_id,location_id);");
-
-			/*** NOW WITHOUT FOREIGN KEY CONSTRAINTS ***/
-			// /* Locations Table */
-			// db.execSQL("DROP TABLE IF EXISTS " + LOCATIONS_TABLE);
-			// db.execSQL("CREATE TABLE " + LOCATIONS_TABLE + " ( "
-			// + "location_id	INTEGER PRIMARY KEY AUTOINCREMENT, "
-			// + "timestamp 		TEXT, "
-			// + "num_merged  INTEGER NOT NULL DEFAULT 1 " + ");");
-			//
-			// /* WAPs Table */
-			// db.execSQL("DROP TABLE IF EXISTS " + WAPS_TABLE);
-			// db.execSQL("CREATE TABLE " + WAPS_TABLE + " ( "
-			// + "wap_id	INTEGER NOT NULL PRIMARY KEY, " + "BSSID	TEXT, "
-			// + "SSID  	TEXT " + ");");
-			//
-			// /* Observations Table */
-			// db.execSQL("DROP TABLE IF EXISTS " + OBSERVATIONS_TABLE);
-			// db.execSQL("CREATE TABLE " + OBSERVATIONS_TABLE + " ( "
-			// + "location_id INTEGER NOT NULL, "
-			// + "wap_id INTEGER NOT NULL, "
-			// + "strength INTEGER NOT NULL DEFAULT 0, "
-			// + "count INTEGER NOT NULL DEFAULT 0, "
-			// + "average_strength FLOAT NOT NULL DEFAULT 0 " + ");");
-			// db.execSQL("CREATE UNIQUE INDEX idx_" + OBSERVATIONS_TABLE
-			// + "_wap_id ON " + OBSERVATIONS_TABLE
-			// + " (wap_id,location_id);");
-			// // db
-			// //
-			// .execSQL("CREATE TRIGGER update_signal_strengths AFTER UPDATE OF strength ON "
-			// // + OBSERVATIONS_TABLE
-			// // + " FOR EACH ROW "
-			// // + "BEGIN "
-			// // + "UPDATE "
-			// // + OBSERVATIONS_TABLE
-			// // +
-			// //
-			// " SET strength=OLD.strength+NEW.strength, count=OLD.count+1, average_strength=(OLD.strength+NEW.strength)/(OLD.count+1) WHERE location_id=NEW.location_id AND wap_id=NEW.wap_id; "
-			// // + "END;");
-			//
-			// /* Neighbours Table */
-			// db.execSQL("DROP TABLE IF EXISTS " + NEIGHBOURS_TABLE);
-			// db.execSQL("CREATE TABLE " + NEIGHBOURS_TABLE + " ( "
-			// + "location_id1 INTEGER NOT NULL, "
-			// + "location_id2 INTEGER NOT NULL "
-			// // + "distance FLOAT NOT NULL DEFAULT -1.0 "
-			// + ");");
-			// db.execSQL("CREATE UNIQUE INDEX idx_" + NEIGHBOURS_TABLE
-			// + "_loc1_loc2 ON " + NEIGHBOURS_TABLE
-			// + " (location_id1,location_id2);");
-			// // db
-			// //
-			// .execSQL("CREATE TRIGGER add_symmetric_neighbour AFTER INSERT ON "
-			// // + NEIGHBOURS_TABLE
-			// // + " FOR EACH ROW "
-			// // + "BEGIN "
-			// // + "INSERT INTO "
-			// // + NEIGHBOURS_TABLE
-			// // +
-			// " VALUES (NEW.location_id2, NEW.location_id1, NEW.distance); "
-			// // + "END;");
-			// // db
-			// //
-			// .execSQL("CREATE TRIGGER remove_symmetric_neighbour AFTER DELETE ON "
-			// // + NEIGHBOURS_TABLE
-			// // + " FOR EACH ROW "
-			// // + "BEGIN "
-			// // + "DELETE FROM "
-			// // + NEIGHBOURS_TABLE
-			// // +
-			// //
-			// " WHERE location_id1=OLD.location_id2 AND location_id2=OLD.location_id1; "
-			// // + "END;");
-			// // db
-			// //
-			// .execSQL("CREATE TRIGGER symmetrize_distance AFTER UPDATE OF distance ON "
-			// // + NEIGHBOURS_TABLE
-			// // + " FOR EACH ROW "
-			// // + "BEGIN "
-			// // + "UPDATE "
-			// // + NEIGHBOURS_TABLE
-			// // + " SET distance=NEW.distance "
-			// // +
-			// //
-			// "WHERE location_id1=OLD.location_id2 and location_id2=OLD.location_id1; "
-			// // + "END;");
-			//
-			// /* Labels Table */
-			// db.execSQL("DROP TABLE IF EXISTS " + LABELS_TABLE);
-			// db.execSQL("CREATE TABLE " + LABELS_TABLE + " ( "
-			// + "label_id	INTEGER NOT NULL PRIMARY KEY, "
-			// + "label		TEXT NOT NULL " + ");");
-			//
-			// /* Clusters Table */
-			// db.execSQL("DROP TABLE IF EXISTS " + CLUSTERS_TABLE);
-			// db.execSQL("CREATE TABLE " + CLUSTERS_TABLE + " ( "
-			// + "location_id	INTEGER NOT NULL PRIMARY KEY, "
-			// + "cluster_id	INTEGER NOT NULL, " + "label_id		INTEGER "
-			// + ");");
-			// db.execSQL("CREATE UNIQUE INDEX idx_" + CLUSTERS_TABLE
-			// + "_cluster_to_locations ON " + CLUSTERS_TABLE
-			// + " (cluster_id,location_id);");
 		}
 
 		@Override
@@ -188,33 +94,56 @@ public final class WifiLocationSet extends LocationSet {
 
 	}
 
-	public static final String OBSERVATIONS_TABLE = "observations";
+	private static final String TAG = "WifiLocationSet";
 
+	/**
+	 * Database table names.
+	 */
+	public static final String OBSERVATIONS_TABLE = "observations";
 	public static final String WAPS_TABLE = "waps";
 
-	// private Map<Integer,WifiLocation> locationCache = new
-	// HashMap<Integer,WifiLocation>();
+	/**
+	 * Used to cache the most recent locations, avoids some database calls. We
+	 * currently cache the last 100 most recently used locations.
+	 */
 	private final LRUCache<Integer, WifiLocation> locationCache = new LRUCache<Integer, WifiLocation>(
 			100);
 
+	/**
+	 * Do not use a time-based window, as samples can often come in at irregular
+	 * intervals.
+	 */
 	private static final boolean TIME_BASED_WINDOW = false;
 
-	// Window length, in samples.
+	/**
+	 * Use the last 6 samples for determining motion status.
+	 */
 	private static final int WINDOW_LENGTH = 6;
 
-	// Delta from the paper. This value represents the percentage of the points
-	// in the pool that must neighbours of a point for it to be considered to be
-	// part of a cluster
+	/**
+	 * Delta from the paper. This value represents the percentage of the points
+	 * in the pool that must neighbours of a point for it to be considered to be
+	 * part of a cluster
+	 */
 	private static final float DELTA = 0.8f;
-
-	private static final String TAG = "WifiLocationSet";
 
 	private final WifiDatabaseHelper dbHelper;
 
+	/**
+	 * Prepared statement for retrieving the number of merged locations. This is
+	 * used quite frequently but we have not actually benchmarked prepared
+	 * statements, and it is possible that this doesn't speed anything up.
+	 */
 	SQLiteStatement retrieveNumMergedStmt = null;
 
 	public WifiLocationSet(final Context context) {
 		try {
+			/*
+			 * We currently copy the database from the sdcard. This is mainly
+			 * used for debugging so that we can make changes to the database
+			 * offline and then use those changes next time we start the
+			 * service. This should eventually be removed.
+			 */
 			DBHelpers
 					.copy(
 							new File(
@@ -234,7 +163,16 @@ public final class WifiLocationSet extends LocationSet {
 		// uncomment to recreate databases
 		// dbHelper.onCreate(db);
 
+		/*
+		 * This should speed things up, as file i/o is slow. However, we should
+		 * be aware that this can be dangerous, as crashes could result in a
+		 * corrupted database.
+		 */
 		db.rawQuery("PRAGMA journal_mode=MEMORY", null).close();
+
+		/*
+		 * Does a little optimization when the service is started. Can't hurt.
+		 */
 		db.execSQL("ANALYZE");
 		retrieveNumMergedStmt = db.compileStatement("SELECT num_merged FROM "
 				+ LocationSet.LOCATIONS_TABLE + " WHERE location_id=?");
@@ -244,35 +182,23 @@ public final class WifiLocationSet extends LocationSet {
 	public int add(final Location loc) {
 		final WifiLocation location = (WifiLocation) loc;
 		final int location_id = location.getId();
-		// if (location.getId() == 50) {
-		// Debug.stopMethodTracing();
-		// }
-		// Now get potential neighbours
 
-		// Compute a threshold for minumum number of waps that must be common to
-		// be considered
-		// a neighbour. Note that if the neighbour has more waps, then it might
-		// have to be pruned
-		// out later.
+		/*
+		 * Compute a threshold for minumum number of waps that must be common to
+		 * be considered a neighbour. Note that if the neighbour has more waps,
+		 * then it might have to be pruned out later. This is just used to
+		 * retrieve from the database a set of potential neighbours.
+		 */
 		final Integer temp_threshold = (int) (location.numObservations() * WifiLocation.ETA);
-		// DebugHelper.out.println("Id is: " + location.location_id +
-		// ", Threshold is: " + temp_threshold);
-		final Collection<Integer> possibleNeighbours = new HashSet<Integer>(
-				(int) (temp_threshold / 0.75f) + 1);
 
-		// final String table = OBSERVATIONS_TABLE + " as o1 " + "JOIN "
-		// + OBSERVATIONS_TABLE + " as o2 USING (wap_id)";
-		// final String[] columns = { "o2.location_id", "count(o2.location_id)"
-		// };
-		// final String selection = "o1.location_id=?";
-		// final String[] selectionArgs = { Integer
-		// .toString(location.getId()) };
-		// final String groupBy = "o2.location_id";
-		// final String having = "COUNT(o2.location_id) > " + temp_threshold;
-		// final Cursor cursor = db.query(table, columns, selection,
-		// selectionArgs, groupBy, having, null);
+		final Collection<Integer> possibleNeighbours = new HashSet<Integer>();
 
 		final String[] params = { Integer.toString(location.getId()) };
+
+		/*
+		 * Select all locations that have at least threshold neighbours in
+		 * common with our current location.
+		 */
 		final Cursor cursor = db.rawQuery("SELECT o2.location_id FROM "
 				+ OBSERVATIONS_TABLE + " AS o1 " + "JOIN " + OBSERVATIONS_TABLE
 				+ " AS o2 USING (wap_id) JOIN " + LOCATIONS_TABLE
@@ -286,7 +212,7 @@ public final class WifiLocationSet extends LocationSet {
 		} finally {
 			cursor.close();
 		}
-		// Remove myself from myself's neighbours.
+		// Remove current location from the neighbours list.
 		try {
 			possibleNeighbours.remove(location_id);
 		} catch (final IndexOutOfBoundsException e) {
@@ -294,12 +220,10 @@ public final class WifiLocationSet extends LocationSet {
 		}
 		Log.d(TAG, "Adding " + possibleNeighbours.size()
 				+ " possible neighbours.");
-		// location.addNeighbours(possibleNeighbours);
 
-		// Add 'o' as a neighbour to 'obs' if they are close, else remove 'obs'
-		// as a neighbour of 'o'. Note that we assumed 'obs' was 'o''s neighbour
-		// earlier; now we adjust that assumption.
-
+		/*
+		 * Now prune the list.
+		 */
 		final Collection<Integer> neighboursToRemove = new HashSet<Integer>();
 		for (final Integer neighbour_id : possibleNeighbours) {
 
@@ -308,13 +232,14 @@ public final class WifiLocationSet extends LocationSet {
 			DebugHelper.out.println("\tDistance between " + location.getId()
 					+ " and " + neighbour_id + " is " + dist);
 
-			// TODO: Get merging right.
+			// Merge location if it is very close to a possible neighbour.
 			if (dist < WifiLocation.MERGE_DIST) {
 				mergeLocations(location, neighbour);
 				return neighbour_id;
 			}
+
 			if (dist > 0 && dist < WifiLocation.EPS) {
-				// Add myself as a neighbour of my neighbour.
+				// Add as neighbour's neighbour.
 				neighbour.addNeighbour(location_id);
 			} else {
 				neighboursToRemove.add(neighbour_id);
@@ -333,10 +258,16 @@ public final class WifiLocationSet extends LocationSet {
 	public void close() {
 		try {
 			if (db != null) {
-				// dumpDBToFile();
 				final File dbFile = new File(db.getPath());
 				db.close(); // Close the database handle
 				dbHelper.close();
+
+				/*
+				 * We copy the database on the sdcard, since the phone
+				 * permissions won't let us retrieve the database using adb. So
+				 * this is mostly for debugging, if we want to look at the
+				 * database offline.
+				 */
 				DBHelpers.copy(dbFile, new File(
 						"/sdcard/hsandroidapp/data/wificlusters.db"));
 
@@ -353,35 +284,6 @@ public final class WifiLocationSet extends LocationSet {
 		loc = new WifiLocation(db, id);
 		return loc.toString();
 	}
-
-	// private void dumpDBToFile() {
-	// final Date d = new Date(System.currentTimeMillis());
-	// final SimpleDateFormat dfm = new SimpleDateFormat("yy-MM-dd-HHmmss");
-	// final File f = new File("/sdcard/hsandroidapp/data/recent/"
-	// + dfm.format(d) + "-clusters.log");
-	// try {
-	// final BufferedWriter br = new BufferedWriter(new FileWriter(f));
-	// final Cursor cursor = db.rawQuery(
-	// "SELECT l.timestamp,l.location_id,c.cluster_id FROM "
-	// + LocationSet.LOCATIONS_TABLE + " AS l JOIN "
-	// + LocationSet.CLUSTERS_TABLE
-	// + " AS c USING (location_id) ORDER BY timestamp",
-	// null);
-	// try {
-	// while (cursor.moveToNext()) {
-	// br.write(cursor.getString(0) + "," + cursor.getInt(1) + ","
-	// + cursor.getInt(2) + "\n");
-	// }
-	// } finally {
-	// cursor.close();
-	// br.flush();
-	// br.close();
-	// }
-	// } catch (final IOException e) {
-	// e.printStackTrace();
-	// }
-	//
-	// }
 
 	@Override
 	protected void finalize() throws Throwable {
@@ -437,16 +339,36 @@ public final class WifiLocationSet extends LocationSet {
 		return new WifiLocation(db, timestamp);
 	}
 
+	/**
+	 * Returns the DELTA parameter, or the fraction of the buffer that must be
+	 * part of a cluster in order for the user to be considered stationary.
+	 */
 	@Override
 	public float pctOfWindowRequiredToBeStationary() {
 		return DELTA;
 	}
 
+	/**
+	 * Returns the number of locations that have been merged into this location.
+	 * This should be used for computing the number of "neighborus" of a
+	 * location, because if this is >1, then it means that this location
+	 * actually represents more than one location, and should count as more than
+	 * one neighbour.
+	 * 
+	 * @param location_id
+	 *            The id of the location being queried.
+	 * @return The number of locations that have been merged into the specified
+	 *         location.
+	 */
 	public int retrieveNumMerged(final int location_id) {
 		retrieveNumMergedStmt.bindLong(0, location_id);
 		return (int) retrieveNumMergedStmt.simpleQueryForLong();
 	}
 
+	/**
+	 * Returns a value specifying whether the MotionStateClassifier should use a
+	 * time-based window.
+	 */
 	@Override
 	public boolean usesTimeBasedWindow() {
 		return TIME_BASED_WINDOW;

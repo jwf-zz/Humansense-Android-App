@@ -24,7 +24,7 @@ import ca.mcgill.hs.plugin.GPSLogger.GPSPacket;
 import ca.mcgill.hs.plugin.GSMLogger.GSMPacket;
 import ca.mcgill.hs.plugin.SensorLogger.SensorPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiPacket;
-import ca.mcgill.hs.serv.NewUploaderService;
+import ca.mcgill.hs.serv.LogFileUploaderService;
 import ca.mcgill.hs.util.PreferenceFactory;
 
 /**
@@ -153,7 +153,7 @@ public class FileOutput extends OutputPlugin {
 
 		if (prefs.getBoolean("autoUploadData", false)) {
 			final Intent uploadIntent = new Intent(context,
-					NewUploaderService.class);
+					LogFileUploaderService.class);
 			context.startService(uploadIntent);
 		}
 	}

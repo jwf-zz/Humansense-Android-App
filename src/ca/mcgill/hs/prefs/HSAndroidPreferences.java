@@ -18,7 +18,7 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.widget.Toast;
 import ca.mcgill.hs.R;
-import ca.mcgill.hs.serv.NewUploaderService;
+import ca.mcgill.hs.serv.LogFileUploaderService;
 
 /**
  * HSAndroidPreferences is a class extending PreferenceActivity which defines
@@ -41,13 +41,13 @@ public class HSAndroidPreferences extends PreferenceActivity {
 
 	private static void broadcastAutoUploaderIntent(final Context c) {
 		final Intent i = new Intent();
-		i.setAction(NewUploaderService.AUTO_UPLOAD_CHANGED_INTENT);
+		i.setAction(LogFileUploaderService.AUTO_UPLOAD_CHANGED_INTENT);
 		c.sendBroadcast(i);
 	}
 
 	private static void broadcastWifiUploaderIntent(final Context c) {
 		final Intent i = new Intent();
-		i.setAction(NewUploaderService.WIFI_ONLY_CHANGED_INTENT);
+		i.setAction(LogFileUploaderService.WIFI_ONLY_CHANGED_INTENT);
 		c.sendBroadcast(i);
 	}
 
@@ -296,7 +296,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 						autoUpload.setChecked((Boolean) newValue);
 						if ((Boolean) newValue == true) {
 							final Intent auto = new Intent(c,
-									NewUploaderService.class);
+									LogFileUploaderService.class);
 							c.startService(auto);
 						}
 						broadcastAutoUploaderIntent(c);

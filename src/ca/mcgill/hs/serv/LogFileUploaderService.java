@@ -52,7 +52,7 @@ import ca.mcgill.hs.prefs.HSAndroidPreferences;
  * If the service was already started, then it will simply update the list of
  * files and resume its operations.
  */
-public class NewUploaderService extends Service {
+public class LogFileUploaderService extends Service {
 	private static final String TAG = "HSUploaderService";
 
 	// Intent for when the auto-upload option is changed.
@@ -233,7 +233,7 @@ public class NewUploaderService extends Service {
 		super.onCreate();
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		FINAL_ERROR_CODE = NO_ERROR_CODE;
-		shutdownIntent = new Intent(this, NewUploaderService.class);
+		shutdownIntent = new Intent(this, LogFileUploaderService.class);
 		UNUPLOADED_PATH = (String) getBaseContext().getResources().getText(
 				R.string.recent_file_path);
 	}

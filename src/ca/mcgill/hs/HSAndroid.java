@@ -176,7 +176,7 @@ public class HSAndroid extends Activity {
 			break;
 		case MENU_UPLOAD:
 			final Intent uploaderIntent = new Intent(getBaseContext(),
-					ca.mcgill.hs.serv.NewUploaderService.class);
+					ca.mcgill.hs.serv.LogFileUploaderService.class);
 			startService(uploaderIntent);
 			break;
 		}

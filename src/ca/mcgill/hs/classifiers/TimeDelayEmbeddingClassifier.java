@@ -3,6 +3,7 @@ package ca.mcgill.hs.classifiers;
 import java.io.File;
 
 public class TimeDelayEmbeddingClassifier {
+	@SuppressWarnings("unused")
 	private static final String TAG = "TimeDelayEmbeddingClassifier";
 
 	private static final NativeClassifier nativeClassifier = new NativeClassifier();

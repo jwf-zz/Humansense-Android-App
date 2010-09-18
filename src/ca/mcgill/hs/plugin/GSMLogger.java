@@ -5,7 +5,7 @@ import java.util.List;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.Preference;
-import android.preference.PreferenceManager;
+import android.preference.PreferenceActivity;
 import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
@@ -15,7 +15,7 @@ import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 import ca.mcgill.hs.R;
-import ca.mcgill.hs.util.PreferenceFactory;
+import ca.mcgill.hs.prefs.PreferenceFactory;
 
 public final class GSMLogger extends InputPlugin {
 	public static class GSMPacket implements DataPacket {
@@ -71,29 +71,15 @@ public final class GSMLogger extends InputPlugin {
 	public final static String PLUGIN_NAME = "GSMLogger";
 	public final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
-	// Keeps track of whether this plugin is enabled or not.
-	private static boolean pluginEnabled;
-
-	// The TelephonyManager required to receive information about the device.
-	private static TelephonyManager telephonyManager;
-
-	// A PhoneStateListener used to listen to phone signals.
-	private static PhoneStateListener phoneStateListener;
-
-	// The Context used for the plugins.
-	private static Context context;
-
 	/**
 	 * Returns the list of Preference objects for this InputPlugin.
 	 * 
-	 * @param c
-	 *            the context for the generated Preferences.
 	 * @return an array of the Preferences of this object.
 	 */
-	public static Preference[] getPreferences(final Context c) {
+	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		final Preference[] prefs = new Preference[1];
 
-		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(activity,
 				GSM_LOGGER_ENABLE_PREF, R.string.gsmlogger_enable_pref_label,
 				R.string.gsmlogger_enable_pref_summary,
 				R.string.gsmlogger_enable_pref_on,
@@ -111,6 +97,20 @@ public final class GSMLogger extends InputPlugin {
 		return true;
 	}
 
+	// Keeps track of whether this plugin is enabled or not.
+	private boolean pluginEnabled;
+
+	// The Context used for the plugins.
+	// private static Context context;
+
+	// The TelephonyManager required to receive information about the device.
+	private final TelephonyManager telephonyManager;
+
+	// A PhoneStateListener used to listen to phone signals.
+	private PhoneStateListener phoneStateListener;
+
+	final SharedPreferences prefs;
+
 	/**
 	 * This is the basic constructor for the GSMLogger plugin. It has to be
 	 * instantiated before it is started, and needs to be passed a reference to
@@ -122,41 +122,18 @@ public final class GSMLogger extends InputPlugin {
 	 *            the context in which this plugin is created.
 	 */
 	public GSMLogger(final Context context) {
-		GSMLogger.telephonyManager = (TelephonyManager) context
+		telephonyManager = (TelephonyManager) context
 				.getSystemService(Context.TELEPHONY_SERVICE);
-		GSMLogger.context = context;
 
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-
-		pluginEnabled = prefs.getBoolean(GSM_LOGGER_ENABLE_PREF, false);
+		prefs = PreferenceFactory.getSharedPreferences();
 	}
 
 	/**
-	 * This method gets called whenever the preferences have been changed.
+	 * Starts the plugin.
 	 */
 	@Override
-	public void onPreferenceChanged() {
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-
-		final boolean pluginEnabledNew = prefs.getBoolean(
-				GSM_LOGGER_ENABLE_PREF, false);
-		if (pluginEnabled && !pluginEnabledNew) {
-			stopPlugin();
-			pluginEnabled = pluginEnabledNew;
-		} else if (!pluginEnabled && pluginEnabledNew) {
-			pluginEnabled = pluginEnabledNew;
-			startPlugin();
-		}
-	}
-
-	/**
-	 * Taken from Jordan Frank
-	 * (hsandroidv1.ca.mcgill.cs.humansense.hsandroid.service) and modified for
-	 * this plugin.
-	 */
-	public void startPlugin() {
+	protected void onPluginStart() {
+		pluginEnabled = prefs.getBoolean(GSM_LOGGER_ENABLE_PREF, false);
 		if (!pluginEnabled) {
 			return;
 		}
@@ -170,7 +147,6 @@ public final class GSMLogger extends InputPlugin {
 				private int rssi = -1;
 				private int mcc = -1;
 				private int mnc = -1;
-				private final TelephonyManager tmanager = telephonyManager;
 
 				public void logSignals(final GsmCellLocation cell) {
 					if (cell == null) {
@@ -180,7 +156,7 @@ public final class GSMLogger extends InputPlugin {
 					final int cid = cell.getCid();
 					final int lac = cell.getLac();
 
-					final List<NeighboringCellInfo> neighbours = tmanager
+					final List<NeighboringCellInfo> neighbours = telephonyManager
 							.getNeighboringCellInfo();
 
 					final int ns = neighbours.size();
@@ -270,13 +246,30 @@ public final class GSMLogger extends InputPlugin {
 	/**
 	 * Tells the phone to stop listening for available GSM signals.
 	 */
-	public void stopPlugin() {
+	@Override
+	protected void onPluginStop() {
 		if (!pluginEnabled) {
 			return;
 		}
 		if (telephonyManager.getSimState() != TelephonyManager.SIM_STATE_ABSENT) {
 			telephonyManager.listen(phoneStateListener,
 					PhoneStateListener.LISTEN_NONE);
+		}
+	}
+
+	/**
+	 * This method gets called whenever the preferences have been changed.
+	 */
+	@Override
+	public void onPreferenceChanged() {
+		final boolean pluginEnabledNew = prefs.getBoolean(
+				GSM_LOGGER_ENABLE_PREF, false);
+		if (pluginEnabled && !pluginEnabledNew) {
+			stopPlugin();
+			pluginEnabled = pluginEnabledNew;
+		} else if (!pluginEnabled && pluginEnabledNew) {
+			pluginEnabled = pluginEnabledNew;
+			startPlugin();
 		}
 	}
 

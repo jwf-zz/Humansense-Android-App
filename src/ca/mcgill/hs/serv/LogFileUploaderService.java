@@ -36,11 +36,11 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.HSAndroidPreferences;
+import ca.mcgill.hs.prefs.PreferenceFactory;
 
 /**
  * A new uploader service for the HSAndroid Application. When this service
@@ -231,7 +231,7 @@ public class LogFileUploaderService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		prefs = PreferenceFactory.getSharedPreferences();
 		FINAL_ERROR_CODE = NO_ERROR_CODE;
 		shutdownIntent = new Intent(this, LogFileUploaderService.class);
 		UNUPLOADED_PATH = (String) getBaseContext().getResources().getText(

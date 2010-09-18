@@ -2,7 +2,9 @@ package ca.mcgill.hs.plugin;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import android.content.Context;
+import android.content.res.XmlResourceParser;
 
 public final class PluginFactory {
 	private static Context context = null;
@@ -73,6 +75,10 @@ public final class PluginFactory {
 	@SuppressWarnings("unchecked")
 	public static Class<? extends OutputPlugin>[] getOutputPluginClassList() {
 		return (Class<? extends OutputPlugin>[]) outputPluginClasses;
+	}
+
+	public static XmlResourceParser getXmlResourceParser(final int id) {
+		return context.getResources().getXml(id);
 	}
 
 	public static void setContext(final Context context) {

@@ -7,14 +7,13 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.preference.Preference;
-import android.preference.PreferenceManager;
+import android.preference.PreferenceActivity;
 import android.util.Log;
 import ca.mcgill.hs.R;
-import ca.mcgill.hs.util.PreferenceFactory;
+import ca.mcgill.hs.prefs.PreferenceFactory;
 
 /**
- * An InputPlugin which gets data from the phone's available sensors.
- * 
+ * An InputPlugin which gets data from the phone's hardware sensors.
  */
 public class SensorLogger extends InputPlugin implements SensorEventListener {
 	public static class SensorPacket implements DataPacket {
@@ -73,28 +72,26 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	/**
 	 * Returns the list of Preference objects for this InputPlugin.
 	 * 
-	 * @param c
-	 *            The context for the generated Preferences.
 	 * @return An array of the Preferences of this object.
 	 */
-	public static Preference[] getPreferences(final Context c) {
+	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		final Preference[] prefs = new Preference[3];
 
-		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(activity,
 				SENSOR_LOGGER_ENABLE_PREF,
 				R.string.sensorlogger_enable_pref_label,
 				R.string.sensorlogger_interval_pref_summary,
 				R.string.sensorlogger_enable_pref_on,
 				R.string.sensorlogger_enable_pref_off);
 
-		prefs[1] = PreferenceFactory.getListPreference(c,
-				R.array.sensorLoggerIntervalStrings,
-				R.array.sensorLoggerIntervalValues,
+		prefs[1] = PreferenceFactory.getListPreference(activity,
+				R.array.sensorlogger_pref_frequency_strings,
+				R.array.sensorlogger_pref_frequency_values,
 				SENSOR_LOGGER_DEFAULT_INTERVAL, SENSOR_LOGGER_INTERVAL_PREF,
 				R.string.sensorlogger_interval_pref,
 				R.string.sensorlogger_interval_pref_summary);
 
-		prefs[2] = PreferenceFactory.getCheckBoxPreference(c,
+		prefs[2] = PreferenceFactory.getCheckBoxPreference(activity,
 				SENSOR_LOGGER_CALCULATE_ORIENTATION,
 				R.string.sensorlogger_orientation_pref,
 				R.string.sensorlogger_orientation_pref_summary,
@@ -103,11 +100,6 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 		return prefs;
 	}
 
-	/**
-	 * Returns whether or not this InputPlugin has Preferences.
-	 * 
-	 * @return whether or not this InputPlugin has preferences.
-	 */
 	public static boolean hasPreferences() {
 		return true;
 	}
@@ -134,6 +126,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	private final float[] orientation = { 0.0f, 0.0f, 0.0f };
 
 	private final SharedPreferences prefs;
+
 	private boolean calculateOrientation;
 
 	/**
@@ -146,12 +139,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 		sensorManager = (SensorManager) context
 				.getSystemService(Context.SENSOR_SERVICE);
 
-		prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		loggingSpeed = Integer.parseInt(prefs.getString(
-				SENSOR_LOGGER_INTERVAL_PREF, SENSOR_LOGGER_DEFAULT_INTERVAL));
-		calculateOrientation = prefs.getBoolean(
-				SENSOR_LOGGER_CALCULATE_ORIENTATION, false);
-		pluginEnabled = prefs.getBoolean(SENSOR_LOGGER_ENABLE_PREF, false);
+		prefs = PreferenceFactory.getSharedPreferences();
 	}
 
 	/**
@@ -181,6 +169,49 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	 */
 	@Override
 	public void onAccuracyChanged(final Sensor sensor, final int accuracy) {
+	}
+
+	/**
+	 * Registers the appropriate listeners using the SensorManager.
+	 */
+	@Override
+	protected void onPluginStart() {
+		loggingSpeed = Integer.parseInt(prefs.getString(
+				SENSOR_LOGGER_INTERVAL_PREF, SENSOR_LOGGER_DEFAULT_INTERVAL));
+		calculateOrientation = prefs.getBoolean(
+				SENSOR_LOGGER_CALCULATE_ORIENTATION, false);
+		pluginEnabled = prefs.getBoolean(SENSOR_LOGGER_ENABLE_PREF, false);
+		if (!pluginEnabled) {
+			return;
+		}
+		Log.i(PLUGIN_NAME, "Registered Sensor Listener");
+		sensorManager.registerListener(this, sensorManager
+				.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), loggingSpeed);
+		sensorManager.registerListener(this, sensorManager
+				.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+				SensorManager.SENSOR_DELAY_UI);
+		sensorManager.registerListener(this, sensorManager
+				.getDefaultSensor(Sensor.TYPE_TEMPERATURE),
+				SensorManager.SENSOR_DELAY_UI);
+		logging = true;
+	}
+
+	/**
+	 * Unregisters the appropriate listeners using the SensorManager.
+	 */
+	@Override
+	protected void onPluginStop() {
+		if (!pluginEnabled) {
+			return;
+		}
+		Log.i(PLUGIN_NAME, "Unregistered Sensor Listener.");
+		sensorManager.unregisterListener(this, sensorManager
+				.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
+		sensorManager.unregisterListener(this, sensorManager
+				.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
+		sensorManager.unregisterListener(this, sensorManager
+				.getDefaultSensor(Sensor.TYPE_TEMPERATURE));
+		logging = false;
 	}
 
 	/**
@@ -265,41 +296,5 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 						+ timestamp_offset);
 			}
 		}
-	}
-
-	/**
-	 * Registers the appropriate listeners using the SensorManager.
-	 */
-	public void startPlugin() {
-		if (!pluginEnabled) {
-			return;
-		}
-		Log.i(PLUGIN_NAME, "Registered Sensor Listener");
-		sensorManager.registerListener(this, sensorManager
-				.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), loggingSpeed);
-		sensorManager.registerListener(this, sensorManager
-				.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
-				SensorManager.SENSOR_DELAY_UI);
-		sensorManager.registerListener(this, sensorManager
-				.getDefaultSensor(Sensor.TYPE_TEMPERATURE),
-				SensorManager.SENSOR_DELAY_UI);
-		logging = true;
-	}
-
-	/**
-	 * Unregisters the appropriate listeners using the SensorManager.
-	 */
-	public void stopPlugin() {
-		if (!pluginEnabled) {
-			return;
-		}
-		Log.i(PLUGIN_NAME, "Unregistered Sensor Listener.");
-		sensorManager.unregisterListener(this, sensorManager
-				.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
-		sensorManager.unregisterListener(this, sensorManager
-				.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
-		sensorManager.unregisterListener(this, sensorManager
-				.getDefaultSensor(Sensor.TYPE_TEMPERATURE));
-		logging = false;
 	}
 }

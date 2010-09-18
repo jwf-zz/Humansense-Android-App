@@ -1,15 +1,12 @@
 package ca.mcgill.hs.plugin;
 
-import android.content.Context;
 import android.preference.Preference;
+import android.preference.PreferenceActivity;
 import ca.mcgill.hs.serv.HSService;
 
 /**
  * Abstract class to be extended by all InputPlugins. Provides an interface for
  * using InputPlugins.
- * 
- * @author Cicerone Cojocaru, Jonathan Pitre
- * 
  */
 public abstract class InputPlugin implements Plugin {
 
@@ -18,11 +15,11 @@ public abstract class InputPlugin implements Plugin {
 	 * InputPlugin. By default, this method returns null. If a specific
 	 * InputPlugin wants to define Preferences, they must override this method.
 	 * 
-	 * @param c
-	 *            the context for the generated Preferences.
+	 * @param activity
+	 *            The PreferenceActivity in which the preferences will appear
 	 * @return an array of the Preferences of this object.
 	 */
-	public static Preference[] getPreferences(final Context c) {
+	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		return null;
 	}
 
@@ -39,6 +36,18 @@ public abstract class InputPlugin implements Plugin {
 	}
 
 	/**
+	 * Called when this InputPlugin is started. This method is meant to be
+	 * overridden.
+	 */
+	protected abstract void onPluginStart();
+
+	/**
+	 * Called when this InputPlugin is stopped. This method is meant to be
+	 * overridden.
+	 */
+	protected abstract void onPluginStop();
+
+	/**
 	 * Signals the plugin that preferences have changed. InputPlugin objects
 	 * with preferences should override this method if something changes at
 	 * runtime when preferences change. If this method is not overridden in a
@@ -49,13 +58,27 @@ public abstract class InputPlugin implements Plugin {
 	}
 
 	/**
+	 * Starts the plugin and calls onPluginStart().
+	 */
+	public final void startPlugin() {
+		onPluginStart();
+	}
+
+	/**
+	 * Stops the plugin and calls onPluginStop().
+	 */
+	public final void stopPlugin() {
+		onPluginStop();
+	}
+
+	/**
 	 * Passes the given DataPacket to HSService.onDataReady().
 	 * 
-	 * @param dp
+	 * @param packet
 	 *            the given DataPacket to pass.
 	 */
-	protected void write(final DataPacket dp) {
-		HSService.onDataReady(dp, this);
+	protected void write(final DataPacket packet) {
+		HSService.onDataReady(packet, this);
 	}
 
 }

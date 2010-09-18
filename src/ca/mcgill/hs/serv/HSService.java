@@ -13,12 +13,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.util.Log;
+import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.DataPacket;
 import ca.mcgill.hs.plugin.InputPlugin;
 import ca.mcgill.hs.plugin.OutputPlugin;
 import ca.mcgill.hs.plugin.PluginFactory;
-import ca.mcgill.hs.util.PreferenceFactory;
+import ca.mcgill.hs.prefs.PreferenceFactory;
 
 /**
  * The main service that runs in the background and manages the plugins.
@@ -31,15 +32,13 @@ public class HSService extends Service {
 
 	// Lists of the plugins currently enabled.
 	private static final LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
-
 	private static final LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
 
 	// A simple static array of the input plugin class names.
-	public static final Class<? extends InputPlugin>[] inputPluginClasses = PluginFactory
+	private static final Class<? extends InputPlugin>[] inputPluginClasses = PluginFactory
 			.getInputPluginClassList();
-
 	// A simple static array of the output plugin class names.
-	public static final Class<? extends OutputPlugin>[] outputPluginClasses = PluginFactory
+	private static final Class<? extends OutputPlugin>[] outputPluginClasses = PluginFactory
 			.getOutputPluginClassList();
 
 	// ExecutorService
@@ -50,14 +49,42 @@ public class HSService extends Service {
 	private static final BroadcastReceiver prefReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
+			Log.d(TAG, "Received Preferences Changed Intent");
 			preferencesChangedIntentReceived();
 		}
 	};
 
+	public static Class<? extends InputPlugin>[] getInputPluginClasses() {
+		return inputPluginClasses;
+	}
+
+	public static LinkedList<InputPlugin> getInputPlugins() {
+		return inputPluginList;
+	}
+
+	public static Class<? extends OutputPlugin>[] getOutputPluginClasses() {
+		return outputPluginClasses;
+	}
+
+	public static LinkedList<OutputPlugin> getOutputPlugins() {
+		return outputPluginList;
+	}
+
+	/**
+	 * Populates the list of input plugins.
+	 */
+	public static void initializeInputPlugins() {
+		inputPluginList.clear();
+		for (final Class<? extends InputPlugin> plugin : inputPluginClasses) {
+			inputPluginList.add(PluginFactory.getInputPlugin(plugin));
+		}
+	}
+
 	/**
 	 * Populates the list of output plugins.
 	 */
-	private static void addOutputPlugins() {
+	public static void initializeOutputPlugins() {
+		outputPluginList.clear();
 		for (final Class<? extends OutputPlugin> plugin : outputPluginClasses) {
 			outputPluginList.add(PluginFactory.getOutputPlugin(plugin));
 		}
@@ -100,15 +127,6 @@ public class HSService extends Service {
 		}
 	}
 
-	/**
-	 * Populates the list of input plugins.
-	 */
-	private void addInputPlugins() {
-		for (final Class<? extends InputPlugin> plugin : inputPluginClasses) {
-			inputPluginList.add(PluginFactory.getInputPlugin(plugin));
-		}
-	}
-
 	private Notification getServiceStartedNotification() {
 		final int icon = R.drawable.notification_icon;
 		final CharSequence tickerText = getResources().getString(
@@ -142,7 +160,6 @@ public class HSService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		Log.d(TAG, "onCreate()");
 	}
 
 	/**
@@ -151,6 +168,7 @@ public class HSService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		getApplicationContext().unregisterReceiver(prefReceiver);
 		stopForeground(true);
 		for (final InputPlugin plugin : inputPluginList) {
 			plugin.stopPlugin();
@@ -158,10 +176,6 @@ public class HSService extends Service {
 		for (final OutputPlugin plugin : outputPluginList) {
 			plugin.stopPlugin();
 		}
-
-		inputPluginList.clear();
-		outputPluginList.clear();
-
 		isRunning = false;
 	}
 
@@ -181,31 +195,25 @@ public class HSService extends Service {
 				R.string.started_notification_text).hashCode();
 		startForeground(notification_id, getServiceStartedNotification());
 
-		// Set up our plugin factory.
-		PluginFactory.setContext(getApplicationContext());
-
-		// Register the receiver for when the preferences change.
-		getApplicationContext().registerReceiver(prefReceiver,
-				new IntentFilter(PreferenceFactory.PREFERENCES_CHANGED_INTENT));
-
-		// Instantiate input plugins.
-		addInputPlugins();
-
-		// Instantiate output plugins
-		addOutputPlugins();
-
+		Log.d(TAG, "Sending start signal to " + outputPluginList.size()
+				+ " output plugins.");
+		// Start output plugins.
+		for (final OutputPlugin plugin : outputPluginList) {
+			plugin.startPlugin();
+		}
+		Log.d(TAG, "Sending stop signal to " + inputPluginList.size()
+				+ " input plugins.");
 		// Start input plugins.
 		for (final InputPlugin plugin : inputPluginList) {
 			plugin.startPlugin();
 		}
 
-		// Start output plugins.
-		for (final OutputPlugin plugin : outputPluginList) {
-			plugin.startPlugin();
-		}
+		// Register the receiver for when the preferences change.
+		getApplicationContext().registerReceiver(prefReceiver,
+				new IntentFilter(PreferenceFactory.PREFERENCES_CHANGED_INTENT));
 
 		isRunning = true;
 
-		ca.mcgill.hs.HSAndroid.updateButton();
+		HSAndroid.updateButton();
 	}
 }

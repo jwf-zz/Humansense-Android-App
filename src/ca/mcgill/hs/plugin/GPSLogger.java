@@ -8,16 +8,13 @@ import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Looper;
 import android.preference.Preference;
-import android.preference.PreferenceManager;
+import android.preference.PreferenceActivity;
 import android.util.Log;
 import ca.mcgill.hs.R;
-import ca.mcgill.hs.util.PreferenceFactory;
+import ca.mcgill.hs.prefs.PreferenceFactory;
 
 /**
- * An InputPlugin which gets data from the available GPS signals around.
- * 
- * @author Cicerone Cojocaru, Jonathan Pitre
- * 
+ * An InputPlugin which gets data from the GPS receiver.
  */
 public final class GPSLogger extends InputPlugin {
 
@@ -109,22 +106,38 @@ public final class GPSLogger extends InputPlugin {
 	private static final String GPS_LOGGER_DISTANCE_PREF = "gpsLoggerDistancePreference";
 	private static final String GPS_LOGGER_ENABLE_PREF = "gpsLoggerEnable";
 
-	// Keeps track of whether this plugin is enabled or not.
-	private static boolean pluginEnabled;
+	/**
+	 * Returns the list of Preference objects for this InputPlugin.
+	 * 
+	 * @param c
+	 *            the context for the generated Preferences.
+	 * @return an array of the Preferences of this object.
+	 */
+	public static Preference[] getPreferences(final PreferenceActivity activity) {
+		final Preference[] prefs = new Preference[3];
 
-	// The LocationManager used to request location updates.
-	private static LocationManager locationManager = null;
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(activity,
+				GPS_LOGGER_ENABLE_PREF, R.string.gpslogger_enable_pref_label,
+				R.string.gpslogger_enable_pref_summary,
+				R.string.gpslogger_enable_pref_on,
+				R.string.gpslogger_enable_pref_off);
 
-	// A GPSLocationListener which listens for location updates.
-	private static GPSLocationListener locationListener = null;
+		prefs[1] = PreferenceFactory.getListPreference(activity,
+				R.array.bluetoothlogger_pref_interval_strings,
+				R.array.gpslogger_pref_interval_values,
+				GPS_LOGGER_INTERVAL_DEFAULT, GPS_LOGGER_INTERVAL_PREF,
+				R.string.gpslogger_interval_pref,
+				R.string.gpslogger_interval_pref_summary);
 
-	// The minimum distance the person has to travel for an update to be valid.
-	private static int minUpdateDistance;
+		prefs[2] = PreferenceFactory.getListPreference(activity,
+				R.array.gpslogger_pref_distance_strings,
+				R.array.gpslogger_pref_distance_values,
+				GPS_LOGGER_DISTANCE_DEFAULT, GPS_LOGGER_DISTANCE_PREF,
+				R.string.gpslogger_distance_pref,
+				R.string.gpslogger_distance_pref_summary);
 
-	// The minimum amount of time, in milliseconds, that has to pass between two
-	// subsequent updates
-	// for an update to be valid.
-	private static int minUpdateFrequency;
+		return prefs;
+	}
 
 	/**
 	 * Returns whether or not this InputPlugin has Preferences.
@@ -135,42 +148,28 @@ public final class GPSLogger extends InputPlugin {
 		return true;
 	}
 
-	// The Context for the preferences.
-	private final Context context;
+	// Keeps track of whether this plugin is enabled or not.
+	private boolean pluginEnabled;
+
+	// The LocationManager used to request location updates.
+	private final LocationManager locationManager;
+
+	// A GPSLocationListener which listens for location updates.
+	private final GPSLocationListener locationListener;
+
+	// The minimum distance the person has to travel for an update to be valid.
+	private int minUpdateDistance;
+
+	// The minimum amount of time, in milliseconds, that has to pass between two
+	// subsequent updates
+	// for an update to be valid.
+	private int minUpdateFrequency;
 
 	public final static String PLUGIN_NAME = "GPSLogger";
+
 	public final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
-	/**
-	 * Returns the list of Preference objects for this InputPlugin.
-	 * 
-	 * @param c
-	 *            the context for the generated Preferences.
-	 * @return an array of the Preferences of this object.
-	 */
-	public static Preference[] getPreferences(final Context c) {
-		final Preference[] prefs = new Preference[3];
-
-		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
-				GPS_LOGGER_ENABLE_PREF, R.string.gpslogger_enable_pref_label,
-				R.string.gpslogger_enable_pref_summary,
-				R.string.gpslogger_enable_pref_on,
-				R.string.gpslogger_enable_pref_off);
-
-		prefs[1] = PreferenceFactory.getListPreference(c,
-				R.array.gpsLoggerIntervalStrings,
-				R.array.gpsLoggerIntervalValues, GPS_LOGGER_INTERVAL_DEFAULT,
-				GPS_LOGGER_INTERVAL_PREF, R.string.gpslogger_interval_pref,
-				R.string.gpslogger_interval_pref_summary);
-
-		prefs[2] = PreferenceFactory.getListPreference(c,
-				R.array.gpsLoggerDistanceStrings,
-				R.array.gpsLoggerDistanceValues, GPS_LOGGER_DISTANCE_DEFAULT,
-				GPS_LOGGER_DISTANCE_PREF, R.string.gpslogger_distance_pref,
-				R.string.gpslogger_distance_pref_summary);
-
-		return prefs;
-	}
+	final private SharedPreferences prefs;
 
 	/**
 	 * This is the basic constructor for the GPSLogger plugin. It has to be
@@ -182,33 +181,60 @@ public final class GPSLogger extends InputPlugin {
 	 */
 	public GPSLogger(final Context context) {
 
-		GPSLogger.locationManager = (LocationManager) context
+		locationManager = (LocationManager) context
 				.getSystemService(Context.LOCATION_SERVICE);
-		GPSLogger.locationListener = new GPSLocationListener(
-				GPSLogger.locationManager);
+		locationListener = new GPSLocationListener(locationManager);
 
-		this.context = context;
-
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-		pluginEnabled = prefs.getBoolean(GPS_LOGGER_ENABLE_PREF, false);
-		minUpdateDistance = Integer.parseInt(prefs.getString(
-				GPS_LOGGER_DISTANCE_PREF, GPS_LOGGER_DISTANCE_DEFAULT));
-		minUpdateFrequency = Integer.parseInt(prefs.getString(
-				GPS_LOGGER_INTERVAL_PREF, GPS_LOGGER_INTERVAL_DEFAULT));
+		prefs = PreferenceFactory.getSharedPreferences();
 	}
 
 	/**
 	 * Creates a GPSLocationPacket with the current location's coordinates.
 	 * 
-	 * @param loc
+	 * @param location
 	 *            the current Location.
 	 */
-	private void getNewLocation(final Location loc) {
+	private void getNewLocation(final Location location) {
 		Log.i(PLUGIN_NAME, "GPS Data received.");
-		write(new GPSPacket(loc.getTime(), loc.getAccuracy(), loc.getBearing(),
-				loc.getSpeed(), loc.getAltitude(), loc.getLatitude(), loc
+		write(new GPSPacket(location.getTime(), location.getAccuracy(),
+				location.getBearing(), location.getSpeed(), location
+						.getAltitude(), location.getLatitude(), location
 						.getLongitude()));
+	}
+
+	/**
+	 * This method requests location updates from the LocationManager.
+	 * 
+	 * @Override
+	 */
+	@Override
+	protected void onPluginStart() {
+		pluginEnabled = prefs.getBoolean(GPS_LOGGER_ENABLE_PREF, false);
+		minUpdateDistance = Integer.parseInt(prefs.getString(
+				GPS_LOGGER_DISTANCE_PREF, GPS_LOGGER_DISTANCE_DEFAULT));
+		minUpdateFrequency = Integer.parseInt(prefs.getString(
+				GPS_LOGGER_INTERVAL_PREF, GPS_LOGGER_INTERVAL_DEFAULT));
+		if (!pluginEnabled) {
+			return;
+		}
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+				minUpdateFrequency, minUpdateDistance, locationListener, Looper
+						.getMainLooper());
+		Log.i(PLUGIN_NAME, "Registered Location Listener.");
+	}
+
+	/**
+	 * This method removes the requested location updates.
+	 * 
+	 * @Override
+	 */
+	@Override
+	protected void onPluginStop() {
+		if (!pluginEnabled) {
+			return;
+		}
+		locationManager.removeUpdates(locationListener);
+		Log.i(PLUGIN_NAME, "Unregistered Location Listener.");
 	}
 
 	/**
@@ -216,9 +242,6 @@ public final class GPSLogger extends InputPlugin {
 	 */
 	@Override
 	public void onPreferenceChanged() {
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-
 		final boolean pluginEnabledNew = prefs.getBoolean(
 				GPS_LOGGER_ENABLE_PREF, false);
 		if (pluginEnabled && !pluginEnabledNew) {
@@ -240,34 +263,6 @@ public final class GPSLogger extends InputPlugin {
 							minUpdateFrequency, minUpdateDistance,
 							locationListener, Looper.getMainLooper());
 		}
-	}
-
-	/**
-	 * This method requests location updates from the LocationManager.
-	 * 
-	 * @Override
-	 */
-	public void startPlugin() {
-		if (!pluginEnabled) {
-			return;
-		}
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-				minUpdateFrequency, minUpdateDistance, locationListener, Looper
-						.getMainLooper());
-		Log.i(PLUGIN_NAME, "Registered Location Listener.");
-	}
-
-	/**
-	 * This method removes the requested location updates.
-	 * 
-	 * @Override
-	 */
-	public void stopPlugin() {
-		if (!pluginEnabled) {
-			return;
-		}
-		locationManager.removeUpdates(locationListener);
-		Log.i(PLUGIN_NAME, "Unregistered Location Listener.");
 	}
 
 }

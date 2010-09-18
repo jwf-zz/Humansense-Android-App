@@ -4,66 +4,28 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.Preference;
-import android.preference.PreferenceManager;
+import android.preference.PreferenceActivity;
 import android.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.graph.NewActivityNotificationLauncher;
 import ca.mcgill.hs.plugin.SensorLogger.SensorPacket;
-import ca.mcgill.hs.util.PreferenceFactory;
+import ca.mcgill.hs.prefs.PreferenceFactory;
 
 public final class TestMagOutputPlugin extends OutputPlugin {
 
 	public static final String PLUGIN_NAME = "TestMagOutput";
 	public static final int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
-	private static final String TESTMAG_OUTPUT_ENABLE_PREF = "testMagOutputEnable";
-
-	// Keeps track of whether this plugin is enabled or not.
-	private static boolean pluginEnabled;
-
-	private static final int MAX_INDEX = 100;
-
-	private static final float[] magValues = new float[MAX_INDEX];
-
-	private static int[] magActivities = new int[MAX_INDEX];
-
-	private static int index;
-	private static SharedPreferences prefs;
-	private static Context context;
-
-	private static long startTimestamp;
-
-	private static long endTimestamp;
-
-	private static void arrayFull() {
-		Log.i(PLUGIN_NAME, "Array is full.");
-
-		final Intent i = new Intent(context,
-				NewActivityNotificationLauncher.class);
-
-		NewActivityNotificationLauncher.setStartTimestamp(startTimestamp);
-		NewActivityNotificationLauncher.setEndTimestamp(endTimestamp);
-		NewActivityNotificationLauncher.setMagValues(magValues, magActivities);
-
-		context.startService(i);
-
-		index = 0;
-	}
-
 	/**
 	 * Returns the list of Preference objects for this OutputPlugin.
 	 * 
-	 * @param c
-	 *            the context for the generated Preferences.
 	 * @return an array of the Preferences of this object.
 	 */
-	public static Preference[] getPreferences(final Context context) {
-		TestMagOutputPlugin.context = context;
+	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		final Preference[] prefs = new Preference[1];
 
-		prefs[0] = PreferenceFactory.getCheckBoxPreference(context,
-				TESTMAG_OUTPUT_ENABLE_PREF,
-				R.string.testmagoutput_enable_pref_label,
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(activity,
+				PLUGIN_ACTIVE_KEY, R.string.testmagoutput_enable_pref_label,
 				R.string.testmagoutput_enable_pref_summary,
 				R.string.testmagoutput_enable_pref_on,
 				R.string.testmagoutput_enable_pref_off);
@@ -79,14 +41,49 @@ public final class TestMagOutputPlugin extends OutputPlugin {
 		return true;
 	}
 
+	// Keeps track of whether this plugin is enabled or not.
+	private boolean pluginEnabled;
+
+	private static final int MAX_INDEX = 100;
+
+	private static final String PLUGIN_ACTIVE_KEY = "testMagOutputEnable";
+
+	private final float[] magValues = new float[MAX_INDEX];
+
+	private final int[] magActivities = new int[MAX_INDEX];
+	private int index;
+	private final SharedPreferences prefs;
+
+	private final Context context;
+
+	private long startTimestamp;
+
+	private long endTimestamp;
+
 	public TestMagOutputPlugin(final Context context) {
+		this.context = context;
+
 		index = 0;
 
 		Log.i(PLUGIN_NAME, "Max Index: " + MAX_INDEX);
 
-		prefs = PreferenceManager.getDefaultSharedPreferences(context);
+		prefs = PreferenceFactory.getSharedPreferences();
 
-		pluginEnabled = prefs.getBoolean(TESTMAG_OUTPUT_ENABLE_PREF, false);
+	}
+
+	private void arrayFull() {
+		Log.i(PLUGIN_NAME, "Array is full.");
+
+		final Intent i = new Intent(context,
+				NewActivityNotificationLauncher.class);
+
+		NewActivityNotificationLauncher.setStartTimestamp(startTimestamp);
+		NewActivityNotificationLauncher.setEndTimestamp(endTimestamp);
+		NewActivityNotificationLauncher.setMagValues(magValues, magActivities);
+
+		context.startService(i);
+
+		index = 0;
 	}
 
 	@Override
@@ -153,4 +150,30 @@ public final class TestMagOutputPlugin extends OutputPlugin {
 			magActivities[i] = 0xF;
 		}
 	}
+
+	@Override
+	protected void onPluginStart() {
+		pluginEnabled = prefs.getBoolean(PLUGIN_ACTIVE_KEY, false);
+	}
+
+	@Override
+	protected void onPluginStop() {
+	}
+
+	/**
+	 * This method gets called whenever the preferences have been changed.
+	 */
+	@Override
+	public void onPreferenceChanged() {
+		final boolean pluginEnabledNew = prefs.getBoolean(PLUGIN_ACTIVE_KEY,
+				false);
+		if (pluginEnabled && !pluginEnabledNew) {
+			stopPlugin();
+			pluginEnabled = pluginEnabledNew;
+		} else if (!pluginEnabled && pluginEnabledNew) {
+			pluginEnabled = pluginEnabledNew;
+			startPlugin();
+		}
+	}
+
 }

@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import ca.mcgill.hs.R;
 
 public class SeekBarPreference extends DialogPreference implements
 		SeekBar.OnSeekBarChangeListener {
@@ -31,7 +32,9 @@ public class SeekBarPreference extends DialogPreference implements
 		super(context, attrs);
 		mContext = context;
 
-		mDialogMessage = attrs.getAttributeValue(ANDROID_NS, DIALOG_MESSAGE_ID);
+		mDialogMessage = context.getResources().getString(
+				attrs.getAttributeResourceValue(ANDROID_NS, DIALOG_MESSAGE_ID,
+						R.string.app_name));
 		mSuffix = attrs.getAttributeValue(ANDROID_NS, DIALOG_TEXT_ID);
 		mDefault = attrs.getAttributeIntValue(ANDROID_NS, DEFAULT_VALUE_ID, 0);
 		mMax = attrs.getAttributeIntValue(ANDROID_NS, MAX_VALUE_ID, 100);

@@ -1,5 +1,6 @@
 package ca.mcgill.hs.plugin;
 
+
 /**
  * A simple interface describing the behaviour of plugins, both input and
  * output. Only two classes implement this, the abstract InputPlugin and
@@ -10,7 +11,6 @@ package ca.mcgill.hs.plugin;
  * 
  */
 public interface Plugin {
-
 	/**
 	 * Sets up the plugin in order for it to run.
 	 */

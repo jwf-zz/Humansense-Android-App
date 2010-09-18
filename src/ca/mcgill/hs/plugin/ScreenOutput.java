@@ -3,32 +3,23 @@ package ca.mcgill.hs.plugin;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.Preference;
-import android.preference.PreferenceManager;
+import android.preference.PreferenceActivity;
 import android.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSPacket;
 import ca.mcgill.hs.plugin.GSMLogger.GSMPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiPacket;
-import ca.mcgill.hs.util.PreferenceFactory;
+import ca.mcgill.hs.prefs.PreferenceFactory;
 
 /**
  * This output plugin takes data from a ReadableByteChannel and outputs it to
  * the Android's logcat.
- * 
- * @author Cicerone Cojocaru, Jonathan Pitre
- * 
  */
 public final class ScreenOutput extends OutputPlugin {
 
 	private static final String SCREEN_OUTPUT_ENABLE_PREF = "screenOutputEnable";
-
 	private static final String PLUGIN_NAME = "ScreenOutput";
-
-	// Keeps track of whether this plugin is enabled or not.
-	private static boolean pluginEnabled;
-
-	private static SharedPreferences prefs;
 
 	/**
 	 * Parses and writes given BluetoothPacket to the Android's logcat.
@@ -36,58 +27,58 @@ public final class ScreenOutput extends OutputPlugin {
 	 * @param gpslp
 	 *            the BluetoothPacket to parse and write out.
 	 */
-	private static void dataParse(final BluetoothPacket bp) {
+	private static void dataParse(final BluetoothPacket packet) {
 		Log.i(PLUGIN_NAME, "Bluetooth Device Found");
-		Log.i(PLUGIN_NAME, "Name : " + bp.names.toString());
-		Log.i(PLUGIN_NAME, "Address : " + bp.addresses.toString());
+		Log.i(PLUGIN_NAME, "Name : " + packet.names.toString());
+		Log.i(PLUGIN_NAME, "Address : " + packet.addresses.toString());
 	}
 
 	/**
 	 * Parses and writes given GPSLoggerPacket to the Android's logcat.
 	 * 
-	 * @param gpslp
+	 * @param packet
 	 *            the GPSLoggerPacket to parse and write out.
 	 */
-	private static void dataParse(final GPSPacket gpslp) {
-		Log.i(PLUGIN_NAME, "Area: [" + gpslp.altitude + "][" + gpslp.latitude
-				+ "][" + gpslp.longitude + "]");
+	private static void dataParse(final GPSPacket packet) {
+		Log.i(PLUGIN_NAME, "Area: [" + packet.altitude + "][" + packet.latitude
+				+ "][" + packet.longitude + "]");
 	}
 
 	/**
 	 * Parses and writes given GSMLoggerPacket to the Android's logcat.
 	 * 
-	 * @param gsmlp
+	 * @param packet
 	 *            the GSMLoggerPacket to parse and write out.
 	 */
-	private static void dataParse(final GSMPacket gsmlp) {
-		Log.i(PLUGIN_NAME, "Timestamp : " + gsmlp.time);
-		Log.i(PLUGIN_NAME, "MCC : " + gsmlp.mcc);
-		Log.i(PLUGIN_NAME, "MNC : " + gsmlp.mnc);
-		Log.i(PLUGIN_NAME, "CID : " + gsmlp.cid);
-		Log.i(PLUGIN_NAME, "LAC : " + gsmlp.lac);
-		Log.i(PLUGIN_NAME, "RSSI : " + gsmlp.rssi);
-		Log.i(PLUGIN_NAME, "Neighbors : " + gsmlp.neighbors);
-		for (int i = gsmlp.neighbors - 1; i >= 0; i--) {
-			Log.i(PLUGIN_NAME, "Neighbor " + i + " CID : " + gsmlp.cids[i]);
-			Log.i(PLUGIN_NAME, "Neighbor " + i + " LAC : " + gsmlp.lacs[i]);
-			Log.i(PLUGIN_NAME, "Neighbor " + i + " RSSI : " + gsmlp.rssis[i]);
+	private static void dataParse(final GSMPacket packet) {
+		Log.i(PLUGIN_NAME, "Timestamp : " + packet.time);
+		Log.i(PLUGIN_NAME, "MCC : " + packet.mcc);
+		Log.i(PLUGIN_NAME, "MNC : " + packet.mnc);
+		Log.i(PLUGIN_NAME, "CID : " + packet.cid);
+		Log.i(PLUGIN_NAME, "LAC : " + packet.lac);
+		Log.i(PLUGIN_NAME, "RSSI : " + packet.rssi);
+		Log.i(PLUGIN_NAME, "Neighbors : " + packet.neighbors);
+		for (int i = packet.neighbors - 1; i >= 0; i--) {
+			Log.i(PLUGIN_NAME, "Neighbor " + i + " CID : " + packet.cids[i]);
+			Log.i(PLUGIN_NAME, "Neighbor " + i + " LAC : " + packet.lacs[i]);
+			Log.i(PLUGIN_NAME, "Neighbor " + i + " RSSI : " + packet.rssis[i]);
 		}
 	}
 
 	/**
 	 * Parses and writes given WifiLoggerPacket to the Android's logcat.
 	 * 
-	 * @param wlp
+	 * @param packet
 	 *            the WifiLoggerPacket to parse and write out.
 	 */
-	private static void dataParse(final WifiPacket wlp) {
-		Log.i(PLUGIN_NAME, "Time: " + wlp.timestamp);
-		Log.i(PLUGIN_NAME, "Neighbors: " + wlp.neighbors);
-		final int j = wlp.levels.length;
+	private static void dataParse(final WifiPacket packet) {
+		Log.i(PLUGIN_NAME, "Time: " + packet.timestamp);
+		Log.i(PLUGIN_NAME, "Neighbors: " + packet.neighbors);
+		final int j = packet.levels.length;
 		for (int i = 0; i < j; i++) {
-			Log.i(PLUGIN_NAME, "SSID: " + wlp.SSIDs[i]);
-			Log.i(PLUGIN_NAME, "Level: " + wlp.levels[i]);
-			Log.i(PLUGIN_NAME, "BSSID: " + wlp.BSSIDs[i]);
+			Log.i(PLUGIN_NAME, "SSID: " + packet.SSIDs[i]);
+			Log.i(PLUGIN_NAME, "Level: " + packet.levels[i]);
+			Log.i(PLUGIN_NAME, "BSSID: " + packet.BSSIDs[i]);
 			Log.i(PLUGIN_NAME, " ");
 		}
 	}
@@ -99,10 +90,10 @@ public final class ScreenOutput extends OutputPlugin {
 	 *            the context for the generated Preferences.
 	 * @return an array of the Preferences of this object.
 	 */
-	public static Preference[] getPreferences(final Context c) {
+	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		final Preference[] prefs = new Preference[1];
 
-		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(activity,
 				SCREEN_OUTPUT_ENABLE_PREF,
 				R.string.screenoutput_enable_pref_label,
 				R.string.screenoutput_enable_pref_summary,
@@ -121,6 +112,11 @@ public final class ScreenOutput extends OutputPlugin {
 		return true;
 	}
 
+	// Keeps track of whether this plugin is enabled or not.
+	private boolean pluginEnabled;
+
+	private final SharedPreferences prefs;
+
 	/**
 	 * This is the basic constructor for the ScreenOutput plugin. It has to be
 	 * instantiated before it is started, and needs to be passed a reference to
@@ -130,8 +126,7 @@ public final class ScreenOutput extends OutputPlugin {
 	 *            the context in which this plugin is created.
 	 */
 	public ScreenOutput(final Context context) {
-		prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		pluginEnabled = prefs.getBoolean(SCREEN_OUTPUT_ENABLE_PREF, false);
+		prefs = PreferenceFactory.getSharedPreferences();
 	}
 
 	/**
@@ -139,24 +134,33 @@ public final class ScreenOutput extends OutputPlugin {
 	 * ScreenOutput has data available to output. This method calls the
 	 * appropriate version of dataParse based on the DataPacket type.
 	 * 
-	 * @param dp
+	 * @param packet
 	 *            the DataPacket recieved.
 	 */
 	@Override
-	void onDataReceived(final DataPacket dp) {
+	void onDataReceived(final DataPacket packet) {
 		if (!pluginEnabled) {
 			return;
 		}
-		final int id = dp.getDataPacketId();
+		final int id = packet.getDataPacketId();
 		if (id == WifiPacket.PACKET_ID) {
-			dataParse((WifiPacket) dp);
+			dataParse((WifiPacket) packet);
 		} else if (id == GPSPacket.PACKET_ID) {
-			dataParse((GPSPacket) dp);
+			dataParse((GPSPacket) packet);
 		} else if (id == GSMPacket.PACKET_ID) {
-			dataParse((GSMPacket) dp);
+			dataParse((GSMPacket) packet);
 		} else if (id == BluetoothPacket.PACKET_ID) {
-			dataParse((BluetoothPacket) dp);
+			dataParse((BluetoothPacket) packet);
 		}
+	}
+
+	@Override
+	protected void onPluginStart() {
+		pluginEnabled = prefs.getBoolean(SCREEN_OUTPUT_ENABLE_PREF, false);
+	}
+
+	@Override
+	protected void onPluginStop() {
 	}
 
 	/**
@@ -174,5 +178,4 @@ public final class ScreenOutput extends OutputPlugin {
 			startPlugin();
 		}
 	}
-
 }

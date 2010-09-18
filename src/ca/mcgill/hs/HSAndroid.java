@@ -4,15 +4,17 @@
 package ca.mcgill.hs;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import ca.mcgill.hs.plugin.PluginFactory;
 import ca.mcgill.hs.prefs.HSAndroidPreferences;
+import ca.mcgill.hs.prefs.PreferenceFactory;
 import ca.mcgill.hs.serv.HSService;
 
 /**
@@ -20,9 +22,6 @@ import ca.mcgill.hs.serv.HSService;
  * is launched manually on the phone by the user, and is from where the
  * background services can be manually started and stopped, and where the
  * preferences and settings can be changed.
- * 
- * @author Jonathan Pitre
- * 
  */
 public class HSAndroid extends Activity {
 
@@ -36,6 +35,7 @@ public class HSAndroid extends Activity {
 	private static final int MENU_SETTINGS = 13371337;
 	private static final int MENU_UPLOAD = 13371338;
 
+	@SuppressWarnings("unused")
 	private static final String TAG = "HSAndroid";
 
 	/**
@@ -55,8 +55,8 @@ public class HSAndroid extends Activity {
 	 * Sets up the preferences, i.e. get Activity preferences.
 	 */
 	private void getPrefs() {
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(getBaseContext());
+		final SharedPreferences prefs = PreferenceFactory
+				.getSharedPreferences();
 		autoStartAppStart = prefs.getBoolean(
 				HSAndroidPreferences.AUTO_START_AT_APP_START_PREF, false);
 	}
@@ -68,6 +68,12 @@ public class HSAndroid extends Activity {
 	@Override
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		final Context context = getApplicationContext();
+		PreferenceFactory.setContext(context);
+		PluginFactory.setContext(context);
+		HSService.initializeInputPlugins();
+		HSService.initializeOutputPlugins();
 
 		// // final Sensor s = new Sensor();
 		// Log.d(TAG, "Sensor.androidInit: " + Sensor.androidInit());
@@ -125,28 +131,6 @@ public class HSAndroid extends Activity {
 				}
 			}
 		});
-
-		// Intent for the Uploader service
-		/*
-		 * final Intent uploaderIntent = new Intent(this,
-		 * UploaderService.class);
-		 * 
-		 * // YES-NO DIALOG BOX FOR FILE UPLOAD final
-		 * DialogInterface.OnClickListener dialogClickListener = new
-		 * DialogInterface.OnClickListener() {
-		 * 
-		 * @Override public void onClick(final DialogInterface dialog, final int
-		 * which) { switch (which) { case DialogInterface.BUTTON_POSITIVE:
-		 * startService(uploaderIntent); break;
-		 * 
-		 * case DialogInterface.BUTTON_NEGATIVE: break; } } };
-		 * 
-		 * final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		 * builder.setMessage(R.string.upload_query).setPositiveButton(
-		 * R.string.yes, dialogClickListener).setNegativeButton( R.string.no,
-		 * dialogClickListener);
-		 */
-
 	}
 
 	/**

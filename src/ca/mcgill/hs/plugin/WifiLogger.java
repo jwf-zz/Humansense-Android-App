@@ -11,24 +11,17 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.PowerManager;
 import android.preference.Preference;
-import android.preference.PreferenceManager;
+import android.preference.PreferenceActivity;
 import android.util.Log;
 import ca.mcgill.hs.R;
-import ca.mcgill.hs.util.PreferenceFactory;
+import ca.mcgill.hs.prefs.PreferenceFactory;
 
 /**
- * An InputPlugin which gets data from the available Wifi signals around.
- * 
- * @author Cicerone Cojocaru, Jonathan Pitre
- * 
+ * An InputPlugin which gets data from the wifi base stations that are currently
+ * in listening range.
  */
 public final class WifiLogger extends InputPlugin {
 
-	/**
-	 * Taken from Jordan Frank
-	 * (hsandroidv1.ca.mcgill.cs.humansense.hsandroid.service) and modified for
-	 * this plugin.
-	 */
 	private final class WifiLoggerReceiver extends BroadcastReceiver {
 
 		private final WifiManager wifi;
@@ -40,7 +33,6 @@ public final class WifiLogger extends InputPlugin {
 
 		@Override
 		public void onReceive(final Context c, final Intent intent) {
-			// Log.d(PLUGIN_NAME, "Received Wifi Scan Results.");
 			final List<ScanResult> results = wifi.getScanResults();
 			processResults(results);
 		}
@@ -99,43 +91,28 @@ public final class WifiLogger extends InputPlugin {
 	private static final String WIFI_INTERVAL_PREF = "wifiIntervalPreference";
 	private static final String WIFI_LOGGER_ENABLE_PREF = "wifiLoggerEnable";
 
-	final static String PLUGIN_NAME = "WifiLogger";
-	final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
-
-	// Boolean ON-OFF switch *Temporary only*
-	private static boolean pluginEnabled;
-
-	// The Thread for requesting scans.
-	private static Thread wifiLoggerThread;
-
-	// A boolean detailing whether or not the Thread is running.
-	private static boolean threadRunning = false;
-
-	private static WifiManager.WifiLock wifiLock;
-	private static PowerManager.WakeLock wakeLock;
+	public final static String PLUGIN_NAME = "WifiLogger";
+	public final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
 	/**
 	 * Returns the list of Preference objects for this InputPlugin.
 	 * 
-	 * @param c
-	 *            the context for the generated Preferences.
 	 * @return an array of the Preferences of this object.
 	 */
-	public static Preference[] getPreferences(final Context c) {
+	public static Preference[] getPreferences(final PreferenceActivity activity) {
+		Log.d(PLUGIN_NAME, "In getPreferences().");
 		final Preference[] prefs = new Preference[2];
-
-		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(activity,
 				WIFI_LOGGER_ENABLE_PREF, R.string.wifilogger_enable_pref_label,
 				R.string.wifilogger_enable_pref_summary,
 				R.string.wifilogger_enable_pref_on,
 				R.string.wifilogger_enable_pref_off);
 
-		prefs[1] = PreferenceFactory.getListPreference(c,
-				R.array.wifiLoggerIntervalStrings,
-				R.array.wifiLoggerIntervalValues, WIFI_INTERVAL_DEFAULT,
+		prefs[1] = PreferenceFactory.getListPreference(activity,
+				R.array.wifilogger_pref_interval_strings,
+				R.array.wifilogger_pref_interval_values, WIFI_INTERVAL_DEFAULT,
 				WIFI_INTERVAL_PREF, R.string.wifilogger_interval_pref,
 				R.string.wifilogger_interval_pref_summary);
-
 		return prefs;
 	}
 
@@ -148,24 +125,38 @@ public final class WifiLogger extends InputPlugin {
 		return true;
 	}
 
+	// Boolean ON-OFF switch *Temporary only*
+	private boolean pluginEnabled;
+
+	// The Thread for requesting scans.
+	private Thread wifiLoggerThread;
+	// A boolean detailing whether or not the Thread is running.
+	private boolean threadRunning = false;
+
+	private final WifiManager.WifiLock wifiLock;
+
+	private final PowerManager.WakeLock wakeLock;
+
 	// A WifiManager used to request scans.
 	private final WifiManager wifiManager;
 
 	// The interval of time between two subsequent scans.
-	private static int sleepIntervalMillisecs;
+	private int sleepIntervalMillisecs;
 
 	// The WifiLoggerReceiver from which we will get the Wifi scan results.
-	private static WifiLoggerReceiver loggerReceiver;
+	private WifiLoggerReceiver loggerReceiver;
 
 	// The Context in which the WifiLoggerReceiver will be registered.
-	private static Context context;
+	private final Context context;
 
 	// Keeps track of whether a scan is in progress
-	private static boolean scanning = false;
+	private boolean scanning = false;
 
 	// Keeps track of whether a new scan has been initiated prior to a previous
 	// scan being completed
-	private static boolean scanPending = false;
+	private boolean scanPending = false;
+
+	final SharedPreferences prefs;
 
 	/**
 	 * This is the basic constructor for the WifiLogger plugin. It has to be
@@ -176,7 +167,9 @@ public final class WifiLogger extends InputPlugin {
 	 *            - the context in which this plugin is created.
 	 */
 	public WifiLogger(final Context context) {
-		WifiLogger.context = context;
+		this.context = context;
+		prefs = PreferenceFactory.getSharedPreferences();
+
 		wifiManager = (WifiManager) context
 				.getSystemService(Context.WIFI_SERVICE);
 		wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_SCAN_ONLY,
@@ -186,13 +179,73 @@ public final class WifiLogger extends InputPlugin {
 				.getSystemService(Context.POWER_SERVICE);
 		wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, PLUGIN_NAME);
 		wakeLock.setReferenceCounted(false);
+	}
 
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-		sleepIntervalMillisecs = Integer.parseInt(prefs.getString(
-				WIFI_INTERVAL_PREF, WIFI_INTERVAL_DEFAULT));
+	/**
+	 * This method starts the WifiLogger plugin and launches all appropriate
+	 * threads. It also registers a new WifiLoggerReceiver to scan for possible
+	 * network connections. This method must be overridden in all input plugins.
+	 */
+	@Override
+	protected void onPluginStart() {
+		Log.d(PLUGIN_NAME, "Starting Wifi Logger.");
+		updatePreferences();
 
-		pluginEnabled = prefs.getBoolean(WIFI_LOGGER_ENABLE_PREF, false);
+		if (!pluginEnabled) {
+			return;
+		}
+		if (!wifiLock.isHeld()) {
+			wifiLock.acquire();
+		}
+
+		loggerReceiver = new WifiLoggerReceiver(wifiManager);
+		context.registerReceiver(loggerReceiver, new IntentFilter(
+				WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+		Log.i(PLUGIN_NAME, "Registered receiver.");
+
+		wifiLoggerThread = new Thread() {
+			@Override
+			public void run() {
+				try {
+					while (threadRunning) {
+						if (!wifiManager.pingSupplicant()) {
+							Log
+									.d(PLUGIN_NAME,
+											"Uh-Oh, Supplicant isn't responding to requests.");
+						}
+						if (!scanning) {
+							scanning = true;
+							wifiManager.startScan();
+						} else {
+							scanPending = true;
+						}
+						sleep(sleepIntervalMillisecs);
+					}
+				} catch (final InterruptedException e) {
+					Log
+							.e(PLUGIN_NAME,
+									"Logging thread terminated due to InterruptedException.");
+				}
+			}
+		};
+		wifiLoggerThread.start();
+		threadRunning = true;
+	}
+
+	/**
+	 * This method stops the thread if it is running, and does nothing if it is
+	 * not.
+	 */
+	@Override
+	protected void onPluginStop() {
+		if (threadRunning) {
+			threadRunning = false;
+			context.unregisterReceiver(loggerReceiver);
+			Log.i(PLUGIN_NAME, "Unegistered receiver.");
+		}
+		if (wifiLock.isHeld()) {
+			wifiLock.release();
+		}
 	}
 
 	/**
@@ -200,18 +253,14 @@ public final class WifiLogger extends InputPlugin {
 	 */
 	@Override
 	public void onPreferenceChanged() {
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-		sleepIntervalMillisecs = Integer.parseInt(prefs.getString(
-				WIFI_INTERVAL_PREF, WIFI_INTERVAL_DEFAULT));
-
-		final boolean pluginEnabledNew = prefs.getBoolean(
-				WIFI_LOGGER_ENABLE_PREF, false);
-		if (pluginEnabled && !pluginEnabledNew) {
+		final boolean pluginEnabledOld = pluginEnabled;
+		updatePreferences();
+		final String enabled = pluginEnabled ? "enabled" : "disabled";
+		Log.d(PLUGIN_NAME, "Preferences changed. Plugin is " + enabled
+				+ ", logging interval is " + sleepIntervalMillisecs);
+		if (pluginEnabledOld && !pluginEnabled) {
 			stopPlugin();
-			pluginEnabled = pluginEnabledNew;
-		} else if (!pluginEnabled && pluginEnabledNew) {
-			pluginEnabled = pluginEnabledNew;
+		} else if (!pluginEnabledOld && pluginEnabled) {
 			startPlugin();
 		}
 	}
@@ -238,79 +287,15 @@ public final class WifiLogger extends InputPlugin {
 		write(new WifiPacket(numResults, timestamp, levels, SSIDs, BSSIDs));
 		if (scanPending) {
 			scanPending = false;
-			// Log.d(PLUGIN_NAME, "Initiating Pending Wifi Scan.");
 			wifiManager.startScan();
 		} else {
 			scanning = false;
 		}
 	}
 
-	/**
-	 * This method starts the WifiLogger plugin and launches all appropriate
-	 * threads. It also registers a new WifiLoggerReceiver to scan for possible
-	 * network connections. This method must be overridden in all input plugins.
-	 */
-	public void startPlugin() {
-		if (!pluginEnabled) {
-			return;
-		}
-
-		if (!wifiLock.isHeld()) {
-			wifiLock.acquire();
-		}
-		// wl.acquire();
-
-		loggerReceiver = new WifiLoggerReceiver(wifiManager);
-		context.registerReceiver(loggerReceiver, new IntentFilter(
-				WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-		Log.i(PLUGIN_NAME, "Registered receiver.");
-
-		wifiLoggerThread = new Thread() {
-			@Override
-			public void run() {
-				try {
-					while (threadRunning) {
-						if (!wifiManager.pingSupplicant()) {
-							Log
-									.d(PLUGIN_NAME,
-											"Uh-Oh, Supplicant isn't responding to requests.");
-						}
-						if (!scanning) {
-							scanning = true;
-							// Log.d(PLUGIN_NAME, "Initiating Wifi Scan.");
-							wifiManager.startScan();
-						} else {
-							scanPending = true;
-						}
-						sleep(sleepIntervalMillisecs);
-					}
-				} catch (final InterruptedException e) {
-					Log
-							.e(PLUGIN_NAME,
-									"Logging thread terminated due to InterruptedException.");
-				}
-			}
-		};
-		wifiLoggerThread.start();
-		threadRunning = true;
-	}
-
-	/**
-	 * This method stops the thread if it is running, and does nothing if it is
-	 * not.
-	 */
-	public void stopPlugin() {
-		if (!pluginEnabled) {
-			return;
-		}
-		if (threadRunning) {
-			threadRunning = false;
-			context.unregisterReceiver(loggerReceiver);
-			Log.i(PLUGIN_NAME, "Unegistered receiver.");
-		}
-		if (wifiLock.isHeld()) {
-			wifiLock.release();
-		}
-		// wl.release();
+	private void updatePreferences() {
+		pluginEnabled = prefs.getBoolean(WIFI_LOGGER_ENABLE_PREF, false);
+		sleepIntervalMillisecs = Integer.parseInt(prefs.getString(
+				WIFI_INTERVAL_PREF, WIFI_INTERVAL_DEFAULT));
 	}
 }

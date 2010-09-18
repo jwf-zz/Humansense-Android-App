@@ -161,14 +161,12 @@
 
 	<!--  FileOutput plugin preferences -->
     <string name="fileoutput_buffersize_pref">Buffer Size</string>
-    <string name="fileoutput_buffersizedefault_pref">4096</string>
     <string name="fileoutput_buffersize_pref_summary">The size of the BufferedOutputStream buffer.</string>
     <string name="fileoutput_enable_pref_label">File Output Plugin</string>
     <string name="fileoutput_enable_pref_summary">Enables or disables this plugin.</string>
     <string name="fileoutput_enable_pref_on">File output is on.</string>
     <string name="fileoutput_enable_pref_off">File output is off.</string>
     <string name="fileoutput_rolloverinterval_pref">File Rollover Interval</string>
-    <string name="fileoutput_rolloverintervaldefault_pref">43200000</string>
     <string name="fileoutput_rolloverinterval_pref_summary">How often should new log files be started.</string>
 
 	<!--  ScreenOutput plugin preferences -->
@@ -184,6 +182,10 @@
     <string name="testmagoutput_enable_pref_off">TestMag output is off.</string>
     
     <!--  ClassifierOutput plugin preferences -->
+    <string name="simpleclassifier_enable_pref_label">Simple Classifier Plugin</string>
+    <string name="simpleclassifier_enable_pref_summary">Estimates motion state via the accelerometer.</string>
+    <string name="simpleclassifier_enable_pref_on">Simple Classifier is enabled.</string>
+    <string name="simpleclassifier_enable_pref_off">Simple Classifier is disabled.</string>
     <string name="accelerometerLingeringThresholds">Lingering Power Threshold</string>
     <string name="accelerometerLingeringThresholdDefault">10</string>
     <string name="accelerometerLingeringThresholdSummary">The threshold for classifying activity as lingering.</string>

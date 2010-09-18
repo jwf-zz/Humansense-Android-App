@@ -8,9 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import ca.mcgill.hs.R;
+import ca.mcgill.hs.prefs.PreferenceFactory;
 
 /**
  * This Service launches a notification for the HSAndroid application. When the
@@ -31,18 +31,6 @@ public class NewActivityNotificationLauncher extends Service {
 
 	// Notification ID, randomly chosen
 	public static final int NOTIFICATION_ID = 455925;
-
-	// Icon used for the notification.
-	private int icon;
-
-	// String used for the notification ticker.
-	private String tickerText;
-
-	// String used for the notification title.
-	private String contentTitle;
-
-	// String used for the notification text.
-	private String contentText;
 
 	/**
 	 * This method sets the END timestamp. Both the START and END timestamps
@@ -77,6 +65,18 @@ public class NewActivityNotificationLauncher extends Service {
 		start = timestamp;
 	}
 
+	// Icon used for the notification.
+	private int icon;
+
+	// String used for the notification ticker.
+	private String tickerText;
+
+	// String used for the notification title.
+	private String contentTitle;
+
+	// String used for the notification text.
+	private String contentText;
+
 	@Override
 	// Unused
 	public IBinder onBind(final Intent arg0) {
@@ -96,8 +96,8 @@ public class NewActivityNotificationLauncher extends Service {
 	 */
 	@Override
 	public void onStart(final Intent intent, final int startId) {
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(this);
+		final SharedPreferences prefs = PreferenceFactory
+				.getSharedPreferences();
 		if (start == -1 || end == -1 || start == end || magValues == null
 				|| magActivities == null
 				|| !prefs.getBoolean("notificationEnablePref", true)) {

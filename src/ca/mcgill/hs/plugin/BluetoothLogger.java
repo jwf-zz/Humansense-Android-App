@@ -10,11 +10,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.preference.Preference;
-import android.preference.PreferenceManager;
+import android.preference.PreferenceActivity;
 import android.util.Log;
 import ca.mcgill.hs.R;
-import ca.mcgill.hs.util.PreferenceFactory;
+import ca.mcgill.hs.prefs.PreferenceFactory;
 
+/**
+ * Logs observable bluetooth devices
+ */
 public class BluetoothLogger extends InputPlugin {
 
 	private class BluetoothDiscoveryListener extends BroadcastReceiver {
@@ -96,11 +99,8 @@ public class BluetoothLogger extends InputPlugin {
 	private static final String BLUETOOTH_DEFAULT_SCAN_INTERVAL = "60000";
 
 	private static final String BLUETOOTH_THREAD_TAG = "BluetoothThread";
-
 	private static final String BLUETOOTH_LOGGER_ENABLE_PREF = "bluetoothLoggerEnable";
-
 	private static final String BLUETOOTH_LOGGER_TIME_INTERVAL_PREF = "bluetoothLoggerTimeInterval";
-
 	private static final String FORCE_BLUETOOTH_ON_PREF = "forceBluetoothOn";
 
 	final static String PLUGIN_NAME = "BluetoothLogger";
@@ -110,30 +110,28 @@ public class BluetoothLogger extends InputPlugin {
 	/**
 	 * Returns the list of Preference objects for this InputPlugin.
 	 * 
-	 * @param c
-	 *            the context for the generated Preferences.
 	 * @return an array of the Preferences of this object.
 	 */
-	public static Preference[] getPreferences(final Context c) {
+	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		final Preference[] prefs = new Preference[3];
 
-		prefs[0] = PreferenceFactory.getCheckBoxPreference(c,
+		prefs[0] = PreferenceFactory.getCheckBoxPreference(activity,
 				BLUETOOTH_LOGGER_ENABLE_PREF,
 				R.string.bluetoothlogger_enable_pref_label,
 				R.string.bluetoothlogger_enable_pref_summary,
 				R.string.bluetoothlogger_enable_pref_on,
 				R.string.bluetoothlogger_enable_pref_off);
 
-		prefs[1] = PreferenceFactory.getCheckBoxPreference(c,
+		prefs[1] = PreferenceFactory.getCheckBoxPreference(activity,
 				FORCE_BLUETOOTH_ON_PREF,
 				R.string.bluetoothlogger_autoenable_pref_label,
 				R.string.bluetoothlogger_autoenable_pref_summary,
 				R.string.bluetoothlogger_autoenable_pref_on,
 				R.string.bluetoothlogger_autoenable_pref_off);
 
-		prefs[2] = PreferenceFactory.getListPreference(c,
-				R.array.bluetoothLoggerIntervalStrings,
-				R.array.bluetoothLoggerIntervalValues,
+		prefs[2] = PreferenceFactory.getListPreference(activity,
+				R.array.bluetoothlogger_pref_interval_strings,
+				R.array.bluetoothlogger_pref_interval_values,
 				BLUETOOTH_DEFAULT_SCAN_INTERVAL,
 				BLUETOOTH_LOGGER_TIME_INTERVAL_PREF,
 				R.string.bluetoothlogger_interval_pref,
@@ -173,9 +171,9 @@ public class BluetoothLogger extends InputPlugin {
 	private BluetoothDiscoveryListener discoveryListener;
 
 	// Lists holding results.
-	private final LinkedList<String> names;
+	private final LinkedList<String> names = new LinkedList<String>();
 
-	private final LinkedList<String> addresses;
+	private final LinkedList<String> addresses = new LinkedList<String>();
 
 	// Was the Bluetooth enable when the plugin was started
 	private boolean wasEnabled = false;
@@ -195,6 +193,8 @@ public class BluetoothLogger extends InputPlugin {
 	// process of being enabled.
 	private boolean isEnabling = false;
 
+	final SharedPreferences prefs;
+
 	/**
 	 * The default and only constructor for the BluetoothLogger InputPlugin.
 	 * 
@@ -209,11 +209,7 @@ public class BluetoothLogger extends InputPlugin {
 			}
 		}
 		this.context = context;
-		names = new LinkedList<String>();
-		addresses = new LinkedList<String>();
-
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
+		prefs = PreferenceFactory.getSharedPreferences();
 
 		forceBluetoothActivation = prefs.getBoolean(FORCE_BLUETOOTH_ON_PREF,
 				false);
@@ -221,8 +217,6 @@ public class BluetoothLogger extends InputPlugin {
 		timeBetweenDiscoveries = Integer.parseInt(prefs.getString(
 				BLUETOOTH_LOGGER_TIME_INTERVAL_PREF,
 				BLUETOOTH_DEFAULT_SCAN_INTERVAL));
-
-		pluginEnabled = prefs.getBoolean(BLUETOOTH_LOGGER_ENABLE_PREF, false);
 	}
 
 	/**
@@ -280,36 +274,9 @@ public class BluetoothLogger extends InputPlugin {
 		addresses.add(device.getAddress());
 	}
 
-	/**
-	 * This method gets called whenever the preferences have been changed.
-	 * 
-	 * @Override
-	 */
 	@Override
-	public void onPreferenceChanged() {
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-
-		timeBetweenDiscoveries = Integer.parseInt(prefs.getString(
-				BLUETOOTH_LOGGER_TIME_INTERVAL_PREF,
-				BLUETOOTH_DEFAULT_SCAN_INTERVAL));
-
-		forceBluetoothActivation = prefs.getBoolean(FORCE_BLUETOOTH_ON_PREF,
-				false);
-
-		final boolean pluginEnabledNew = prefs.getBoolean(
-				BLUETOOTH_LOGGER_ENABLE_PREF, false);
-		if (pluginEnabled && !pluginEnabledNew) {
-			stopPlugin();
-			pluginEnabled = pluginEnabledNew;
-		} else if (!pluginEnabled && pluginEnabledNew) {
-			pluginEnabled = pluginEnabledNew;
-			startPlugin();
-		}
-	}
-
-	@Override
-	public void startPlugin() {
+	protected void onPluginStart() {
+		pluginEnabled = prefs.getBoolean(BLUETOOTH_LOGGER_ENABLE_PREF, false);
 		if (!pluginEnabled) {
 			return;
 		}
@@ -336,7 +303,8 @@ public class BluetoothLogger extends InputPlugin {
 	 * broadcast receivers and cancels any ongoing discoveries. Disables
 	 * Bluetooth adapter if it was disabled when the service was started.
 	 */
-	public void stopPlugin() {
+	@Override
+	protected void onPluginStop() {
 		if (!pluginEnabled) {
 			return;
 		}
@@ -371,6 +339,31 @@ public class BluetoothLogger extends InputPlugin {
 			} else {
 				adapter.disable();
 			}
+		}
+	}
+
+	/**
+	 * This method gets called whenever the preferences have been changed.
+	 * 
+	 * @Override
+	 */
+	@Override
+	public void onPreferenceChanged() {
+		timeBetweenDiscoveries = Integer.parseInt(prefs.getString(
+				BLUETOOTH_LOGGER_TIME_INTERVAL_PREF,
+				BLUETOOTH_DEFAULT_SCAN_INTERVAL));
+
+		forceBluetoothActivation = prefs.getBoolean(FORCE_BLUETOOTH_ON_PREF,
+				false);
+
+		final boolean pluginEnabledNew = prefs.getBoolean(
+				BLUETOOTH_LOGGER_ENABLE_PREF, false);
+		if (pluginEnabled && !pluginEnabledNew) {
+			stopPlugin();
+			pluginEnabled = pluginEnabledNew;
+		} else if (!pluginEnabled && pluginEnabledNew) {
+			pluginEnabled = pluginEnabledNew;
+			startPlugin();
 		}
 	}
 }

@@ -31,7 +31,7 @@
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/JavaDoc Compiler.launch</value>
+					<value>&lt;project&gt;/.externalToolBuilders/Javadoc Builder.launch</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>

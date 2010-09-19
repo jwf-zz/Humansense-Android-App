@@ -224,7 +224,7 @@ public class LogFileUploaderService extends Service {
 	}
 
 	@Override
-	public IBinder onBind(final Intent arg0) {
+	public IBinder onBind(final Intent intent) {
 		return null;
 	}
 

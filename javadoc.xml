@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="protected" author="false" classpath="ext/httpcomponents-client-4.0.2/apache-mime4j-0.6.jar:ext/httpcomponents-client-4.0.2/httpmime-4.0.2.jar" destdir="doc" doctitle="HumanSense Android Data Collection Platform" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="ca.mcgill.hs.util,ca.mcgill.hs.classifiers,ca.mcgill.hs.serv,ca.mcgill.hs,ca.mcgill.hs.hardware,ca.mcgill.hs.prefs,ca.mcgill.hs.classifiers.location,ca.mcgill.hs.graph,ca.mcgill.hs.plugin,ca.mcgill.hs.uploader" source="1.6" sourcepath="gen:src" splitindex="true" use="true" version="false">
+            <link href="http://d.android.com/reference/"/>
+            <link href="http://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/"/>
+            <link href="http://james.apache.org/mime4j/apidocs/"/>
+        </javadoc>
+    </target>
+</project>

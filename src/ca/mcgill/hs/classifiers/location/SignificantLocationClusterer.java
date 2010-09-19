@@ -63,15 +63,15 @@ public class SignificantLocationClusterer {
 	 * 
 	 * @param point
 	 *            The point whose neighbours must be moved.
-	 * @param clusterID
+	 * @param cluster_id
 	 *            The cluster to move them to.
 	 */
 	private void addNeighboursToCluster(final Location point,
-			final int clusterId) {
+			final int cluster_id) {
 		for (final int neighbour_id : point.getNeighbours()) {
 			DebugHelper.out.println("\tAdding neighbour " + neighbour_id
-					+ " to cluster " + clusterId + ": ");
-			pool.addToCluster(neighbour_id, clusterId);
+					+ " to cluster " + cluster_id + ": ");
+			pool.addToCluster(neighbour_id, cluster_id);
 		}
 
 	}

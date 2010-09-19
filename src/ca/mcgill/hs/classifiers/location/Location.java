@@ -37,7 +37,12 @@ public abstract class Location {
 	 * database
 	 * 
 	 * @param db
+	 *            The database in which these locations will be stored.
 	 * @param timestamp
+	 *            The timestamp, in milliseconds since the epoch (similar to
+	 *            what is returned by System.currentTimeMillis()) associated
+	 *            with the location. Note that this timestamp is really only
+	 *            useful for debugging, and may change when points are merged.
 	 * @throws SQLException
 	 */
 	public Location(final SQLiteDatabase db, final double timestamp) {
@@ -51,8 +56,10 @@ public abstract class Location {
 	/**
 	 * Creates a location that is linked to a record in the database.
 	 * 
-	 * @param conn
+	 * @param db
+	 *            The database in which these locations will be stored.
 	 * @param id
+	 *            The id of the new location.
 	 * @throws SQLException
 	 */
 	public Location(final SQLiteDatabase db, final int id) {
@@ -63,10 +70,10 @@ public abstract class Location {
 	}
 
 	/**
-	 * Adds a point as this point's neighbour.
+	 * Adds a location as this location's neighbour.
 	 * 
-	 * @param point
-	 *            A neighbouring point.
+	 * @param id
+	 *            The id of the neighbour to be added.
 	 */
 	public void addNeighbour(final int id) {
 		if (id == getId()) {
@@ -83,10 +90,10 @@ public abstract class Location {
 	}
 
 	/**
-	 * Adds a set of neighbours to the point.
+	 * Adds a set of neighbours to the location.
 	 * 
-	 * @param points
-	 *            A set of the point's neighbours.
+	 * @param ids
+	 *            The ids of the neighbours to be added.
 	 */
 	public void addNeighbours(final Collection<Integer> ids) {
 		if (neighbours == null) {
@@ -131,13 +138,19 @@ public abstract class Location {
 	 */
 	public abstract void addObservation(Observation observation);
 
+	/**
+	 * Calculates the distance between this and other.
+	 * 
+	 * @param other
+	 *            The other location.
+	 * @return The distance between this and other.
+	 */
 	public abstract double distanceFrom(Location other);
 
 	/**
 	 * Creates a new location record
 	 * 
-	 * @param conn
-	 * @return
+	 * @return The id of the new empty location that has been created.
 	 */
 	protected int generateNewLocationId() {
 		// Insert Default Values
@@ -151,9 +164,9 @@ public abstract class Location {
 	}
 
 	/**
-	 * Returns this point's neighbours.
+	 * Returns this location's neighbours.
 	 * 
-	 * @return This point's neighbours.
+	 * @return This location's neighbours.
 	 */
 	public List<Integer> getNeighbours() {
 		if (neighbours == null) {
@@ -243,10 +256,10 @@ public abstract class Location {
 	}
 
 	/**
-	 * Removes a point as this point's neighbour.
+	 * Removes a location as this location's neighbour.
 	 * 
-	 * @param point
-	 *            A neighbouring point.
+	 * @param id
+	 *            The id of the neighbouring location to be removed.
 	 */
 	public void removeNeighbour(final int id) {
 		if (neighbours == null) {
@@ -267,10 +280,10 @@ public abstract class Location {
 	}
 
 	/**
-	 * Removes a set of neighbours from the point.
+	 * Removes a set of neighbours from the location.
 	 * 
-	 * @param points
-	 *            A set of the point's neighbours.
+	 * @param neighboursToRemove
+	 *            A set of the location's neighbours.
 	 */
 	public void removeNeighbours(final Collection<Integer> neighboursToRemove) {
 		if (neighbours == null) {

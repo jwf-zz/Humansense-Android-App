@@ -52,7 +52,7 @@ public class FileOutput extends OutputPlugin {
 	/**
 	 * Parses and writes given BluetoothPacket to given DataOutputStream.
 	 * 
-	 * @param gsmlp
+	 * @param packet
 	 *            the BluetoothPacket to parse and write out.
 	 * @param outputStream
 	 *            the DataOutputStream to write to.
@@ -132,7 +132,7 @@ public class FileOutput extends OutputPlugin {
 	/**
 	 * Parses and writes given SensorLoggerPacket to given DataOutputStream.
 	 * 
-	 * @param wlp
+	 * @param packet
 	 *            the WifiLoggerPacket to parse and write out.
 	 * @param outputStream
 	 *            the DataOutputStream to write to.

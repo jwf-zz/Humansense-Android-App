@@ -3,7 +3,15 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry kind="lib" path="ext/httpcomponents-client-4.0.2/httpmime-4.0.2.jar"/>
-	<classpathentry kind="lib" path="ext/httpcomponents-client-4.0.2/apache-mime4j-0.6.jar"/>
+	<classpathentry kind="lib" path="ext/httpcomponents-client-4.0.2/httpmime-4.0.2.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="ext/httpcomponents-client-4.0.2/apache-mime4j-0.6.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://james.apache.org/mime4j/apidocs/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

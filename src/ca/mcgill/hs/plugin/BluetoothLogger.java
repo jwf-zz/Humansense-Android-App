@@ -344,8 +344,6 @@ public class BluetoothLogger extends InputPlugin {
 
 	/**
 	 * This method gets called whenever the preferences have been changed.
-	 * 
-	 * @Override
 	 */
 	@Override
 	public void onPreferenceChanged() {

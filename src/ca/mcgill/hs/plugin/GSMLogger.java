@@ -116,10 +116,8 @@ public final class GSMLogger extends InputPlugin {
 	 * instantiated before it is started, and needs to be passed a reference to
 	 * a TelephonyManager and a Context.
 	 * 
-	 * @param wm
-	 *            the WifiManager for this WifiLogger.
 	 * @param context
-	 *            the context in which this plugin is created.
+	 *            The context in which this plugin is created.
 	 */
 	public GSMLogger(final Context context) {
 		telephonyManager = (TelephonyManager) context

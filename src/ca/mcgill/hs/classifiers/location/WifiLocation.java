@@ -56,12 +56,12 @@ public class WifiLocation extends Location {
 	 * Adds a generic WiFi observation to this observation's list. The signal
 	 * strength of the observation is added to this observation's mapping.
 	 * 
-	 * @param observation
+	 * @param obs
 	 *            The WiFi observation to be added.
 	 */
 	@Override
-	public void addObservation(final Observation o) {
-		final WifiObservation observation = (WifiObservation) o;
+	public void addObservation(final Observation obs) {
+		final WifiObservation observation = (WifiObservation) obs;
 		final int my_id = getId();
 		final SQLiteStatement ensureExistsStmt = db
 				.compileStatement("INSERT OR IGNORE INTO "
@@ -143,7 +143,7 @@ public class WifiLocation extends Location {
 	/**
 	 * Returns the average strength of this observation at the specified WAP ID.
 	 * 
-	 * @param wapID
+	 * @param wap_id
 	 *            The WAP ID to examine.
 	 * @return The average strength of this observation at the specified WAP ID.
 	 */

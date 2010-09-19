@@ -109,8 +109,8 @@ public final class GPSLogger extends InputPlugin {
 	/**
 	 * Returns the list of Preference objects for this InputPlugin.
 	 * 
-	 * @param c
-	 *            the context for the generated Preferences.
+	 * @param activity
+	 *            The PreferenceActivity that will display the preferences.
 	 * @return an array of the Preferences of this object.
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
@@ -204,8 +204,6 @@ public final class GPSLogger extends InputPlugin {
 
 	/**
 	 * This method requests location updates from the LocationManager.
-	 * 
-	 * @Override
 	 */
 	@Override
 	protected void onPluginStart() {
@@ -225,8 +223,6 @@ public final class GPSLogger extends InputPlugin {
 
 	/**
 	 * This method removes the requested location updates.
-	 * 
-	 * @Override
 	 */
 	@Override
 	protected void onPluginStop() {

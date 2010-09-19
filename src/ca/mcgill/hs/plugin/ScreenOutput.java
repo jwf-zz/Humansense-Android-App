@@ -24,7 +24,7 @@ public final class ScreenOutput extends OutputPlugin {
 	/**
 	 * Parses and writes given BluetoothPacket to the Android's logcat.
 	 * 
-	 * @param gpslp
+	 * @param packet
 	 *            the BluetoothPacket to parse and write out.
 	 */
 	private static void dataParse(final BluetoothPacket packet) {
@@ -86,8 +86,9 @@ public final class ScreenOutput extends OutputPlugin {
 	/**
 	 * Returns the list of Preference objects for this OutputPlugin.
 	 * 
-	 * @param c
-	 *            the context for the generated Preferences.
+	 * @param activity
+	 *            The PreferenceActivity in which these preferences will be
+	 *            displayed.
 	 * @return an array of the Preferences of this object.
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {

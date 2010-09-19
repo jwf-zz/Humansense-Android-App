@@ -92,7 +92,7 @@ public class PreferenceFactory {
 	 * Returns a CheckBoxPreference preference specified by the parameters. This
 	 * method does not use resource IDs for its parameters.
 	 * 
-	 * @param actvity
+	 * @param activity
 	 *            The PreferenceActivity in which this preference will appear
 	 * @param key
 	 *            The key of this preference.
@@ -136,7 +136,7 @@ public class PreferenceFactory {
 	 * Returns a CheckBoxPreference preference specified by the parameters. This
 	 * method does not use resource IDs for its parameters.
 	 * 
-	 * @param actvity
+	 * @param activity
 	 *            The PreferenceActivity in which this preference will appear
 	 * @param key
 	 *            The key of this preference.
@@ -180,7 +180,7 @@ public class PreferenceFactory {
 	 * Returns a ListPreference preference specified by the parameters. This
 	 * method uses resource IDs for its parameters.
 	 * 
-	 * @param actvity
+	 * @param activity
 	 *            The PreferenceActivity in which this preference will appear
 	 * @param entriesResId
 	 *            The resource ID for the text entries of this preference.
@@ -225,7 +225,7 @@ public class PreferenceFactory {
 	 * Returns a ListPreference preference specified by the parameters. This
 	 * method does not use resource IDs for its parameters.
 	 * 
-	 * @param actvity
+	 * @param activity
 	 *            The PreferenceActivity in which this preference will appear
 	 * @param entries
 	 *            The String array of entries for this preference.
@@ -269,7 +269,7 @@ public class PreferenceFactory {
 	/**
 	 * Returns a SeekBarPreference.
 	 * 
-	 * @param actvity
+	 * @param activity
 	 *            The PreferenceActivity in which this preference will appear
 	 * @param attrs
 	 *            The attributes for this seekbar

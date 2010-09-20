@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="javadoc">
-	<!-- Imports environment variables, required for ANDROID_HOME variable -->
-	<property environment="env"/>
+    <!-- Imports environment variables, required for ANDROID_HOME variable -->
+    <property environment="env"/>
     <target name="javadoc">
         <javadoc 
         	access="private" 
         	author="false" 
-        	classpath="ext/httpcomponents-client-4.0.2/apache-mime4j-0.6.jar:ext/httpcomponents-client-4.0.2/httpmime-4.0.2.jar:${android.sdk}/platforms/android-8/android.jar" 
+        	classpath="ext/httpcomponents-client-4.0.2/apache-mime4j-0.6.jar:ext/httpcomponents-client-4.0.2/httpmime-4.0.2.jar:${android.sdk}/platforms/android-8/android.jar:${env.ANDROID_HOME}/platforms/android-8/android.jar" 
         	destdir="doc" 
         	doctitle="HumanSense Android Data Collection Platform" 
         	nodeprecated="false" nodeprecatedlist="false" 

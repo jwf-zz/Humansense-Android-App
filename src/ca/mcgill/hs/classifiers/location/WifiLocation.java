@@ -62,7 +62,7 @@ public class WifiLocation extends Location {
 	@Override
 	public void addObservation(final Observation obs) {
 		final WifiObservation observation = (WifiObservation) obs;
-		final int my_id = getId();
+		final long my_id = getId();
 		final SQLiteStatement ensureExistsStmt = db
 				.compileStatement("INSERT OR IGNORE INTO "
 						+ WifiLocationSet.OBSERVATIONS_TABLE
@@ -118,8 +118,8 @@ public class WifiLocation extends Location {
 						+ "JOIN " + WifiLocationSet.OBSERVATIONS_TABLE
 						+ " AS o2 USING (wap_id) "
 						+ "WHERE o1.location_id=? AND o2.location_id=?",
-				new String[] { Integer.toString(this.getId()),
-						Integer.toString(location.getId()) });
+				new String[] { Long.toString(this.getId()),
+						Long.toString(location.getId()) });
 		try {
 			while (cursor.moveToNext()) {
 				final double part = cursor.getDouble(0) - cursor.getDouble(1);
@@ -152,7 +152,7 @@ public class WifiLocation extends Location {
 		final Cursor cursor = db.rawQuery("SELECT average_strength FROM "
 				+ WifiLocationSet.OBSERVATIONS_TABLE
 				+ " WHERE location_id=? AND wap_id=?", new String[] {
-				Integer.toString(getId()), Integer.toString(wap_id) });
+				Long.toString(getId()), Integer.toString(wap_id) });
 		try {
 			cursor.moveToNext();
 			avgStrength = cursor.getDouble(0);
@@ -166,7 +166,7 @@ public class WifiLocation extends Location {
 		final Set<Integer> wap_ids = new HashSet<Integer>();
 		final Cursor cursor = db.rawQuery("SELECT wap_id FROM "
 				+ WifiLocationSet.OBSERVATIONS_TABLE + " WHERE location_id=?",
-				new String[] { Integer.toString(getId()) });
+				new String[] { Long.toString(getId()) });
 		try {
 			while (cursor.moveToNext()) {
 				wap_ids.add(cursor.getInt(0));
@@ -184,7 +184,7 @@ public class WifiLocation extends Location {
 		final Cursor cursor = db.rawQuery(
 				"SELECT wap_id,average_strength FROM "
 						+ WifiLocationSet.OBSERVATIONS_TABLE
-						+ " WHERE location_id=?", new String[] { Integer
+						+ " WHERE location_id=?", new String[] { Long
 						.toString(getId()) });
 		try {
 			while (cursor.moveToNext()) {
@@ -214,8 +214,8 @@ public class WifiLocation extends Location {
 					+ getAvgStrength(wap_id) + "\n");
 		}
 		sb.append("\tNeighbours:");
-		final List<Integer> neighbours = getNeighbours();
-		for (final int neighbour : neighbours) {
+		final List<Long> neighbours = getNeighbours();
+		for (final long neighbour : neighbours) {
 			sb.append(" " + neighbour);
 		}
 		sb.append("\n");
@@ -225,7 +225,7 @@ public class WifiLocation extends Location {
 	private void updateNumObservations() {
 		final Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM "
 				+ WifiLocationSet.OBSERVATIONS_TABLE + " WHERE location_id=?",
-				new String[] { new Integer(getId()).toString() });
+				new String[] { Long.toString(getId()) });
 		try {
 			cursor.moveToNext();
 			num_observations = cursor.getInt(0);

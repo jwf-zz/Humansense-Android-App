@@ -2,6 +2,7 @@ package ca.mcgill.hs.classifiers.location;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * This class clusters a set of locations, which are really points at which the
@@ -43,14 +44,14 @@ public class SignificantLocationClusterer {
 	 *            The set of clusters.
 	 */
 	private void addNeighbouringClusters(final Location location,
-			final Collection<Integer> clustersToMerge) {
+			final Collection<Long> clustersToMerge) {
 		DebugHelper.out
 				.println("\tAdding neighbouring clusters into merge set.");
-		final Collection<Integer> clusterIds = pool.getClusterIds(location
+		final Collection<Long> clusterIds = pool.getClusterIds(location
 				.getNeighbours());
 		if (!clusterIds.isEmpty()) {
 			DebugHelper.out.print("\t\tClusters to merge:");
-			for (final int clusterId : clusterIds) {
+			for (final long clusterId : clusterIds) {
 				DebugHelper.out.print(" " + clusterId);
 			}
 			DebugHelper.out.println(".");
@@ -63,15 +64,16 @@ public class SignificantLocationClusterer {
 	 * 
 	 * @param point
 	 *            The point whose neighbours must be moved.
-	 * @param cluster_id
+	 * @param clusterId
 	 *            The cluster to move them to.
 	 */
 	private void addNeighboursToCluster(final Location point,
-			final int cluster_id) {
-		for (final int neighbour_id : point.getNeighbours()) {
+			final long clusterId) {
+		final List<Long> neighbours = point.getNeighbours();
+		for (final long neighbour_id : neighbours) {
 			DebugHelper.out.println("\tAdding neighbour " + neighbour_id
-					+ " to cluster " + cluster_id + ": ");
-			pool.addToCluster(neighbour_id, cluster_id);
+					+ " to cluster " + clusterId + ": ");
+			pool.addToCluster(neighbour_id, clusterId);
 		}
 
 	}
@@ -82,33 +84,33 @@ public class SignificantLocationClusterer {
 	 * @param location
 	 *            The new location to be added.
 	 */
-	public int addNewLocation(Location location) {
+	public long addNewLocation(Location location) {
 		pool.cacheLocation(location);
 
 		// Add the point to the pool, compute neighbours.
-		final int new_id = pool.add(location);
+		final long new_id = pool.add(location);
 		if (new_id != location.getId()) {
 			location = pool.getLocation(new_id);
 		}
 		return assignToCluster(location);
 	}
 
-	public int assignToCluster(final Location location) {
+	public long assignToCluster(final Location location) {
 		// if (location.getId() > 4) {
 		// System.exit(0);
 		// }
-		final int location_id = location.getId();
-		int cluster_id = pool.getClusterId(location_id);
+		final long location_id = location.getId();
+		long cluster_id = pool.getClusterId(location_id);
 		DebugHelper.out.println("Clustering location " + location_id
 				+ " with timestamp " + location.getTimestamp());
 
 		// The neighbours of the point.
-		final Collection<Integer> neighbour_ids = location.getNeighbours();
-		final int num_neighbours = location.getNumNeighbours();
-		final int num_merged = location.getNumMerged();
+		final Collection<Long> neighbour_ids = location.getNeighbours();
+		final long num_neighbours = location.getNumNeighbours();
+		final long num_merged = location.getNumMerged();
 
 		// The list of cluster to merge.
-		final Collection<Integer> clustersToMerge = new HashSet<Integer>();
+		final Collection<Long> clustersToMerge = new HashSet<Long>();
 
 		// Determine whether or not to make a new set.
 		if (cluster_id < 0 && num_merged + num_neighbours >= MIN_PTS) {
@@ -137,7 +139,7 @@ public class SignificantLocationClusterer {
 
 		DebugHelper.out.println("\tChecking neighbours...");
 		// Repeat process for all neighbours.
-		for (final int neighbour_id : neighbour_ids) {
+		for (final long neighbour_id : neighbour_ids) {
 			// Check if neighbour is in a cluster
 			if (pool.getClusterId(neighbour_id) == -1) {
 				// If the neighbour is not already in a cluster, check if it now
@@ -146,7 +148,7 @@ public class SignificantLocationClusterer {
 				if (neighbour.getNumNeighbours() >= MIN_PTS) {
 					DebugHelper.out.println("\tNeighbour " + neighbour_id
 							+ " now has enough neighbours to form a cluster.");
-					final int cid = createNewCluster(neighbour);
+					final long cid = createNewCluster(neighbour);
 					clustersToMerge.add(cid);
 					addNeighbouringClusters(neighbour, clustersToMerge);
 					addNeighboursToCluster(neighbour, cid);
@@ -158,7 +160,7 @@ public class SignificantLocationClusterer {
 		if (clustersToMerge.size() > 1) {
 			// The minimum ID of the clusters to merge will be used.
 			cluster_id = Integer.MAX_VALUE;
-			for (final int id : clustersToMerge) {
+			for (final long id : clustersToMerge) {
 				if (id < cluster_id) {
 					cluster_id = id;
 				}
@@ -167,7 +169,7 @@ public class SignificantLocationClusterer {
 					+ cluster_id);
 			// Place all the points in the set of clusters to merge in the same
 			// cluster.
-			for (final int id : clustersToMerge) {
+			for (final long id : clustersToMerge) {
 				pool.changeClusterId(id, cluster_id);
 			}
 		}
@@ -182,8 +184,8 @@ public class SignificantLocationClusterer {
 	 *            The point centering the new cluster.
 	 * @return The ID of the newly formed cluster.
 	 */
-	private int createNewCluster(final Location point) {
-		final int clusterID = pool.getNewClusterId();
+	private long createNewCluster(final Location point) {
+		final long clusterID = pool.getNewClusterId();
 		pool.addToCluster(point.getId(), clusterID);
 		DebugHelper.out.println("\tAdded " + point.getId() + " to new cluster "
 				+ clusterID);
@@ -193,15 +195,15 @@ public class SignificantLocationClusterer {
 	@Override
 	public String toString() {
 		String result = "";
-		final Collection<Integer> locations = pool.getAllLocations();
-		final Collection<Integer> clusters = pool.getAllClusters();
+		final Collection<Long> locations = pool.getAllLocations();
+		final Collection<Long> clusters = pool.getAllClusters();
 
 		result += "Total points: " + locations.size() + "\n";
 		int sum = 0;
-		for (final int cluster_id : clusters) {
-			final Collection<Integer> locations_in_cluster = pool
+		for (final long cluster_id : clusters) {
+			final Collection<Long> locations_in_cluster = pool
 					.getLocationsForCluster(cluster_id);
-			final int num_locations_in_cluster = locations_in_cluster.size();
+			final long num_locations_in_cluster = locations_in_cluster.size();
 			if (num_locations_in_cluster > 0) {
 				result += "Cluster " + cluster_id + ": "
 						+ num_locations_in_cluster + "\n";
@@ -210,7 +212,7 @@ public class SignificantLocationClusterer {
 		}
 		result += "Noise points: " + (locations.size() - sum);
 		int noise = 0;
-		for (final int location_id : locations) {
+		for (final long location_id : locations) {
 			noise += (pool.getClusterId(location_id) == -1 ? 1 : 0);
 		}
 		if (noise == (locations.size() - sum)) {

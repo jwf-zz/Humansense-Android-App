@@ -8,11 +8,6 @@ import android.database.sqlite.SQLiteDatabase;
 
 public abstract class LocationSet {
 
-	protected static class PairOfInts {
-		public int int1;
-		public int int2;
-	}
-
 	public static final String LOCATIONS_TABLE = "locations";
 	public static final String NEIGHBOURS_TABLE = "neighbours";
 	public static final String LABELS_TABLE = "labels";
@@ -33,17 +28,19 @@ public abstract class LocationSet {
 	 * 
 	 * @param point
 	 *            The point to be added to the set.
+	 * @return The id of the location, which may have changed if the location
+	 *         gets merged with another existing location.
 	 */
-	public abstract int add(Location point);
+	public abstract long add(Location point);
 
-	public void addToCluster(final int locationId, final int clusterId) {
+	public void addToCluster(final long locationId, final long clusterId) {
 		db.execSQL("REPLACE INTO " + CLUSTERS_TABLE + " VALUES (" + locationId
 				+ "," + clusterId + ", NULL);");
 	}
 
 	public abstract void cacheLocation(Location location);
 
-	public void changeClusterId(final int oldId, final int newId) {
+	public void changeClusterId(final long oldId, final long newId) {
 		if (oldId == newId) {
 			return;
 		}
@@ -53,13 +50,13 @@ public abstract class LocationSet {
 				+ " WHERE cluster_id=" + oldId + ";");
 	}
 
-	public Collection<Integer> getAllClusters() {
-		final Collection<Integer> clusters = new LinkedList<Integer>();
+	public Collection<Long> getAllClusters() {
+		final Collection<Long> clusters = new LinkedList<Long>();
 		final Cursor cursor = db.rawQuery("SELECT DISTINCT cluster_id FROM "
 				+ CLUSTERS_TABLE + ";", null);
 		try {
 			while (cursor.moveToNext()) {
-				clusters.add(cursor.getInt(0));
+				clusters.add(cursor.getLong(0));
 			}
 		} finally {
 			cursor.close();
@@ -67,13 +64,13 @@ public abstract class LocationSet {
 		return clusters;
 	}
 
-	public Collection<Integer> getAllLocations() {
-		final Collection<Integer> locations = new LinkedList<Integer>();
+	public Collection<Long> getAllLocations() {
+		final Collection<Long> locations = new LinkedList<Long>();
 		final Cursor cursor = db.rawQuery("SELECT location_id FROM "
 				+ LOCATIONS_TABLE + ";", null);
 		try {
 			while (cursor.moveToNext()) {
-				locations.add(cursor.getInt(0));
+				locations.add(cursor.getLong(0));
 			}
 		} finally {
 			cursor.close();
@@ -87,14 +84,14 @@ public abstract class LocationSet {
 	 * @param location_id
 	 * @return Cluster id, or -1 if point is not in a cluster.
 	 */
-	public int getClusterId(final int location_id) {
-		int cluster_id = -1;
+	public long getClusterId(final long location_id) {
+		long cluster_id = -1;
 		final Cursor cursor = db.rawQuery("SELECT cluster_id FROM "
 				+ CLUSTERS_TABLE + " WHERE location_id=" + location_id + ";",
 				null);
 		try {
 			if (cursor.moveToNext()) {
-				cluster_id = cursor.getInt(0);
+				cluster_id = cursor.getLong(0);
 			}
 		} finally {
 			cursor.close();
@@ -110,10 +107,10 @@ public abstract class LocationSet {
 	 *            the set of locations to check
 	 * @return the cluster ids that occur in the collection of locations.
 	 */
-	public Collection<Integer> getClusterIds(final Collection<Integer> locations) {
+	public Collection<Long> getClusterIds(final Collection<Long> locations) {
 		final StringBuilder location_ids = new StringBuilder();
 		boolean first = true;
-		for (final int location_id : locations) {
+		for (final long location_id : locations) {
 			if (first) {
 				location_ids.append(location_id);
 				first = false;
@@ -122,13 +119,13 @@ public abstract class LocationSet {
 			}
 		}
 
-		final Collection<Integer> clusters = new LinkedList<Integer>();
+		final Collection<Long> clusters = new LinkedList<Long>();
 		final Cursor cursor = db.rawQuery("SELECT DISTINCT cluster_id FROM "
 				+ CLUSTERS_TABLE + " WHERE location_id IN ("
 				+ location_ids.toString() + ");", null);
 		try {
 			while (cursor.moveToNext()) {
-				clusters.add(cursor.getInt(0));
+				clusters.add(cursor.getLong(0));
 			}
 		} finally {
 			cursor.close();
@@ -136,16 +133,16 @@ public abstract class LocationSet {
 		return clusters;
 	}
 
-	public abstract Location getLocation(int location_id);
+	public abstract Location getLocation(long location_id);
 
-	public Collection<Integer> getLocationsForCluster(final int cluster_id) {
-		final Collection<Integer> ids = new LinkedList<Integer>();
-		final String[] params = { Integer.toString(cluster_id) };
+	public Collection<Long> getLocationsForCluster(final long cluster_id) {
+		final Collection<Long> ids = new LinkedList<Long>();
 		final Cursor cursor = db.rawQuery("SELECT location_id FROM "
-				+ CLUSTERS_TABLE + " WHERE cluster_id=?", params);
+				+ CLUSTERS_TABLE + " WHERE cluster_id=?", new String[] { Long
+				.toString(cluster_id) });
 		try {
 			while (cursor.moveToNext()) {
-				ids.add(cursor.getInt(0));
+				ids.add(cursor.getLong(0));
 			}
 		} finally {
 			cursor.close();
@@ -153,13 +150,13 @@ public abstract class LocationSet {
 		return ids;
 	}
 
-	public int getNewClusterId() {
-		int cluster_id = -1;
+	public long getNewClusterId() {
+		long cluster_id = -1;
 		final Cursor cursor = db.rawQuery("SELECT MAX(cluster_id) FROM "
 				+ CLUSTERS_TABLE + ";", null);
 		try {
 			if (cursor.moveToNext()) {
-				cluster_id = cursor.getInt(0) + 1;
+				cluster_id = cursor.getLong(0) + 1;
 			}
 		} finally {
 			cursor.close();

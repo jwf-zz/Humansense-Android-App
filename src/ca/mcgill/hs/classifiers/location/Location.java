@@ -24,13 +24,13 @@ public abstract class Location {
 	 * Locations can be merged, this keeps track of how many locations have been
 	 * merged to create this current one
 	 **/
-	private int num_merged = -1;
-	private int location_id = -1;
+	private long num_merged = -1;
+	private long location_id = -1;
 
 	protected SQLiteDatabase db = null;
 	protected double timestamp = -1;
-	private int num_neighbours = -1;
-	private List<Integer> neighbours = null;
+	private long num_neighbours = -1;
+	private List<Long> neighbours = null;
 
 	/**
 	 * Creates a new location with the specified timestamp, and adds it to the
@@ -50,7 +50,7 @@ public abstract class Location {
 		this.location_id = generateNewLocationId();
 		this.setTimestamp(timestamp);
 		this.num_merged = 1;
-		this.neighbours = new LinkedList<Integer>();
+		this.neighbours = new LinkedList<Long>();
 	}
 
 	/**
@@ -62,7 +62,7 @@ public abstract class Location {
 	 *            The id of the new location.
 	 * @throws SQLException
 	 */
-	public Location(final SQLiteDatabase db, final int id) {
+	public Location(final SQLiteDatabase db, final long id) {
 		this.location_id = id;
 		this.db = db;
 		this.setTimestamp(getTimestamp());
@@ -75,7 +75,7 @@ public abstract class Location {
 	 * @param id
 	 *            The id of the neighbour to be added.
 	 */
-	public void addNeighbour(final int id) {
+	public void addNeighbour(final long id) {
 		if (id == getId()) {
 			return;
 		}
@@ -84,8 +84,8 @@ public abstract class Location {
 		}
 		neighbours.add(id);
 		db.execSQL("INSERT OR IGNORE INTO " + LocationSet.NEIGHBOURS_TABLE
-				+ " VALUES (?,?)", new String[] { Integer.toString(getId()),
-				Integer.toString(id) });
+				+ " VALUES (?,?)", new String[] { Long.toString(getId()),
+				Long.toString(id) });
 		num_neighbours = -1;
 	}
 
@@ -95,7 +95,7 @@ public abstract class Location {
 	 * @param ids
 	 *            The ids of the neighbours to be added.
 	 */
-	public void addNeighbours(final Collection<Integer> ids) {
+	public void addNeighbours(final Collection<Long> ids) {
 		if (neighbours == null) {
 			neighbours = getNeighbours();
 		}
@@ -106,7 +106,7 @@ public abstract class Location {
 		try {
 			db.beginTransaction();
 			stmt.bindLong(1, getId());
-			for (final int id : ids) {
+			for (final long id : ids) {
 				if (id == getId()) {
 					try {
 						neighbours.remove(id);
@@ -152,14 +152,14 @@ public abstract class Location {
 	 * 
 	 * @return The id of the new empty location that has been created.
 	 */
-	protected int generateNewLocationId() {
+	protected long generateNewLocationId() {
 		// Insert Default Values
-		final int new_id = (int) db.insert(LocationSet.LOCATIONS_TABLE,
-				"timestamp", null);
+		final long new_id = db.insert(LocationSet.LOCATIONS_TABLE, "timestamp",
+				null);
 		return new_id;
 	}
 
-	public int getId() {
+	public long getId() {
 		return location_id;
 	}
 
@@ -168,21 +168,21 @@ public abstract class Location {
 	 * 
 	 * @return This location's neighbours.
 	 */
-	public List<Integer> getNeighbours() {
+	public List<Long> getNeighbours() {
 		if (neighbours == null) {
-			final List<Integer> neighbours = new LinkedList<Integer>();
+			final List<Long> neighbours = new LinkedList<Long>();
 			num_neighbours = 0;
 			final Cursor cursor = db.rawQuery(
 					"SELECT location_id2,num_merged FROM "
 							+ LocationSet.NEIGHBOURS_TABLE + " JOIN "
 							+ LocationSet.LOCATIONS_TABLE
 							+ " ON location_id=location_id2 "
-							+ "WHERE location_id1=?", new String[] { Integer
+							+ "WHERE location_id1=?", new String[] { Long
 							.toString(getId()) });
 			try {
 				while (cursor.moveToNext()) {
-					neighbours.add(cursor.getInt(0));
-					num_neighbours += cursor.getInt(1);
+					neighbours.add(cursor.getLong(0));
+					num_neighbours += cursor.getLong(1);
 				}
 			} finally {
 				cursor.close();
@@ -193,23 +193,23 @@ public abstract class Location {
 		return neighbours;
 	}
 
-	public int getNumMerged() {
+	public long getNumMerged() {
 		if (num_merged > 0) {
 			return num_merged;
 		}
 		final Cursor cursor = db.rawQuery("SELECT num_merged FROM "
 				+ LocationSet.LOCATIONS_TABLE + " WHERE location_id=?",
-				new String[] { Integer.toString(getId()) });
+				new String[] { Long.toString(getId()) });
 		try {
 			cursor.moveToNext();
-			num_merged = cursor.getInt(0);
+			num_merged = cursor.getLong(0);
 		} finally {
 			cursor.close();
 		}
 		return num_merged;
 	}
 
-	public int getNumNeighbours() {
+	public long getNumNeighbours() {
 		if (num_neighbours >= 0) {
 			return num_neighbours;
 		}
@@ -220,7 +220,7 @@ public abstract class Location {
 						+ " ON location_id=location_id2 WHERE location_id1=?");
 		try {
 			stmt.bindLong(1, getId());
-			num_neighbours = (int) stmt.simpleQueryForLong();
+			num_neighbours = stmt.simpleQueryForLong();
 		} finally {
 			stmt.close();
 		}
@@ -241,7 +241,7 @@ public abstract class Location {
 							"SELECT strftime('%s',timestamp)-strftime('%S',timestamp)+strftime('%f',timestamp) FROM "
 									+ LocationSet.LOCATIONS_TABLE
 									+ " WHERE location_id=?",
-							new String[] { Integer.toString(getId()) });
+							new String[] { Long.toString(getId()) });
 			try {
 				cursor.moveToNext();
 				timestamp = cursor.getDouble(0);
@@ -261,7 +261,7 @@ public abstract class Location {
 	 * @param id
 	 *            The id of the neighbouring location to be removed.
 	 */
-	public void removeNeighbour(final int id) {
+	public void removeNeighbour(final long id) {
 		if (neighbours == null) {
 			neighbours = getNeighbours();
 		}
@@ -272,10 +272,10 @@ public abstract class Location {
 		}
 		db.execSQL("DELETE FROM " + LocationSet.NEIGHBOURS_TABLE
 				+ " WHERE location_id1=? AND location_id2=?", new String[] {
-				Integer.toString(getId()), Integer.toString(id) });
+				Long.toString(getId()), Long.toString(id) });
 		db.execSQL("DELETE FROM " + LocationSet.NEIGHBOURS_TABLE
 				+ " WHERE location_id2=? AND location_id1=?", new String[] {
-				Integer.toString(getId()), Integer.toString(id) });
+				Long.toString(getId()), Long.toString(id) });
 		num_neighbours = -1;
 	}
 
@@ -285,7 +285,7 @@ public abstract class Location {
 	 * @param neighboursToRemove
 	 *            A set of the location's neighbours.
 	 */
-	public void removeNeighbours(final Collection<Integer> neighboursToRemove) {
+	public void removeNeighbours(final Collection<Long> neighboursToRemove) {
 		if (neighbours == null) {
 			neighbours = getNeighbours();
 		}
@@ -294,7 +294,7 @@ public abstract class Location {
 				+ " WHERE location_id1=? AND location_id2=?");
 		try {
 			db.beginTransaction();
-			for (final int id : neighboursToRemove) {
+			for (final long id : neighboursToRemove) {
 				try {
 					neighbours.remove(id);
 				} catch (final IndexOutOfBoundsException e) {
@@ -319,11 +319,11 @@ public abstract class Location {
 
 	}
 
-	public void setNumMerged(final int num_merged) {
-		this.num_merged = num_merged;
+	public void setNumMerged(final long l) {
+		this.num_merged = l;
 		db.execSQL("UPDATE " + LocationSet.LOCATIONS_TABLE
 				+ " SET num_merged=? WHERE location_id=?", new String[] {
-				Integer.toString(num_merged), Integer.toString(location_id) });
+				Long.toString(l), Long.toString(location_id) });
 	}
 
 	public void setTimestamp(final double timestamp) {

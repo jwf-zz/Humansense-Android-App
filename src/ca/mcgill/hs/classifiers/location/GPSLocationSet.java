@@ -14,7 +14,7 @@ import ca.mcgill.hs.util.LRUCache;
  */
 public class GPSLocationSet extends LocationSet {
 
-	private final LRUCache<Integer, GPSLocation> locationCache = new LRUCache<Integer, GPSLocation>(
+	private final LRUCache<Long, GPSLocation> locationCache = new LRUCache<Long, GPSLocation>(
 			100);
 
 	private static final boolean TIME_BASED_WINDOW = false;
@@ -45,11 +45,11 @@ public class GPSLocationSet extends LocationSet {
 	}
 
 	@Override
-	public int add(final Location loc) {
+	public long add(final Location loc) {
 		final GPSLocation location = (GPSLocation) loc;
 
 		// Now get potential neighbours
-		final Collection<Integer> possibleNeighbours = new LinkedList<Integer>();
+		final Collection<Long> possibleNeighbours = new LinkedList<Long>();
 		final double lat = location.getLatitude();
 		final double lon = location.getLongitude();
 		final Cursor cursor = db.rawQuery("SELECT location_id FROM locations "
@@ -60,7 +60,7 @@ public class GPSLocationSet extends LocationSet {
 				null);
 		try {
 			while (cursor.moveToNext()) {
-				possibleNeighbours.add(cursor.getInt(0));
+				possibleNeighbours.add(cursor.getLong(0));
 			}
 		} finally {
 			cursor.close();
@@ -73,8 +73,8 @@ public class GPSLocationSet extends LocationSet {
 		// as a neighbour of 'o'. Note that we assumed 'obs' was 'o''s neighbour
 		// earlier; now we adjust that assumption.
 
-		final Collection<Integer> neighboursToRemove = new LinkedList<Integer>();
-		for (final Integer neighbour_id : location.getNeighbours()) {
+		final Collection<Long> neighboursToRemove = new LinkedList<Long>();
+		for (final Long neighbour_id : location.getNeighbours()) {
 			final GPSLocation obs = (GPSLocation) getLocation(neighbour_id);
 			final double dist = location.distanceFrom(obs);
 			// DebugHelper.out.println("\tDistance between " + location.getId()
@@ -188,7 +188,7 @@ public class GPSLocationSet extends LocationSet {
 	}
 
 	@Override
-	public Location getLocation(final int locationId) {
+	public Location getLocation(final long locationId) {
 		GPSLocation obs = locationCache.get(locationId);
 		if (obs == null) {
 			obs = new GPSLocation(db, locationId);

@@ -35,7 +35,7 @@ public class MotionStateClusterer {
 	private final SignificantLocationClusterer slClusterer;
 	private final LocationSet locations;
 	private Timer resetMovementTimer;
-	private int current_cluster = -1;
+	private long current_cluster = -1;
 
 	// Maintain a queue of the Tuples for the observations that are
 	// currently being clustered.

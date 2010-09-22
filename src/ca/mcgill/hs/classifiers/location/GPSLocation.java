@@ -25,7 +25,7 @@ public class GPSLocation extends Location {
 		super(db, timestamp);
 	}
 
-	public GPSLocation(final SQLiteDatabase db, final int id) {
+	public GPSLocation(final SQLiteDatabase db, final long id) {
 		super(db, id);
 	}
 

@@ -106,7 +106,7 @@ public final class WifiLocationSet extends LocationSet {
 	 * Used to cache the most recent locations, avoids some database calls. We
 	 * currently cache the last 100 most recently used locations.
 	 */
-	private final LRUCache<Integer, WifiLocation> locationCache = new LRUCache<Integer, WifiLocation>(
+	private final LRUCache<Long, WifiLocation> locationCache = new LRUCache<Long, WifiLocation>(
 			100);
 
 	/**
@@ -179,9 +179,9 @@ public final class WifiLocationSet extends LocationSet {
 	}
 
 	@Override
-	public int add(final Location loc) {
+	public long add(final Location loc) {
 		final WifiLocation location = (WifiLocation) loc;
-		final int location_id = location.getId();
+		final long location_id = location.getId();
 
 		/*
 		 * Compute a threshold for minumum number of waps that must be common to
@@ -189,11 +189,9 @@ public final class WifiLocationSet extends LocationSet {
 		 * then it might have to be pruned out later. This is just used to
 		 * retrieve from the database a set of potential neighbours.
 		 */
-		final Integer temp_threshold = (int) (location.numObservations() * WifiLocation.ETA);
+		final Long temp_threshold = (long) (location.numObservations() * WifiLocation.ETA);
 
-		final Collection<Integer> possibleNeighbours = new HashSet<Integer>();
-
-		final String[] params = { Integer.toString(location.getId()) };
+		final Collection<Long> possibleNeighbours = new HashSet<Long>();
 
 		/*
 		 * Select all locations that have at least threshold neighbours in
@@ -204,10 +202,11 @@ public final class WifiLocationSet extends LocationSet {
 				+ " AS o2 USING (wap_id) JOIN " + LOCATIONS_TABLE
 				+ " AS l USING (location_id) WHERE o1.location_id=? "
 				+ "GROUP BY o2.location_id HAVING SUM(l.num_merged) > "
-				+ temp_threshold, params);
+				+ temp_threshold, new String[] { Long
+				.toString(location.getId()) });
 		try {
 			while (cursor.moveToNext()) {
-				possibleNeighbours.add(cursor.getInt(0));
+				possibleNeighbours.add(cursor.getLong(0));
 			}
 		} finally {
 			cursor.close();
@@ -224,8 +223,8 @@ public final class WifiLocationSet extends LocationSet {
 		/*
 		 * Now prune the list.
 		 */
-		final Collection<Integer> neighboursToRemove = new HashSet<Integer>();
-		for (final Integer neighbour_id : possibleNeighbours) {
+		final Collection<Long> neighboursToRemove = new HashSet<Long>();
+		for (final Long neighbour_id : possibleNeighbours) {
 
 			final WifiLocation neighbour = (WifiLocation) getLocation(neighbour_id);
 			final double dist = location.distanceFrom(neighbour);
@@ -279,7 +278,7 @@ public final class WifiLocationSet extends LocationSet {
 		}
 	}
 
-	public String displayLocation(final int id) {
+	public String displayLocation(final long id) {
 		WifiLocation loc = null;
 		loc = new WifiLocation(db, id);
 		return loc.toString();
@@ -292,7 +291,7 @@ public final class WifiLocationSet extends LocationSet {
 	}
 
 	@Override
-	public Location getLocation(final int id) {
+	public Location getLocation(final long id) {
 		WifiLocation obs = locationCache.get(id);
 		if (obs == null) {
 			obs = new WifiLocation(db, id);
@@ -316,20 +315,20 @@ public final class WifiLocationSet extends LocationSet {
 	 *            Location that will hold the merged locations.
 	 */
 	private void mergeLocations(final WifiLocation src, final WifiLocation dst) {
-		final int src_id = src.getId();
-		final int dst_id = dst.getId();
+		final long src_id = src.getId();
+		final long dst_id = dst.getId();
 		Log.d(TAG, "MERGING LOCATIONS " + src_id + " and " + dst_id);
 		dst.addObservation(src.getObservations());
 		dst.setNumMerged(dst.getNumMerged() + src.getNumMerged());
 		db.execSQL("DELETE FROM " + WifiLocationSet.OBSERVATIONS_TABLE
-				+ " WHERE location_id=?", new String[] { Integer
-				.toString(src_id) });
+				+ " WHERE location_id=?",
+				new String[] { Long.toString(src_id) });
 		db.execSQL("DELETE FROM " + LocationSet.NEIGHBOURS_TABLE
 				+ " WHERE location_id1=? OR location_id2=?", new String[] {
-				Integer.toString(src_id), Integer.toString(src_id) });
+				Long.toString(src_id), Long.toString(src_id) });
 		db.execSQL("DELETE FROM " + LocationSet.LOCATIONS_TABLE
-				+ " WHERE location_id=?", new String[] { Integer
-				.toString(src_id) });
+				+ " WHERE location_id=?",
+				new String[] { Long.toString(src_id) });
 		// Remove from the cache.
 		locationCache.put(src_id, null);
 	}
@@ -360,9 +359,9 @@ public final class WifiLocationSet extends LocationSet {
 	 * @return The number of locations that have been merged into the specified
 	 *         location.
 	 */
-	public int retrieveNumMerged(final int location_id) {
+	public long retrieveNumMerged(final long location_id) {
 		retrieveNumMergedStmt.bindLong(0, location_id);
-		return (int) retrieveNumMergedStmt.simpleQueryForLong();
+		return retrieveNumMergedStmt.simpleQueryForLong();
 	}
 
 	/**

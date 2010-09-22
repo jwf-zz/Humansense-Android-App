@@ -224,27 +224,35 @@ public final class WifiLocationSet extends LocationSet {
 		 * Now prune the list.
 		 */
 		final Collection<Long> neighboursToRemove = new HashSet<Long>();
+		double min_dist = Double.MAX_VALUE;
+		long nearest_neighbour_id = -1;
 		for (final Long neighbour_id : possibleNeighbours) {
-
 			final WifiLocation neighbour = (WifiLocation) getLocation(neighbour_id);
 			final double dist = location.distanceFrom(neighbour);
 			DebugHelper.out.println("\tDistance between " + location.getId()
 					+ " and " + neighbour_id + " is " + dist);
 
 			// Merge location if it is very close to a possible neighbour.
-			if (dist < WifiLocation.MERGE_DIST) {
-				mergeLocations(location, neighbour);
-				return neighbour_id;
+			if (dist < min_dist) {
+				min_dist = dist;
+				nearest_neighbour_id = neighbour_id;
 			}
-
 			if (dist > 0 && dist < WifiLocation.EPS) {
 				// Add as neighbour's neighbour.
-				neighbour.addNeighbour(location_id);
+				// neighbour.addNeighbour(location_id);
 			} else {
 				neighboursToRemove.add(neighbour_id);
 			}
 		}
+		if (min_dist < WifiLocation.MERGE_DIST) {
+			mergeLocations(location,
+					(WifiLocation) getLocation(nearest_neighbour_id));
+			return nearest_neighbour_id;
+		}
 		possibleNeighbours.removeAll(neighboursToRemove);
+		for (final Long neighbour_id : possibleNeighbours) {
+			getLocation(neighbour_id).addNeighbour(location_id);
+		}
 		location.addNeighbours(possibleNeighbours);
 		return location_id;
 	}

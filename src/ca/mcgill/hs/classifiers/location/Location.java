@@ -105,17 +105,11 @@ public abstract class Location {
 						+ LocationSet.NEIGHBOURS_TABLE + " VALUES (?,?)");
 		try {
 			db.beginTransaction();
-			stmt.bindLong(1, getId());
 			for (final long id : ids) {
 				if (id == getId()) {
-					try {
-						neighbours.remove(id);
-					} catch (final IndexOutOfBoundsException e) {
-						// Ignore
-					}
-
 					continue;
 				}
+				stmt.bindLong(1, getId());
 				stmt.bindLong(2, id);
 				stmt.execute();
 				// db.execSQL("INSERT OR IGNORE INTO "

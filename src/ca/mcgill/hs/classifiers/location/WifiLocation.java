@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.util.Log;
 
 /**
  * A location characterized by observable wifi base stations and the measured
@@ -48,7 +47,7 @@ public class WifiLocation extends Location {
 	// private HashMap<Integer,Integer> wapStrengths = new
 	// HashMap<Integer,Integer>();
 
-	public WifiLocation(final SQLiteDatabase db, final int id) {
+	public WifiLocation(final SQLiteDatabase db, final long id) {
 		super(db, id);
 	}
 
@@ -88,9 +87,6 @@ public class WifiLocation extends Location {
 					.entrySet()) {
 				final int strength = entry.getValue();
 				final int wap_id = entry.getKey();
-				if (Math.abs(strength) > 100) {
-					Log.d(TAG, "SIGNAL STRENGTH GREATER THAN 100!!!");
-				}
 				updateStrengthStmt.bindLong(1, strength);
 				updateStrengthStmt.bindLong(2, strength);
 				updateStrengthStmt.bindLong(4, wap_id);

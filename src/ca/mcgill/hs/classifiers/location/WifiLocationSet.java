@@ -329,6 +329,7 @@ public final class WifiLocationSet extends LocationSet {
 		db.execSQL("DELETE FROM " + LocationSet.LOCATIONS_TABLE
 				+ " WHERE location_id=?",
 				new String[] { Long.toString(src_id) });
+		dst.removeNeighbour(src_id);
 		// Remove from the cache.
 		locationCache.put(src_id, null);
 	}

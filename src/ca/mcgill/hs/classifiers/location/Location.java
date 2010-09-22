@@ -273,9 +273,9 @@ public abstract class Location {
 		db.execSQL("DELETE FROM " + LocationSet.NEIGHBOURS_TABLE
 				+ " WHERE location_id1=? AND location_id2=?", new String[] {
 				Long.toString(getId()), Long.toString(id) });
-		db.execSQL("DELETE FROM " + LocationSet.NEIGHBOURS_TABLE
-				+ " WHERE location_id2=? AND location_id1=?", new String[] {
-				Long.toString(getId()), Long.toString(id) });
+		// db.execSQL("DELETE FROM " + LocationSet.NEIGHBOURS_TABLE
+		// + " WHERE location_id2=? AND location_id1=?", new String[] {
+		// Long.toString(getId()), Long.toString(id) });
 		num_neighbours = -1;
 	}
 
@@ -328,12 +328,6 @@ public abstract class Location {
 
 	public void setTimestamp(final double timestamp) {
 		this.timestamp = timestamp;
-		// final ContentValues values = new ContentValues();
-		// values.put("timestamp", "strftime(" + LocationSet.SQLITE_DATE_FORMAT
-		// + "," + timestamp + ",'unixepoch')");
-		// final String[] whereArgs = { Integer.toString(getId()) };
-		// db.update(LocationSet.LOCATIONS_TABLE, values, "location_id=?",
-		// whereArgs);
 		db.execSQL("UPDATE " + LocationSet.LOCATIONS_TABLE
 				+ " SET timestamp=strftime(" + LocationSet.SQLITE_DATE_FORMAT
 				+ ",?,'unixepoch') " + "WHERE location_id=?", new Object[] {

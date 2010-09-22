@@ -87,8 +87,8 @@ public abstract class LocationSet {
 	public long getClusterId(final long location_id) {
 		long cluster_id = -1;
 		final Cursor cursor = db.rawQuery("SELECT cluster_id FROM "
-				+ CLUSTERS_TABLE + " WHERE location_id=" + location_id + ";",
-				null);
+				+ CLUSTERS_TABLE + " WHERE location_id=?;", new String[] { Long
+				.toString(location_id) });
 		try {
 			if (cursor.moveToNext()) {
 				cluster_id = cursor.getLong(0);
@@ -121,8 +121,8 @@ public abstract class LocationSet {
 
 		final Collection<Long> clusters = new LinkedList<Long>();
 		final Cursor cursor = db.rawQuery("SELECT DISTINCT cluster_id FROM "
-				+ CLUSTERS_TABLE + " WHERE location_id IN ("
-				+ location_ids.toString() + ");", null);
+				+ CLUSTERS_TABLE + " WHERE location_id IN (?);",
+				new String[] { location_ids.toString() });
 		try {
 			while (cursor.moveToNext()) {
 				clusters.add(cursor.getLong(0));

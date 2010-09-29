@@ -195,10 +195,10 @@ public class MotionStateClusterer {
 			if (current_cluster > 0) {
 				/*
 				 * The purpose of this timer is to avoid continually updating
-				 * the location if the user remains stationary. We start with a
-				 * timer that resets the motion state every
-				 * RESET_UPDATE_STATUS_TIME_IN_SECONDS seconds, and then after
-				 * an update we double the time before the next update.
+				 * the location if the user remains stationary in a known
+				 * location. We start with a timer that resets the motion state
+				 * every RESET_UPDATE_STATUS_TIME_IN_SECONDS seconds, and then
+				 * after an update we double the time before the next update.
 				 */
 				resetMovementTimer.schedule(new TimerTask() {
 					@Override
@@ -210,10 +210,7 @@ public class MotionStateClusterer {
 				timerDelay *= 2;
 				previouslyMoving = false;
 			}
-			// } else {
-			// previouslyMoving = true;
-			// }
-		} else if (!previouslyMoving && clustered_points == 0) {
+		} else if (!previouslyMoving) {
 			/*
 			 * If we were stationary, but now we are moving, then we cancel the
 			 * timer that should only be running if we're stationary.
@@ -225,6 +222,10 @@ public class MotionStateClusterer {
 			resetMovementTimer.cancel();
 			resetMovementTimer.purge();
 			resetMovementTimer = new Timer(RESET_MOVEMENT_STATE_TIMER_NAME);
+		} else {
+			/* User was moving previously, and is still moving */
+			current_cluster = -1;
+			currentlyMoving = true;
 		}
 		final Date d = new Date(System.currentTimeMillis());
 		LocationStatusWidget.updateText("Update at: " + dfm.format(d)

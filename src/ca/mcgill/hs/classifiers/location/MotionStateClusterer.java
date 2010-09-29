@@ -210,7 +210,7 @@ public class MotionStateClusterer {
 				timerDelay *= 2;
 				previouslyMoving = false;
 			}
-		} else if (!previouslyMoving) {
+		} else if (!previouslyMoving && clustered_points == 0) {
 			/*
 			 * If we were stationary, but now we are moving, then we cancel the
 			 * timer that should only be running if we're stationary.
@@ -222,7 +222,7 @@ public class MotionStateClusterer {
 			resetMovementTimer.cancel();
 			resetMovementTimer.purge();
 			resetMovementTimer = new Timer(RESET_MOVEMENT_STATE_TIMER_NAME);
-		} else {
+		} else if (clustered_points == 0) {
 			/* User was moving previously, and is still moving */
 			current_cluster = -1;
 			currentlyMoving = true;

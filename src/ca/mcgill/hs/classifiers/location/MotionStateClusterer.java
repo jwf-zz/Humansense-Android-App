@@ -26,6 +26,8 @@ public class MotionStateClusterer {
 		}
 	}
 
+	private static final int RESET_MOVEMENT_STATE_TIME_IN_SECONDS = 10;
+
 	private BufferedWriter outputLog = null;
 
 	private static final String RESET_MOVEMENT_STATE_TIMER_NAME = "reset movement state timer";
@@ -59,13 +61,14 @@ public class MotionStateClusterer {
 
 	// True if the previous window was labelled as stationary.
 	private boolean previouslyMoving = true;
+	private boolean currentlyMoving = false;
 
 	// True if the current window was labelled as stationary.
 	// private boolean curStationaryStatus = false;
 
 	private final SimpleDateFormat dfm = new SimpleDateFormat("HH:mm:ss");
 
-	private int timerDelay = 1000 * 10; // 10 seconds;
+	private int timerDelay = 1000 * RESET_MOVEMENT_STATE_TIME_IN_SECONDS;
 
 	public MotionStateClusterer(final LocationSet locations) {
 		TIME_BASED_WINDOW = locations.usesTimeBasedWindow();
@@ -115,6 +118,15 @@ public class MotionStateClusterer {
 
 		final int pool_size = pool.size();
 
+		/*
+		 * If it's a time-based window, then don't cluster if there's only one
+		 * sample in the pool, otherwise if it's not a time-based window, then
+		 * don't cluster until the pool is full.
+		 */
+		if ((TIME_BASED_WINDOW && pool_size <= 1)
+				|| (!TIME_BASED_WINDOW && pool_size < WINDOW_LENGTH)) {
+			return;
+		}
 		// Perform the clustering
 		final boolean[] cluster_status = new boolean[WINDOW_LENGTH];
 		for (int i = 0; i < WINDOW_LENGTH; i++) {
@@ -157,9 +169,10 @@ public class MotionStateClusterer {
 			if (cluster_status[index]) {
 				status -= 1; // Vote for stationarity
 				clustered_points += 1;
-				// If we were moving on the last step and now we've stopped,
-				// create a new
-				// significant location candidate.
+				/*
+				 * If we were moving on the last step and now we've stopped,
+				 * create a new significant location candidate.
+				 */
 				if (previouslyMoving) {
 					if (location == null) {
 						location = locations.newLocation(timestamp);
@@ -175,10 +188,18 @@ public class MotionStateClusterer {
 
 		if (location != null) {
 			current_cluster = slClusterer.addNewLocation(location);
-			Log.d(TAG, "WifiClusterer thinks we're in location: "
-					+ current_cluster);
+			currentlyMoving = false;
+			Log.d(TAG,
+					"WifiClusterer thinks we're stationary and in location: "
+							+ current_cluster);
 			if (current_cluster > 0) {
-				// Set the timer, so that we will still update once in a while
+				/*
+				 * The purpose of this timer is to avoid continually updating
+				 * the location if the user remains stationary. We start with a
+				 * timer that resets the motion state every
+				 * RESET_UPDATE_STATUS_TIME_IN_SECONDS seconds, and then after
+				 * an update we double the time before the next update.
+				 */
 				resetMovementTimer.schedule(new TimerTask() {
 					@Override
 					public void run() {
@@ -193,9 +214,14 @@ public class MotionStateClusterer {
 			// previouslyMoving = true;
 			// }
 		} else if (!previouslyMoving && clustered_points == 0) {
+			/*
+			 * If we were stationary, but now we are moving, then we cancel the
+			 * timer that should only be running if we're stationary.
+			 */
 			current_cluster = -1;
-			timerDelay = 10 * 1000;
+			timerDelay = RESET_MOVEMENT_STATE_TIME_IN_SECONDS * 1000;
 			previouslyMoving = true;
+			currentlyMoving = true;
 			resetMovementTimer.cancel();
 			resetMovementTimer.purge();
 			resetMovementTimer = new Timer(RESET_MOVEMENT_STATE_TIMER_NAME);
@@ -211,9 +237,6 @@ public class MotionStateClusterer {
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
-		// if (avg != null) {
-		// slClusterer.addNeighborPoint(avg);
-		// }
 	}
 
 	public void close() {
@@ -294,5 +317,9 @@ public class MotionStateClusterer {
 
 	public int getPoolSize() {
 		return pool.size();
+	}
+
+	public boolean lastObservationWasMoving() {
+		return currentlyMoving;
 	}
 }

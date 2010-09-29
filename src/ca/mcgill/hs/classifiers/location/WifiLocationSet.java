@@ -189,7 +189,7 @@ public final class WifiLocationSet extends LocationSet {
 		 * then it might have to be pruned out later. This is just used to
 		 * retrieve from the database a set of potential neighbours.
 		 */
-		final Long temp_threshold = (long) (location.numObservations() * WifiLocation.ETA);
+		final Long temp_threshold = (long) (location.getNumObservations() * WifiLocation.ETA);
 
 		final Collection<Long> possibleNeighbours = new HashSet<Long>();
 

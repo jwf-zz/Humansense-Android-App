@@ -48,6 +48,22 @@
 		<item>30</item>
 	</string-array>
 	
+	<string-array name="gpslogger_pref_timeout_strings">
+		<item>Never</item>
+		<item>10 Seconds</item>
+		<item>30 Seconds</item>
+		<item>1 Minute</item>
+		<item>5 Minutes</item>
+	</string-array>
+	
+	<string-array name="gpslogger_pref_timeout_values">
+		<item>-1</item>
+		<item>10000</item>
+		<item>30000</item>
+		<item>60000</item>
+		<item>300000</item>
+	</string-array>
+	
 	<string-array name="sensorlogger_pref_frequency_strings">
 		<item>Fastest</item>
 		<item>Slowest</item>

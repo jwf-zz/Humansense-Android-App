@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.classifiers.location.GPSClusterer;
 import ca.mcgill.hs.classifiers.location.WifiClusterer;
@@ -37,10 +38,32 @@ public class LocationClusterer extends OutputPlugin {
 			synchronized (wifiClusterer) {
 				if (!stopped) {
 					wifiClusterer.cluster(observation);
+					if (manageGPS) {
+						final boolean currentlyMoving = wifiClusterer
+								.isMoving();
+						if (currentlyMoving) {
+							Log.d(PLUGIN_NAME, "User is currently moving.");
+						} else {
+							Log.d(PLUGIN_NAME, "User is currently stationary.");
+						}
+						if (previouslyMoving && !currentlyMoving) {
+							// User has stopped moving, disable GPS
+							Log.d(PLUGIN_NAME,
+									"User went from moving to stationary, disabling GPS");
+							GPSLogger.disableAfterNextScan();
+						} else if (!previouslyMoving && currentlyMoving) {
+							// User has started moving, enable GPS
+							Log.d(PLUGIN_NAME,
+									"User went from stationary to moving, enabling GPS");
+							GPSLogger.enable();
+						}
+						previouslyMoving = currentlyMoving;
+					}
 				}
 			}
 		}
 
+		@Override
 		public void run() {
 			try {
 				while (!stopped) {
@@ -56,10 +79,10 @@ public class LocationClusterer extends OutputPlugin {
 		}
 	}
 
-	@SuppressWarnings("unused")
-	private static final String TAG = "LocationClusterer";
+	private static final String PLUGIN_NAME = "LocationClusterer";
 
 	private static final String LOCATION_CLUSTERER_ENABLED_PREF = "locationClustererEnabledPref";
+	private static final String LOCATION_CLUSTERER_USE_RESULTS_TO_MANAGE_GPS = "locationClustererManageGPS";
 
 	/**
 	 * Returns the list of Preference objects for this OutputPlugin.
@@ -67,7 +90,7 @@ public class LocationClusterer extends OutputPlugin {
 	 * @return an array of the Preferences of this object.
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
-		final Preference[] prefs = new Preference[1];
+		final Preference[] prefs = new Preference[2];
 
 		prefs[0] = PreferenceFactory.getCheckBoxPreference(activity,
 				LOCATION_CLUSTERER_ENABLED_PREF,
@@ -75,12 +98,22 @@ public class LocationClusterer extends OutputPlugin {
 				R.string.locationclusterer_enable_pref_summary,
 				R.string.locationclusterer_enable_pref_on,
 				R.string.locationclusterer_enable_pref_off);
+		prefs[1] = PreferenceFactory.getCheckBoxPreference(activity,
+				LOCATION_CLUSTERER_USE_RESULTS_TO_MANAGE_GPS,
+				R.string.locationclusterer_manage_gps_pref_label,
+				R.string.locationclusterer_manage_gps_pref_summary,
+				R.string.locationclusterer_manage_gps_pref_on,
+				R.string.locationclusterer_manage_gps_pref_off);
 		return prefs;
 	}
 
 	public static boolean hasPreferences() {
 		return true;
 	}
+
+	private boolean previouslyMoving = true;
+
+	private boolean manageGPS;
 
 	// The preference manager for this plugin.
 	private final SharedPreferences prefs;
@@ -126,12 +159,15 @@ public class LocationClusterer extends OutputPlugin {
 	protected void onPluginStart() {
 		pluginEnabled = prefs
 				.getBoolean(LOCATION_CLUSTERER_ENABLED_PREF, false);
+		manageGPS = prefs.getBoolean(
+				LOCATION_CLUSTERER_USE_RESULTS_TO_MANAGE_GPS, false);
+
 		if (!pluginEnabled) {
 			return;
 		}
 		wifiClusterer = new WifiClusterer(context);
-		gpsClusterer = new GPSClusterer(context
-				.getDatabasePath("gpsclusters.db"));
+		gpsClusterer = new GPSClusterer(
+				context.getDatabasePath("gpsclusters.db"));
 		wifiObservationConsumer = new WifiObservationConsumer(
 				wifiObservationQueue);
 		new Thread(wifiObservationConsumer).start();
@@ -162,6 +198,8 @@ public class LocationClusterer extends OutputPlugin {
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(
 				LOCATION_CLUSTERER_ENABLED_PREF, false);
+		manageGPS = prefs.getBoolean(
+				LOCATION_CLUSTERER_USE_RESULTS_TO_MANAGE_GPS, false);
 		if (pluginEnabled && !pluginEnabledNew) {
 			stopPlugin();
 			pluginEnabled = pluginEnabledNew;

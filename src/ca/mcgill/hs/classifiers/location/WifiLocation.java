@@ -2,8 +2,8 @@ package ca.mcgill.hs.classifiers.location;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -21,6 +21,9 @@ public class WifiLocation extends Location {
 	/** Epsilon from the paper, maximum distance between neighbouring points. */
 	public static final double EPS = 6.0;
 
+	/**
+	 * Keeps track of the number of observations associated with this location.
+	 */
 	private int num_observations = -1;
 
 	/**
@@ -29,6 +32,7 @@ public class WifiLocation extends Location {
 	 */
 	public static final double ETA = 0.8;
 
+	@SuppressWarnings("unused")
 	private static final String TAG = "WifiLocation";
 
 	/**
@@ -39,13 +43,6 @@ public class WifiLocation extends Location {
 	public WifiLocation(final SQLiteDatabase db, final double timestamp) {
 		super(db, timestamp);
 	}
-
-	/**
-	 * A mapping from WAP IDs to the sums signal strengths associated with this
-	 * observation.
-	 */
-	// private HashMap<Integer,Integer> wapStrengths = new
-	// HashMap<Integer,Integer>();
 
 	public WifiLocation(final SQLiteDatabase db, final long id) {
 		super(db, id);
@@ -127,8 +124,8 @@ public class WifiLocation extends Location {
 		}
 
 		if ((double) num_common
-				/ (double) Math.min(this.numObservations(), location
-						.numObservations()) < ETA) {
+				/ (double) Math.min(this.getNumObservations(),
+						location.getNumObservations()) < ETA) {
 			dist = Double.POSITIVE_INFINITY;
 		} else {
 			dist = Math.sqrt((1.0 / num_common) * dist);
@@ -145,10 +142,11 @@ public class WifiLocation extends Location {
 	 */
 	public double getAvgStrength(final int wap_id) {
 		double avgStrength = 0.0;
-		final Cursor cursor = db.rawQuery("SELECT average_strength FROM "
-				+ WifiLocationSet.OBSERVATIONS_TABLE
-				+ " WHERE location_id=? AND wap_id=?", new String[] {
-				Long.toString(getId()), Integer.toString(wap_id) });
+		final Cursor cursor = db
+				.rawQuery("SELECT average_strength FROM "
+						+ WifiLocationSet.OBSERVATIONS_TABLE
+						+ " WHERE location_id=? AND wap_id=?", new String[] {
+						Long.toString(getId()), Integer.toString(wap_id) });
 		try {
 			cursor.moveToNext();
 			avgStrength = cursor.getDouble(0);
@@ -156,6 +154,13 @@ public class WifiLocation extends Location {
 			cursor.close();
 		}
 		return avgStrength;
+	}
+
+	public int getNumObservations() {
+		if (num_observations < 0) {
+			updateNumObservations();
+		}
+		return num_observations;
 	}
 
 	public Set<Integer> getObservableWAPs() {
@@ -180,8 +185,8 @@ public class WifiLocation extends Location {
 		final Cursor cursor = db.rawQuery(
 				"SELECT wap_id,average_strength FROM "
 						+ WifiLocationSet.OBSERVATIONS_TABLE
-						+ " WHERE location_id=?", new String[] { Long
-						.toString(getId()) });
+						+ " WHERE location_id=?",
+				new String[] { Long.toString(getId()) });
 		try {
 			while (cursor.moveToNext()) {
 				observation.addObservation(cursor.getInt(0), cursor.getInt(1));
@@ -190,13 +195,6 @@ public class WifiLocation extends Location {
 			cursor.close();
 		}
 		return observation;
-	}
-
-	public int numObservations() {
-		if (num_observations < 0) {
-			updateNumObservations();
-		}
-		return num_observations;
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -33,19 +34,23 @@ public final class GPSLogger extends InputPlugin {
 			this.locationmanager = locationManager;
 		}
 
+		@Override
 		public void onLocationChanged(final Location location) {
-			getNewLocation(location);
+			logLocation(location);
 		}
 
+		@Override
 		public void onProviderDisabled(final String provider) {
 			Log.d(TAG, "GPS onProviderEnabled called.");
 			available = false;
 		}
 
+		@Override
 		public void onProviderEnabled(final String provider) {
 			Log.d(TAG, "GPS onProviderEnabled called.");
 		}
 
+		@Override
 		public void onStatusChanged(final String provider, final int status,
 				final Bundle extras) {
 			if (status == LocationProvider.AVAILABLE) {
@@ -100,11 +105,114 @@ public final class GPSLogger extends InputPlugin {
 
 	}
 
-	private static final String GPS_LOGGER_DISTANCE_DEFAULT = "0";
-	private static final String GPS_LOGGER_INTERVAL_DEFAULT = "30000";
-	private static final String GPS_LOGGER_INTERVAL_PREF = "gpsLoggerIntervalPreference";
-	private static final String GPS_LOGGER_DISTANCE_PREF = "gpsLoggerDistancePreference";
 	private static final String GPS_LOGGER_ENABLE_PREF = "gpsLoggerEnable";
+	private static final String GPS_LOGGER_DISTANCE_PREF = "gpsLoggerDistancePreference";
+	private static final String GPS_LOGGER_DISTANCE_DEFAULT = "0";
+	private static final String GPS_LOGGER_INTERVAL_PREF = "gpsLoggerIntervalPreference";
+	private static final String GPS_LOGGER_INTERVAL_DEFAULT = "30000";
+	private static final String GPS_LOGGER_TIMEOUT_PREF = "gpsLoggerTimeoutPreference";
+	private static final String GPS_LOGGER_TIMEOUT_DEFAULT = "-1";
+
+	private static Handler gpsTimeoutHandler = new Handler();
+
+	/**
+	 * This keeps track of whether another plugin has remotely disabled
+	 * scanning. For example, the location clustering plugin can disable the GPS
+	 * plugin if the user is determined to be stationary.
+	 */
+	private static Boolean remotelyDisabled = false;
+
+	/**
+	 * This keeps track of whether another plugin has requested that this plugin
+	 * be disabled. We use this so that a plugin can request that this plugin be
+	 * disabled after the next scan completes, rather than having other plugins
+	 * disable the plugin immediately.
+	 */
+	private static Boolean pendingRemoteDisable = false;
+
+	private static boolean listeningForLocationUpdates = false;
+
+	private static int gpsTimeoutInMillis = -1;
+
+	protected static Runnable checkIfTimedOut = new Runnable() {
+		@Override
+		public void run() {
+			final Location lastLocation = locationManager
+					.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			if (listeningForLocationUpdates) {
+				if (lastLocation != null) {
+					// We have a previous location, just log that.
+					((GPSLogger) PluginFactory.getInputPlugin(GPSLogger.class))
+							.logLocation(lastLocation);
+				}
+				// Location update has timed out.
+				stopListeningForLocationUpdates();
+				if (pendingRemoteDisable) {
+					remotelyDisabled = true;
+					pendingRemoteDisable = false;
+				}
+				if (!remotelyDisabled) {
+					// Start up again in minUpdateFrequency milliseconds.
+					Log.d(PLUGIN_NAME,
+							"GPS Has timed out, disabling and sleeping for a bit.");
+					gpsTimeoutHandler.postDelayed(restartGPSUpdates,
+							minUpdateFrequency);
+				}
+			}
+		}
+	};
+
+	protected static Runnable restartGPSUpdates = new Runnable() {
+		@Override
+		public void run() {
+			if (pendingRemoteDisable) {
+				remotelyDisabled = true;
+				pendingRemoteDisable = false;
+			}
+			if (!remotelyDisabled) {
+				Log.d(PLUGIN_NAME, "Restarting GPS updates after timeout.");
+				if (pluginEnabled && !remotelyDisabled) {
+					startListeningForLocationUpdates();
+				}
+			}
+		}
+	};
+
+	// Keeps track of whether this plugin is enabled or not.
+	private static boolean pluginEnabled;
+
+	// The LocationManager used to request location updates.
+	private static LocationManager locationManager = null;
+
+	// A GPSLocationListener which listens for location updates.
+	private static GPSLocationListener locationListener = null;
+
+	// The minimum distance the person has to travel for an update to be valid.
+	private static int minUpdateDistance;
+
+	// The minimum amount of time, in milliseconds, that has to pass between two
+	// subsequent updates
+	// for an update to be valid.
+	private static int minUpdateFrequency;
+
+	public final static String PLUGIN_NAME = "GPSLogger";
+
+	public final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+
+	public static void disableAfterNextScan() {
+		Log.d(PLUGIN_NAME,
+				"We have been asked to stop scanning after the next scan completes.");
+		pendingRemoteDisable = true;
+	}
+
+	public static void enable() {
+		Log.d(PLUGIN_NAME, "We have been remotely enabled.");
+		startListeningForLocationUpdates();
+		remotelyDisabled = false;
+
+		// Reset this so that a pending disable will not occur.
+		pendingRemoteDisable = false;
+	}
 
 	/**
 	 * Returns the list of Preference objects for this InputPlugin.
@@ -114,7 +222,7 @@ public final class GPSLogger extends InputPlugin {
 	 * @return an array of the Preferences of this object.
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
-		final Preference[] prefs = new Preference[3];
+		final Preference[] prefs = new Preference[4];
 
 		prefs[0] = PreferenceFactory.getCheckBoxPreference(activity,
 				GPS_LOGGER_ENABLE_PREF, R.string.gpslogger_enable_pref_label,
@@ -136,6 +244,13 @@ public final class GPSLogger extends InputPlugin {
 				R.string.gpslogger_distance_pref,
 				R.string.gpslogger_distance_pref_summary);
 
+		prefs[2] = PreferenceFactory.getListPreference(activity,
+				R.array.gpslogger_pref_timeout_strings,
+				R.array.gpslogger_pref_timeout_values,
+				GPS_LOGGER_TIMEOUT_DEFAULT, GPS_LOGGER_TIMEOUT_PREF,
+				R.string.gpslogger_timeout_pref,
+				R.string.gpslogger_timeout_pref_summary);
+
 		return prefs;
 	}
 
@@ -148,26 +263,41 @@ public final class GPSLogger extends InputPlugin {
 		return true;
 	}
 
-	// Keeps track of whether this plugin is enabled or not.
-	private boolean pluginEnabled;
+	private static void removeAllTimers() {
+		gpsTimeoutHandler.removeCallbacks(checkIfTimedOut);
+		gpsTimeoutHandler.removeCallbacks(restartGPSUpdates);
+	}
 
-	// The LocationManager used to request location updates.
-	private final LocationManager locationManager;
+	/**
+	 * Start listening for location updates.
+	 */
+	protected static void startListeningForLocationUpdates() {
+		removeAllTimers();
+		if (!listeningForLocationUpdates && locationManager != null) {
+			locationManager
+					.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+							minUpdateFrequency, minUpdateDistance,
+							locationListener, Looper.getMainLooper());
+			listeningForLocationUpdates = true;
+			if (gpsTimeoutInMillis > 0) {
+				gpsTimeoutHandler.postDelayed(checkIfTimedOut,
+						gpsTimeoutInMillis);
+			}
+			Log.i(PLUGIN_NAME, "Registered Location Listener.");
+		}
+	}
 
-	// A GPSLocationListener which listens for location updates.
-	private final GPSLocationListener locationListener;
-
-	// The minimum distance the person has to travel for an update to be valid.
-	private int minUpdateDistance;
-
-	// The minimum amount of time, in milliseconds, that has to pass between two
-	// subsequent updates
-	// for an update to be valid.
-	private int minUpdateFrequency;
-
-	public final static String PLUGIN_NAME = "GPSLogger";
-
-	public final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
+	/**
+	 * Stops listening for location updates.
+	 */
+	protected static void stopListeningForLocationUpdates() {
+		removeAllTimers();
+		if (listeningForLocationUpdates && locationManager != null) {
+			locationManager.removeUpdates(locationListener);
+			listeningForLocationUpdates = false;
+			Log.i(PLUGIN_NAME, "Unregistered Location Listener.");
+		}
+	}
 
 	final private SharedPreferences prefs;
 
@@ -189,17 +319,27 @@ public final class GPSLogger extends InputPlugin {
 	}
 
 	/**
-	 * Creates a GPSLocationPacket with the current location's coordinates.
+	 * Writes out the data to the plugin outputstream.
 	 * 
 	 * @param location
 	 *            the current Location.
 	 */
-	private void getNewLocation(final Location location) {
+	protected void logLocation(final Location location) {
 		Log.i(PLUGIN_NAME, "GPS Data received.");
+		if (pendingRemoteDisable) {
+			synchronized (pendingRemoteDisable) {
+				if (pendingRemoteDisable) {
+					Log.d(PLUGIN_NAME, "Disabling because of pending request.");
+					pendingRemoteDisable = false;
+					stopListeningForLocationUpdates();
+					remotelyDisabled = true;
+				}
+			}
+		}
 		write(new GPSPacket(location.getTime(), location.getAccuracy(),
-				location.getBearing(), location.getSpeed(), location
-						.getAltitude(), location.getLatitude(), location
-						.getLongitude()));
+				location.getBearing(), location.getSpeed(),
+				location.getAltitude(), location.getLatitude(),
+				location.getLongitude()));
 	}
 
 	/**
@@ -212,13 +352,12 @@ public final class GPSLogger extends InputPlugin {
 				GPS_LOGGER_DISTANCE_PREF, GPS_LOGGER_DISTANCE_DEFAULT));
 		minUpdateFrequency = Integer.parseInt(prefs.getString(
 				GPS_LOGGER_INTERVAL_PREF, GPS_LOGGER_INTERVAL_DEFAULT));
+		gpsTimeoutInMillis = Integer.parseInt(prefs.getString(
+				GPS_LOGGER_TIMEOUT_PREF, GPS_LOGGER_TIMEOUT_DEFAULT));
 		if (!pluginEnabled) {
 			return;
 		}
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-				minUpdateFrequency, minUpdateDistance, locationListener, Looper
-						.getMainLooper());
-		Log.i(PLUGIN_NAME, "Registered Location Listener.");
+		startListeningForLocationUpdates();
 	}
 
 	/**
@@ -229,8 +368,7 @@ public final class GPSLogger extends InputPlugin {
 		if (!pluginEnabled) {
 			return;
 		}
-		locationManager.removeUpdates(locationListener);
-		Log.i(PLUGIN_NAME, "Unregistered Location Listener.");
+		stopListeningForLocationUpdates();
 	}
 
 	/**
@@ -249,15 +387,14 @@ public final class GPSLogger extends InputPlugin {
 		}
 
 		if (pluginEnabled) {
-			locationManager.removeUpdates(locationListener);
+			stopListeningForLocationUpdates();
 			minUpdateDistance = Integer.parseInt(prefs.getString(
 					GPS_LOGGER_DISTANCE_PREF, GPS_LOGGER_DISTANCE_DEFAULT));
 			minUpdateFrequency = Integer.parseInt(prefs.getString(
 					GPS_LOGGER_INTERVAL_PREF, GPS_LOGGER_INTERVAL_DEFAULT));
-			locationManager
-					.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-							minUpdateFrequency, minUpdateDistance,
-							locationListener, Looper.getMainLooper());
+			gpsTimeoutInMillis = Integer.parseInt(prefs.getString(
+					GPS_LOGGER_TIMEOUT_PREF, GPS_LOGGER_TIMEOUT_DEFAULT));
+			startListeningForLocationUpdates();
 		}
 	}
 

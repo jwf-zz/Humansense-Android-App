@@ -126,6 +126,8 @@
     <string name="gpslogger_interval_pref_summary">The time interval between two subsequent scans.</string>
     <string name="gpslogger_distance_pref">GPS Minimum Distance</string>
     <string name="gpslogger_distance_pref_summary">The minimum distance that has to be travelled between two subsequent scans.</string>
+    <string name="gpslogger_timeout_pref">GPS Timeout</string>
+    <string name="gpslogger_timeout_pref_summary">Amount of time after which we stop scanning if we cannot get a GPS fix.</string>
     
     <!--  GSMLogger plugin preferences -->
     <string name="gsmlogger_enable_pref_label">GSM Logging Plugin</string>
@@ -158,6 +160,10 @@
     <string name="locationclusterer_enable_pref_summary">Enables or disables this plugin.</string>
     <string name="locationclusterer_enable_pref_on">Location Clustering is on.</string>
 	<string name="locationclusterer_enable_pref_off">Location Clustering is off.</string> 
+    <string name="locationclusterer_manage_gps_pref_label">Manage GPS Sensor</string>
+    <string name="locationclusterer_manage_gps_pref_summary">Use the results of the motion estimation algorithm to enable and disable the GPS sensor.</string>
+    <string name="locationclusterer_manage_gps_pref_on">GPS Management is on.</string>
+	<string name="locationclusterer_manage_gps_pref_off">GPS Management is off.</string> 
 
 	<!--  FileOutput plugin preferences -->
     <string name="fileoutput_buffersize_pref">Buffer Size</string>

@@ -230,7 +230,8 @@ public class MotionStateClusterer {
 		final Date d = new Date(System.currentTimeMillis());
 		LocationStatusWidget.updateText("Update at: " + dfm.format(d)
 				+ "\nClustered " + clustered_points + " of " + pool_size
-				+ " points.\nCurrently in location: " + current_cluster + "\n");
+				+ " points.\nCurrently in location: " + current_cluster + "\n",
+				currentlyMoving);
 		try {
 			if (outputLog != null) {
 				outputLog.write(dfm.format(d) + "," + current_cluster + "\n");

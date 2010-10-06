@@ -4,15 +4,16 @@
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
   android:orientation="vertical"
-  style="@style/WidgetBackground"
+  android:id="@+id/location_status_background" 
 >
 	<TextView android:text="Results Currently Unavailable" 
 			  android:id="@+id/location_status_text" 
 			  android:layout_width="fill_parent" 
-			  android:layout_height="wrap_content"
+			  android:layout_height="fill_parent"
 	          android:layout_marginTop="12dip"
          	  android:padding="10dip"
         	  android:gravity="center"
-			  style="@style/Text.Loading"
+        	  android:background="#eeeeee"
+ 			  style="@style/Text.Loading"
 	/>
 </LinearLayout>

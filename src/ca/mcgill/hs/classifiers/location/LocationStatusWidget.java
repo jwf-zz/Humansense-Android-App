@@ -4,6 +4,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.util.Log;
 import android.widget.RemoteViews;
 import ca.mcgill.hs.R;
@@ -14,9 +15,19 @@ public class LocationStatusWidget extends android.appwidget.AppWidgetProvider {
 	private static RemoteViews updateViews = null;
 	private static final String TAG = "LocationStatusWidget";
 
-	public static void updateText(final String text) {
+	public static void updateText(final String text, final boolean moving) {
 		if (thisWidget != null && manager != null && updateViews != null) {
+			if (moving) {
+				updateViews.setInt(R.id.location_status_text,
+						"setBackgroundResource",
+						R.drawable.location_status_widget_bg_moving);
+			} else {
+				updateViews.setInt(R.id.location_status_text,
+						"setBackgroundResource",
+						R.drawable.location_status_widget_bg_stationary);
+			}
 			updateViews.setTextViewText(R.id.location_status_text, text);
+			updateViews.setTextColor(R.id.location_status_text, Color.WHITE);
 			manager.updateAppWidget(thisWidget, updateViews);
 		} else {
 			if (thisWidget == null) {
@@ -69,5 +80,4 @@ public class LocationStatusWidget extends android.appwidget.AppWidgetProvider {
 		updateViews = new RemoteViews(context.getPackageName(),
 				R.layout.location_status_appwidget);
 	}
-
 }

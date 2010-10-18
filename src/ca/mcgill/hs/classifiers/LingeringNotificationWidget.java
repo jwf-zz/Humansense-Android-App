@@ -32,5 +32,4 @@ public class LingeringNotificationWidget extends AppWidgetProvider {
 		updateViews = new RemoteViews(context.getPackageName(),
 				R.layout.lingering_notification_appwidget);
 	}
-
 }

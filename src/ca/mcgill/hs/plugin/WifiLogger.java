@@ -106,7 +106,7 @@ public final class WifiLogger extends InputPlugin {
 				WIFI_LOGGER_ENABLE_PREF, R.string.wifilogger_enable_pref_label,
 				R.string.wifilogger_enable_pref_summary,
 				R.string.wifilogger_enable_pref_on,
-				R.string.wifilogger_enable_pref_off);
+				R.string.wifilogger_enable_pref_off, false);
 
 		prefs[1] = PreferenceFactory.getListPreference(activity,
 				R.array.wifilogger_pref_interval_strings,
@@ -124,9 +124,6 @@ public final class WifiLogger extends InputPlugin {
 	public static boolean hasPreferences() {
 		return true;
 	}
-
-	// Boolean ON-OFF switch *Temporary only*
-	private boolean pluginEnabled;
 
 	// The Thread for requesting scans.
 	private Thread wifiLoggerThread;
@@ -189,6 +186,7 @@ public final class WifiLogger extends InputPlugin {
 	@Override
 	protected void onPluginStart() {
 		Log.d(PLUGIN_NAME, "Starting Wifi Logger.");
+		pluginEnabled = prefs.getBoolean(WIFI_LOGGER_ENABLE_PREF, false);
 		updatePreferences();
 
 		if (!pluginEnabled) {
@@ -253,16 +251,13 @@ public final class WifiLogger extends InputPlugin {
 	 */
 	@Override
 	public void onPreferenceChanged() {
-		final boolean pluginEnabledOld = pluginEnabled;
+		final boolean pluginEnabledNew = prefs.getBoolean(
+				WIFI_LOGGER_ENABLE_PREF, false);
 		updatePreferences();
-		final String enabled = pluginEnabled ? "enabled" : "disabled";
-		Log.d(PLUGIN_NAME, "Preferences changed. Plugin is " + enabled
-				+ ", logging interval is " + sleepIntervalMillisecs);
-		if (pluginEnabledOld && !pluginEnabled) {
-			stopPlugin();
-		} else if (!pluginEnabledOld && pluginEnabled) {
-			startPlugin();
-		}
+		// final String enabled = pluginEnabledNew ? "enabled" : "disabled";
+		// Log.d(PLUGIN_NAME, "Preferences changed. Plugin is " + enabled
+		// + ", logging interval is " + sleepIntervalMillisecs);
+		super.changePluginEnabledStatus(pluginEnabledNew);
 	}
 
 	/**
@@ -294,7 +289,6 @@ public final class WifiLogger extends InputPlugin {
 	}
 
 	private void updatePreferences() {
-		pluginEnabled = prefs.getBoolean(WIFI_LOGGER_ENABLE_PREF, false);
 		sleepIntervalMillisecs = Integer.parseInt(prefs.getString(
 				WIFI_INTERVAL_PREF, WIFI_INTERVAL_DEFAULT));
 	}

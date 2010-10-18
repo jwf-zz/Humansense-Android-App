@@ -120,14 +120,14 @@ public class BluetoothLogger extends InputPlugin {
 				R.string.bluetoothlogger_enable_pref_label,
 				R.string.bluetoothlogger_enable_pref_summary,
 				R.string.bluetoothlogger_enable_pref_on,
-				R.string.bluetoothlogger_enable_pref_off);
+				R.string.bluetoothlogger_enable_pref_off, false);
 
 		prefs[1] = PreferenceFactory.getCheckBoxPreference(activity,
 				FORCE_BLUETOOTH_ON_PREF,
 				R.string.bluetoothlogger_autoenable_pref_label,
 				R.string.bluetoothlogger_autoenable_pref_summary,
 				R.string.bluetoothlogger_autoenable_pref_on,
-				R.string.bluetoothlogger_autoenable_pref_off);
+				R.string.bluetoothlogger_autoenable_pref_off, false);
 
 		prefs[2] = PreferenceFactory.getListPreference(activity,
 				R.array.bluetoothlogger_pref_interval_strings,
@@ -152,9 +152,6 @@ public class BluetoothLogger extends InputPlugin {
 
 	// The BluetoothAdapter used to start and stop discovery of devices.
 	private final BluetoothAdapter adapter;
-
-	// Keeps track of whether this plugin is enabled or not.
-	private boolean pluginEnabled;
 
 	// The interval of time between two subsequent scans.
 	private int timeBetweenDiscoveries;
@@ -356,12 +353,6 @@ public class BluetoothLogger extends InputPlugin {
 
 		final boolean pluginEnabledNew = prefs.getBoolean(
 				BLUETOOTH_LOGGER_ENABLE_PREF, false);
-		if (pluginEnabled && !pluginEnabledNew) {
-			stopPlugin();
-			pluginEnabled = pluginEnabledNew;
-		} else if (!pluginEnabled && pluginEnabledNew) {
-			pluginEnabled = pluginEnabledNew;
-			startPlugin();
-		}
+		super.changePluginEnabledStatus(pluginEnabledNew);
 	}
 }

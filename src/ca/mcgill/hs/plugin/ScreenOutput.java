@@ -99,7 +99,7 @@ public final class ScreenOutput extends OutputPlugin {
 				R.string.screenoutput_enable_pref_label,
 				R.string.screenoutput_enable_pref_summary,
 				R.string.screenoutput_enable_pref_on,
-				R.string.screenoutput_enable_pref_off);
+				R.string.screenoutput_enable_pref_off, false);
 
 		return prefs;
 	}
@@ -112,9 +112,6 @@ public final class ScreenOutput extends OutputPlugin {
 	public static boolean hasPreferences() {
 		return true;
 	}
-
-	// Keeps track of whether this plugin is enabled or not.
-	private boolean pluginEnabled;
 
 	private final SharedPreferences prefs;
 
@@ -171,12 +168,6 @@ public final class ScreenOutput extends OutputPlugin {
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(
 				SCREEN_OUTPUT_ENABLE_PREF, false);
-		if (pluginEnabled && !pluginEnabledNew) {
-			stopPlugin();
-			pluginEnabled = pluginEnabledNew;
-		} else if (!pluginEnabled && pluginEnabledNew) {
-			pluginEnabled = pluginEnabledNew;
-			startPlugin();
-		}
+		super.changePluginEnabledStatus(pluginEnabledNew);
 	}
 }

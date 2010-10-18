@@ -7,6 +7,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.XmlResourceParser;
 import android.hardware.SensorManager;
@@ -16,6 +17,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Xml;
@@ -33,7 +35,7 @@ import ca.mcgill.hs.prefs.PreferenceFactory;
  * Also classifies according to time-delay embedding models (Frank et al, 2010)
  * if they exist in the models folder.
  */
-public final class SimpleClassifierPlugin extends OutputPlugin {
+public final class TDEClassifierPlugin extends OutputPlugin {
 	private static final class ClassifierThread extends Thread {
 		public static Handler mHandler = null;
 
@@ -72,13 +74,14 @@ public final class SimpleClassifierPlugin extends OutputPlugin {
 	private static float[] cumulativeClassProbs = null;
 
 	// Preference key for this plugin's state
-	private final static String PLUGIN_ACTIVE_KEY = "simpleClassifierEnabled";
+	private final static String PLUGIN_ACTIVE_KEY = "tdeClassifierEnabled";
 	private final static String ACCEL_THRESHOLD_KEY = "accelerometerThreshold";
 	private final static int ACCEL_THRESHOLD_DEFAULT = 100;
 	private final static String ACCEL_WINDOW_KEY = "accelerometerWindowSize";
 	private final static String ACCEL_WINDOW_DEFAULT = "25";
+	public static final String MANAGE_MODELS_PREF = "manageModels";
 
-	private final static String PLUGIN_NAME = "SimpleClassifierPlugin";
+	private final static String PLUGIN_NAME = "TDEClassifierPlugin";
 
 	private static final int LOG_MESSAGE = 0;
 	private static final int QUIT_MESSAGE = 1;
@@ -89,13 +92,13 @@ public final class SimpleClassifierPlugin extends OutputPlugin {
 	 * @return an array of the Preferences of this object.
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
-		final Preference[] prefs = new Preference[3];
+		final Preference[] prefs = new Preference[4];
 
 		prefs[0] = PreferenceFactory.getCheckBoxPreference(activity,
 				PLUGIN_ACTIVE_KEY, R.string.simpleclassifier_enable_pref_label,
 				R.string.simpleclassifier_enable_pref_summary,
 				R.string.simpleclassifier_enable_pref_on,
-				R.string.simpleclassifier_enable_pref_off);
+				R.string.simpleclassifier_enable_pref_off, false);
 
 		prefs[1] = PreferenceFactory.getSeekBarPreference(activity,
 				getThresholdAttributes(), ACCEL_THRESHOLD_KEY);
@@ -106,6 +109,18 @@ public final class SimpleClassifierPlugin extends OutputPlugin {
 				ACCEL_WINDOW_DEFAULT, ACCEL_WINDOW_KEY,
 				R.string.accelerometerLingeringWindow,
 				R.string.accelerometerLingeringWindowSummary);
+
+		prefs[3] = PreferenceFactory.getButtonPreference(activity,
+				MANAGE_MODELS_PREF, R.string.manage_model_files_pref_title,
+				R.string.manage_model_files_pref_summary);
+		prefs[3].setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			public boolean onPreferenceClick(final Preference preference) {
+				final Intent i = new Intent(activity,
+						ca.mcgill.hs.prefs.ManageModelsFileManager.class);
+				activity.startActivity(i);
+				return true;
+			}
+		});
 
 		return prefs;
 	}
@@ -144,22 +159,17 @@ public final class SimpleClassifierPlugin extends OutputPlugin {
 		return true;
 	}
 
-	// Keeps track of whether this plugin is enabled or not.
-	private boolean pluginEnabled;
-
 	private AccelerometerLingeringFilter lingeringFilter;
 
 	private int counter = 0;
 
-	private final Context context;
+	private static Context context;
 
 	private final SharedPreferences prefs;
 
-	public SimpleClassifierPlugin(final Context context) {
-		this.context = context;
-
+	public TDEClassifierPlugin(final Context context) {
+		TDEClassifierPlugin.context = context;
 		prefs = PreferenceFactory.getSharedPreferences();
-
 	}
 
 	@Override

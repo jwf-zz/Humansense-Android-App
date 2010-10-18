@@ -82,7 +82,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 				R.string.sensorlogger_enable_pref_label,
 				R.string.sensorlogger_interval_pref_summary,
 				R.string.sensorlogger_enable_pref_on,
-				R.string.sensorlogger_enable_pref_off);
+				R.string.sensorlogger_enable_pref_off, false);
 
 		prefs[1] = PreferenceFactory.getListPreference(activity,
 				R.array.sensorlogger_pref_frequency_strings,
@@ -96,16 +96,13 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 				R.string.sensorlogger_orientation_pref,
 				R.string.sensorlogger_orientation_pref_summary,
 				R.string.sensorlogger_orientation_pref_on,
-				R.string.sensorlogger_orientation_pref_off);
+				R.string.sensorlogger_orientation_pref_off, true);
 		return prefs;
 	}
 
 	public static boolean hasPreferences() {
 		return true;
 	}
-
-	// Keeps track of whether this plugin is enabled or not.
-	private boolean pluginEnabled;
 
 	// The SensorManager used to register listeners.
 	private final SensorManager sensorManager;
@@ -219,35 +216,31 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	 */
 	@Override
 	public void onPreferenceChanged() {
-		boolean restartPlugin = false;
+		boolean changed = false;
 		final int newLoggingSpeed = Integer.parseInt(prefs.getString(
 				SENSOR_LOGGER_INTERVAL_PREF, SENSOR_LOGGER_DEFAULT_INTERVAL));
 		if (newLoggingSpeed != loggingSpeed) {
-			loggingSpeed = newLoggingSpeed;
-			restartPlugin = true;
+			changed = true;
 		}
-		calculateOrientation = prefs.getBoolean(
+		final boolean newCalculateOrientation = prefs.getBoolean(
 				SENSOR_LOGGER_CALCULATE_ORIENTATION, false);
-		if (!calculateOrientation) {
+		if (!newCalculateOrientation) {
 			orientation[0] = 0.0f;
 			orientation[1] = 0.0f;
 			orientation[2] = 0.0f;
 		}
-		final boolean pluginActiveNew = prefs.getBoolean(
+		if (newCalculateOrientation != calculateOrientation) {
+			changed = true;
+		}
+		final boolean pluginEnabledNew = prefs.getBoolean(
 				SENSOR_LOGGER_ENABLE_PREF, false);
-		if (pluginEnabled && !pluginActiveNew) {
-			stopPlugin();
-			pluginEnabled = pluginActiveNew;
-			restartPlugin = false;
-		} else if (!pluginEnabled && pluginActiveNew) {
-			pluginEnabled = pluginActiveNew;
-			startPlugin();
-			restartPlugin = false;
+		// If something changed but the enabled status didn't, then we need to
+		// restart the plugin.
+		if (changed && pluginEnabled && pluginEnabledNew) {
+			onPluginStop();
+			onPluginStart();
 		}
-		if (restartPlugin) {
-			stopPlugin();
-			startPlugin();
-		}
+		super.changePluginEnabledStatus(pluginEnabledNew);
 	}
 
 	/**

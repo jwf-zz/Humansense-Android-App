@@ -27,7 +27,11 @@
 			android:label="@string/set_output_preferences">
 		</activity>
 		<activity
-			android:name=".prefs.FileManager"
+			android:name=".prefs.DeleteUnUploadedFileManager"
+			android:label="@string/manage_files">
+		</activity>
+		<activity
+			android:name=".prefs.ManageModelsFileManager"
 			android:label="@string/manage_files">
 		</activity>
 		<activity
@@ -80,4 +84,4 @@
 	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 	<uses-permission android:name="android.permission.VIBRATE" />
 	<uses-permission android:name="android.permission.PERSISTENT_ACTIVITY"></uses-permission>
-</manifest> 
+</manifest>

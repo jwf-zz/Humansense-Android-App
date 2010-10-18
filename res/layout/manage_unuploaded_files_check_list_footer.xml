@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout 
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/file_list_footer_layout"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content">
+	<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:id="@+id/manage_unuploaded_footer_table" 
+	    android:layout_width="fill_parent"
+	    android:stretchColumns="*" 
+	    android:layout_alignParentTop="true"
+	    android:layout_centerHorizontal="true" 
+	    android:layout_height="wrap_content">
+	    <TableRow>          
+	        <Button android:id="@+id/manage_unuploaded_footer_delete_button" 
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content" 
+	        android:text="Delete"
+	        android:gravity="center" 
+	        android:paddingTop="16dip">
+	    </Button>
+	        <Button android:id="@+id/manage_unuploaded_footer_close_button"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content" 
+	        android:text="Cancel"
+	        android:gravity="center" 
+	        android:paddingTop="16dip">
+	    </Button>           
+	    </TableRow>         
+	</TableLayout>
+</RelativeLayout>

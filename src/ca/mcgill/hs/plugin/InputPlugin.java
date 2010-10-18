@@ -35,6 +35,19 @@ public abstract class InputPlugin implements Plugin {
 		return false;
 	}
 
+	protected boolean pluginEnabled;
+
+	protected void changePluginEnabledStatus(
+			final boolean newPluginEnabledStatus) {
+		if (pluginEnabled && !newPluginEnabledStatus) {
+			stopPlugin();
+			pluginEnabled = newPluginEnabledStatus;
+		} else if (!pluginEnabled && newPluginEnabledStatus) {
+			pluginEnabled = newPluginEnabledStatus;
+			startPlugin();
+		}
+	}
+
 	/**
 	 * Called when this InputPlugin is started. This method is meant to be
 	 * overridden.

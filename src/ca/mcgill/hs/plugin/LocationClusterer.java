@@ -25,6 +25,8 @@ public class LocationClusterer extends OutputPlugin {
 	class WifiObservationConsumer implements Runnable {
 		private final BlockingQueue<WifiObservation> queue;
 		private boolean stopped;
+		private final GPSLogger gpsLogger = (GPSLogger) PluginFactory
+				.getInputPlugin(GPSLogger.class);
 
 		WifiObservationConsumer(final BlockingQueue<WifiObservation> q) {
 			queue = q;
@@ -35,7 +37,7 @@ public class LocationClusterer extends OutputPlugin {
 			if (observation == null) {
 				return;
 			}
-			synchronized (wifiClusterer) {
+			synchronized (queue) {
 				if (!stopped) {
 					wifiClusterer.cluster(observation);
 					if (manageGPS) {
@@ -48,14 +50,16 @@ public class LocationClusterer extends OutputPlugin {
 						}
 						if (previouslyMoving && !currentlyMoving) {
 							// User has stopped moving, disable GPS
-							Log.d(PLUGIN_NAME,
-									"User went from moving to stationary, disabling GPS");
-							GPSLogger.disableAfterNextScan();
+							Log
+									.d(PLUGIN_NAME,
+											"User went from moving to stationary, disabling GPS");
+							gpsLogger.disableAfterNextScan();
 						} else if (!previouslyMoving && currentlyMoving) {
 							// User has started moving, enable GPS
-							Log.d(PLUGIN_NAME,
-									"User went from stationary to moving, enabling GPS");
-							GPSLogger.enable();
+							Log
+									.d(PLUGIN_NAME,
+											"User went from stationary to moving, enabling GPS");
+							gpsLogger.enable();
 						}
 						previouslyMoving = currentlyMoving;
 					}
@@ -97,13 +101,15 @@ public class LocationClusterer extends OutputPlugin {
 				R.string.locationclusterer_enable_pref_label,
 				R.string.locationclusterer_enable_pref_summary,
 				R.string.locationclusterer_enable_pref_on,
-				R.string.locationclusterer_enable_pref_off);
+				R.string.locationclusterer_enable_pref_off, false);
+
 		prefs[1] = PreferenceFactory.getCheckBoxPreference(activity,
 				LOCATION_CLUSTERER_USE_RESULTS_TO_MANAGE_GPS,
 				R.string.locationclusterer_manage_gps_pref_label,
 				R.string.locationclusterer_manage_gps_pref_summary,
 				R.string.locationclusterer_manage_gps_pref_on,
-				R.string.locationclusterer_manage_gps_pref_off);
+				R.string.locationclusterer_manage_gps_pref_off, false);
+
 		return prefs;
 	}
 
@@ -118,8 +124,6 @@ public class LocationClusterer extends OutputPlugin {
 	// The preference manager for this plugin.
 	private final SharedPreferences prefs;
 
-	// Keeps track of whether this plugin is enabled or not.
-	private boolean pluginEnabled;
 	private final Context context;
 
 	private final BlockingQueue<WifiObservation> wifiObservationQueue = new LinkedBlockingQueue<WifiObservation>();
@@ -166,8 +170,8 @@ public class LocationClusterer extends OutputPlugin {
 			return;
 		}
 		wifiClusterer = new WifiClusterer(context);
-		gpsClusterer = new GPSClusterer(
-				context.getDatabasePath("gpsclusters.db"));
+		gpsClusterer = new GPSClusterer(context
+				.getDatabasePath("gpsclusters.db"));
 		wifiObservationConsumer = new WifiObservationConsumer(
 				wifiObservationQueue);
 		new Thread(wifiObservationConsumer).start();
@@ -175,11 +179,11 @@ public class LocationClusterer extends OutputPlugin {
 
 	@Override
 	protected void onPluginStop() {
-		if (!pluginEnabled) {
-			return;
-		}
-		synchronized (wifiClusterer) {
-			wifiObservationConsumer.stop();
+		synchronized (wifiObservationQueue) {
+			if (wifiObservationConsumer != null) {
+				wifiObservationConsumer.stop();
+				wifiObservationConsumer = null;
+			}
 			if (wifiClusterer != null) {
 				wifiClusterer.close();
 				wifiClusterer = null;
@@ -200,13 +204,6 @@ public class LocationClusterer extends OutputPlugin {
 				LOCATION_CLUSTERER_ENABLED_PREF, false);
 		manageGPS = prefs.getBoolean(
 				LOCATION_CLUSTERER_USE_RESULTS_TO_MANAGE_GPS, false);
-		if (pluginEnabled && !pluginEnabledNew) {
-			stopPlugin();
-			pluginEnabled = pluginEnabledNew;
-		} else if (!pluginEnabled && pluginEnabledNew) {
-			pluginEnabled = pluginEnabledNew;
-			startPlugin();
-		}
+		super.changePluginEnabledStatus(pluginEnabledNew);
 	}
-
 }

@@ -3,21 +3,20 @@ package ca.mcgill.hs.prefs;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
-import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -28,7 +27,7 @@ import ca.mcgill.hs.R;
  * Provides a simple file manager for a preference panel. Shows file names with
  * checkboxes next to them.
  */
-public class FileManager extends ListActivity {
+public abstract class FileManager extends ListActivity {
 
 	public class CheckboxFileListAdapter extends SimpleAdapter {
 
@@ -38,22 +37,22 @@ public class FileManager extends ListActivity {
 		 * This is the list of items to show, so it is the shortened filenames,
 		 * not the full path names
 		 */
-		private final List<String> listItems;
+		private final List<CheckListEntry> listItems = new ArrayList<CheckListEntry>();
 
 		/**
 		 * This is the list of files that have been checked off, and this list
 		 * includes the full pathnames of the files
 		 */
-		private final List<String> checkList = new ArrayList<String>();
+		private final Set<String> checkList = new HashSet<String>();
 
 		/**
 		 * This is the full path where the uploaded directory lives.
 		 */
-		private final String uploadPathName;
+		private final String pathName;
 
 		public CheckboxFileListAdapter(final Context context,
 				final List<Map<String, Boolean>> listItems,
-				final int fileCheckList, final String uploadPathName,
+				final int fileCheckList, final String pathName,
 				final String[] from, final int[] to) {
 			super(context, listItems, fileCheckList, from, to);
 			this.context = context;
@@ -61,14 +60,15 @@ public class FileManager extends ListActivity {
 			/*
 			 * The SimpleAdapter class requires the funny List<Map<?,?>> object,
 			 * but for our purposes it is much easier to just keep a list of the
-			 * items, so we pull out all of the strings from the listItems.
+			 * items, so we pull out all of the entries from the listItems.
 			 */
-			final List<String> itemList = new ArrayList<String>();
 			for (final Map<String, Boolean> map : listItems) {
-				itemList.addAll(map.keySet());
+				for (final Entry<String, Boolean> entry : map.entrySet()) {
+					this.listItems.add(new CheckListEntry(entry.getKey(), entry
+							.getValue()));
+				}
 			}
-			this.listItems = itemList;
-			this.uploadPathName = uploadPathName;
+			this.pathName = pathName;
 		}
 
 		/**
@@ -100,19 +100,24 @@ public class FileManager extends ListActivity {
 			}
 			final CheckBox cBox = (CheckBox) v.findViewById(R.id.bcheck);
 
+			final CheckListEntry entry = listItems.get(pos);
 			/*
 			 * We set the tag for the checkbox (like the value) to be the full
 			 * pathname of the file
 			 */
-			cBox.setTag(uploadPathName + listItems.get(pos));
+			cBox.setTag(new File(pathName, entry.filename).getAbsolutePath());
+			if (entry.checked) {
+				checkList.add((String) cBox.getTag());
+			}
+
 			/*
 			 * The text is just the filename, which is much shorter
 			 */
-			cBox.setText(listItems.get(pos));
+			cBox.setText(entry.filename);
 			/*
 			 * Start with everything unchecked
 			 */
-			cBox.setChecked(false);
+			cBox.setChecked(entry.checked);
 
 			/*
 			 * Instead of collecting the checked items at the end, we maintain
@@ -135,11 +140,24 @@ public class FileManager extends ListActivity {
 		}
 	}
 
-	public static final File RECENT_FILES_DIRECTORY = new File(Environment
-			.getExternalStorageDirectory(), "hsandroidapp/data/recent/");
-	public static final File UPLOADED_FILES_DIRECTORY = new File(Environment
-			.getExternalStorageDirectory()
-			+ "hsandroidapp/data/uploaded/");
+	protected class CheckListEntry {
+		public String filename;
+		public boolean checked;
+
+		public CheckListEntry(final String filename, final boolean checked) {
+			this.filename = filename;
+			this.checked = checked;
+		}
+	}
+
+	private static final String TAG = "FileManager";
+
+	protected abstract CheckListEntry[] getCheckListEntries(File path);
+
+	protected abstract View getFooterView(ListView listView,
+			CheckboxFileListAdapter checkList);
+
+	protected abstract String getPathName();
 
 	/**
 	 * Helper function for displaying brief messages
@@ -151,7 +169,7 @@ public class FileManager extends ListActivity {
 	 *            DURATION_LONG
 	 * 
 	 */
-	private void makeToast(final String message, final int duration) {
+	protected void makeToast(final String message, final int duration) {
 		final Toast slice = Toast.makeText(getBaseContext(), message, duration);
 		slice.setGravity(slice.getGravity(), slice.getXOffset(), slice
 				.getYOffset() + 100);
@@ -169,10 +187,8 @@ public class FileManager extends ListActivity {
 		 */
 		final List<Map<String, Boolean>> listItems = new ArrayList<Map<String, Boolean>>();
 
-		final String pathName = Environment.getExternalStorageDirectory()
-				+ File.separator
-				+ (String) getBaseContext().getResources().getText(
-						R.string.recent_file_path);
+		final String pathName = getPathName();
+		Log.d(TAG, "Listing files for directory: " + pathName);
 		final File path = new File(pathName);
 		if (!path.exists()) {
 			path.mkdirs();
@@ -181,16 +197,17 @@ public class FileManager extends ListActivity {
 		/*
 		 * Collect all of the files in the unuploaded directory
 		 */
-		final String[] files = path.list();
+		final CheckListEntry[] entries = getCheckListEntries(path);
+		Log.d(TAG, "\tFound " + entries.length + " entries.");
 
 		/*
 		 * Build a map for each unuploaded file. The Boolean parameter is never
 		 * used.
 		 */
-		if (files != null) {
-			for (final String s : files) {
+		if (entries != null) {
+			for (final CheckListEntry s : entries) {
 				final Map<String, Boolean> item = new HashMap<String, Boolean>();
-				item.put(s, false);
+				item.put(s.filename, s.checked);
 				listItems.add(item);
 			}
 		}
@@ -213,88 +230,7 @@ public class FileManager extends ListActivity {
 		 * Add a footer with the delete and cancel buttons.
 		 */
 		final ListView listView = getListView();
-		final View footerView = getLayoutInflater().inflate(
-				R.layout.file_check_list_footer, listView, false);
-		final Button deleteButton = (Button) footerView
-				.findViewById(R.id.footer_delete_button);
-		final Button closeButton = (Button) footerView
-				.findViewById(R.id.footer_close_button);
-
-		/*
-		 * This does the work of deleting the files, and is called after the
-		 * delete prompt is shown, whether the user clicks YES or NO
-		 */
-		final DialogInterface.OnClickListener deleteUnUploadedFiles = new DialogInterface.OnClickListener() {
-
-			@Override
-			public void onClick(final DialogInterface dialog, final int which) {
-				switch (which) {
-				case DialogInterface.BUTTON_POSITIVE:
-					final String[] filesToDelete = checkList.getCheckedFiles();
-					for (final String fname : filesToDelete) {
-						final File f = new File(fname);
-						if (f.exists()) {
-							Log.d("HSFileManager", "Deleting file "
-									+ f.getName());
-							f.delete();
-						}
-					}
-					/*
-					 * Alert the user once the files have been deleted.
-					 */
-					makeToast(getResources().getString(R.string.Deleted)
-							+ " "
-							+ filesToDelete.length
-							+ " "
-							+ (filesToDelete.length == 1 ? getResources()
-									.getString(R.string.file) : getResources()
-									.getString(R.string.files)) + ".",
-							Toast.LENGTH_SHORT);
-
-					finish();
-					break;
-
-				case DialogInterface.BUTTON_NEGATIVE:
-					break;
-				}
-			}
-		};
-
-		/*
-		 * Prompt the user before deleting the files
-		 */
-		final AlertDialog.Builder deletePrompt = new AlertDialog.Builder(this);
-		deletePrompt.setMessage(R.string.delete_files_warning)
-				.setPositiveButton(R.string.yes, deleteUnUploadedFiles)
-				.setNegativeButton(R.string.no, deleteUnUploadedFiles);
-
-		/*
-		 * Connect the delete button to the prompt, which then calls the
-		 * deleteUnUploaded dialog interface to do the real work
-		 */
-		deleteButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(final View v) {
-				final String[] filesToDelete = checkList.getCheckedFiles();
-				if (filesToDelete.length == 0) {
-					makeToast(getResources().getString(
-							R.string.no_files_to_delete), Toast.LENGTH_SHORT);
-					return;
-				}
-				deletePrompt.show();
-			}
-
-		});
-
-		/*
-		 * Set up the CLOSE button
-		 */
-		closeButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(final View v) {
-				finish();
-			}
-		});
+		final View footerView = getFooterView(listView, checkList);
 
 		/*
 		 * It is important that this is done before the checkList is set as the

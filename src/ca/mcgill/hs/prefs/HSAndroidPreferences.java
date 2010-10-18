@@ -51,8 +51,8 @@ public class HSAndroidPreferences extends PreferenceActivity {
 		c.sendBroadcast(i);
 	}
 
-	private final File path = FileManager.UPLOADED_FILES_DIRECTORY;
-	private final File recent = FileManager.RECENT_FILES_DIRECTORY;
+	private final File path = DeleteUnUploadedFileManager.UPLOADED_FILES_DIRECTORY;
+	private final File recent = DeleteUnUploadedFileManager.RECENT_FILES_DIRECTORY;
 	private int filesToDelete;
 
 	private int unuploadedFilesToDelete;
@@ -203,8 +203,9 @@ public class HSAndroidPreferences extends PreferenceActivity {
 		manageUnuploaded
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 					public boolean onPreferenceClick(final Preference preference) {
-						final Intent i = new Intent(getBaseContext(),
-								ca.mcgill.hs.prefs.FileManager.class);
+						final Intent i = new Intent(
+								getBaseContext(),
+								ca.mcgill.hs.prefs.DeleteUnUploadedFileManager.class);
 						startActivity(i);
 						return true;
 					}

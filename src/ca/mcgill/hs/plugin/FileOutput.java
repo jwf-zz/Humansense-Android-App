@@ -221,10 +221,10 @@ public class FileOutput extends OutputPlugin {
 	// Size of BufferedOutputStream buffer
 	private int bufferSize;
 
+	// Preference Keys
 	private static final String BUFFER_SIZE_KEY = "fileOutputBufferSize";
-
-	// Rollover Interval pref key
 	private static final String ROLLOVER_INTERVAL_KEY = "fileOutputRolloverInterval";
+	private static final String FILE_OUTPUT_LOG_SENSOR_DATA = "fileOutputLogSensorDataFlag";
 
 	/**
 	 * Returns the list of Preference objects for this OutputPlugin.
@@ -232,14 +232,14 @@ public class FileOutput extends OutputPlugin {
 	 * @return an array of the Preferences of this object.
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
-		final Preference[] prefs = new Preference[3];
+		final Preference[] prefs = new Preference[4];
 
 		prefs[0] = PreferenceFactory.getCheckBoxPreference(activity,
 				FILE_OUTPUT_ENABLED_PREF,
 				R.string.fileoutput_enable_pref_label,
 				R.string.fileoutput_enable_pref_summary,
 				R.string.fileoutput_enable_pref_on,
-				R.string.fileoutput_enable_pref_off);
+				R.string.fileoutput_enable_pref_off, false);
 		prefs[1] = PreferenceFactory.getListPreference(activity,
 				R.array.fileoutput_pref_buffer_size_strings,
 				R.array.fileoutput_pref_buffer_size_values,
@@ -252,6 +252,12 @@ public class FileOutput extends OutputPlugin {
 				FILE_ROLLOVER_INTERVAL_DEFAULT, ROLLOVER_INTERVAL_KEY,
 				R.string.fileoutput_rolloverinterval_pref,
 				R.string.fileoutput_rolloverinterval_pref_summary);
+		prefs[3] = PreferenceFactory.getCheckBoxPreference(activity,
+				FILE_OUTPUT_LOG_SENSOR_DATA,
+				R.string.fileoutput_log_sensor_data_pref_label,
+				R.string.fileoutput_log_sensor_data_pref_summary,
+				R.string.fileoutput_log_sensor_data_pref_on,
+				R.string.fileoutput_log_sensor_data_pref_off, true);
 
 		return prefs;
 	}
@@ -269,12 +275,12 @@ public class FileOutput extends OutputPlugin {
 	// stop.
 	private boolean pluginStopping;
 
+	// Boolean representing whether to log all sensor data
+	private boolean logSensorData;
+
 	// Semaphore counter for the number of threads currently executing data
 	// read/write operations.
 	private int numThreadsWriting;
-
-	// Keeps track of whether this plugin is enabled or not.
-	private boolean pluginEnabled;
 
 	// A boolean making sure we're not uselessly uploading.
 	private boolean hasRunOnce = false;
@@ -456,7 +462,7 @@ public class FileOutput extends OutputPlugin {
 		}
 		// Choose correct dataParse method based on the format of the data
 		// received.
-		if (id == SensorPacket.PACKET_ID) {
+		if (logSensorData && id == SensorPacket.PACKET_ID) {
 			dataParse((SensorPacket) packet, outputStream);
 		} else if (id == WifiPacket.PACKET_ID) {
 			dataParse((WifiPacket) packet, outputStream);
@@ -477,6 +483,7 @@ public class FileOutput extends OutputPlugin {
 				BUFFER_SIZE_DEFAULT));
 		rolloverInterval = Integer.parseInt(prefs.getString(
 				ROLLOVER_INTERVAL_KEY, FILE_ROLLOVER_INTERVAL_DEFAULT));
+		logSensorData = prefs.getBoolean(FILE_OUTPUT_LOG_SENSOR_DATA, true);
 	}
 
 	/**
@@ -500,20 +507,13 @@ public class FileOutput extends OutputPlugin {
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(
 				FILE_OUTPUT_ENABLED_PREF, false);
-		if (pluginEnabled && !pluginEnabledNew) {
-			stopPlugin();
-			pluginEnabled = pluginEnabledNew;
-		} else if (!pluginEnabled && pluginEnabledNew) {
-			pluginEnabled = pluginEnabledNew;
-			startPlugin();
-		}
-
 		rolloverInterval = Integer.parseInt(prefs.getString(
 				ROLLOVER_INTERVAL_KEY, FILE_ROLLOVER_INTERVAL_DEFAULT));
 		rolloverTimestamp = initialTimestamp + rolloverInterval;
-
 		bufferSize = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY,
 				BUFFER_SIZE_DEFAULT));
+		logSensorData = prefs.getBoolean(FILE_OUTPUT_LOG_SENSOR_DATA, true);
+		super.changePluginEnabledStatus(pluginEnabledNew);
 	}
 
 }

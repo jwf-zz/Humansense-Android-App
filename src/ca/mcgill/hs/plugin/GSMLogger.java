@@ -83,7 +83,7 @@ public final class GSMLogger extends InputPlugin {
 				GSM_LOGGER_ENABLE_PREF, R.string.gsmlogger_enable_pref_label,
 				R.string.gsmlogger_enable_pref_summary,
 				R.string.gsmlogger_enable_pref_on,
-				R.string.gsmlogger_enable_pref_off);
+				R.string.gsmlogger_enable_pref_off, false);
 
 		return prefs;
 	}
@@ -96,12 +96,6 @@ public final class GSMLogger extends InputPlugin {
 	public static boolean hasPreferences() {
 		return true;
 	}
-
-	// Keeps track of whether this plugin is enabled or not.
-	private boolean pluginEnabled;
-
-	// The Context used for the plugins.
-	// private static Context context;
 
 	// The TelephonyManager required to receive information about the device.
 	private final TelephonyManager telephonyManager;
@@ -262,13 +256,7 @@ public final class GSMLogger extends InputPlugin {
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(
 				GSM_LOGGER_ENABLE_PREF, false);
-		if (pluginEnabled && !pluginEnabledNew) {
-			stopPlugin();
-			pluginEnabled = pluginEnabledNew;
-		} else if (!pluginEnabled && pluginEnabledNew) {
-			pluginEnabled = pluginEnabledNew;
-			startPlugin();
-		}
+		super.changePluginEnabledStatus(pluginEnabledNew);
 	}
 
 }

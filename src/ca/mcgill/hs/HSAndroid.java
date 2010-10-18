@@ -31,12 +31,17 @@ public class HSAndroid extends Activity {
 
 	private boolean autoStartAppStart = false;
 	public static final String HSANDROID_PREFS_NAME = "HSAndroidPrefs";
+	private static Context context = null;
 
 	private static final int MENU_SETTINGS = 13371337;
 	private static final int MENU_UPLOAD = 13371338;
 
 	@SuppressWarnings("unused")
 	private static final String TAG = "HSAndroid";
+
+	public static String getAppString(final int resId) {
+		return context.getString(resId);
+	}
 
 	/**
 	 * Updates the main starting button. This is required due to the nature of
@@ -69,7 +74,7 @@ public class HSAndroid extends Activity {
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		final Context context = getApplicationContext();
+		context = getApplicationContext();
 		PreferenceFactory.setContext(context);
 		PluginFactory.setContext(context);
 		HSService.initializeInputPlugins();

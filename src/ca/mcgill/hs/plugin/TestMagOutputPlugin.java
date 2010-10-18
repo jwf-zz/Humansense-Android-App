@@ -16,6 +16,10 @@ public final class TestMagOutputPlugin extends OutputPlugin {
 	public static final String PLUGIN_NAME = "TestMagOutput";
 	public static final int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
+	private static final int MAX_INDEX = 100;
+
+	private static final String PLUGIN_ACTIVE_KEY = "testMagOutputEnable";
+
 	/**
 	 * Returns the list of Preference objects for this OutputPlugin.
 	 * 
@@ -28,7 +32,7 @@ public final class TestMagOutputPlugin extends OutputPlugin {
 				PLUGIN_ACTIVE_KEY, R.string.testmagoutput_enable_pref_label,
 				R.string.testmagoutput_enable_pref_summary,
 				R.string.testmagoutput_enable_pref_on,
-				R.string.testmagoutput_enable_pref_off);
+				R.string.testmagoutput_enable_pref_off, false);
 		return prefs;
 	}
 
@@ -40,13 +44,6 @@ public final class TestMagOutputPlugin extends OutputPlugin {
 	public static boolean hasPreferences() {
 		return true;
 	}
-
-	// Keeps track of whether this plugin is enabled or not.
-	private boolean pluginEnabled;
-
-	private static final int MAX_INDEX = 100;
-
-	private static final String PLUGIN_ACTIVE_KEY = "testMagOutputEnable";
 
 	private final float[] magValues = new float[MAX_INDEX];
 
@@ -167,13 +164,6 @@ public final class TestMagOutputPlugin extends OutputPlugin {
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(PLUGIN_ACTIVE_KEY,
 				false);
-		if (pluginEnabled && !pluginEnabledNew) {
-			stopPlugin();
-			pluginEnabled = pluginEnabledNew;
-		} else if (!pluginEnabled && pluginEnabledNew) {
-			pluginEnabled = pluginEnabledNew;
-			startPlugin();
-		}
+		super.changePluginEnabledStatus(pluginEnabledNew);
 	}
-
 }

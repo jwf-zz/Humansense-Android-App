@@ -12,7 +12,7 @@ public final class PluginFactory {
 	private static final Map<Class<? extends OutputPlugin>, OutputPlugin> outputPlugins = new HashMap<Class<? extends OutputPlugin>, OutputPlugin>();
 	private final static Class<?>[] outputPluginClasses = { FileOutput.class,
 			ScreenOutput.class, TestMagOutputPlugin.class,
-			SimpleClassifierPlugin.class, LocationClusterer.class };
+			TDEClassifierPlugin.class, LocationClusterer.class };
 
 	private static final Map<Class<? extends InputPlugin>, InputPlugin> inputPlugins = new HashMap<Class<? extends InputPlugin>, InputPlugin>();
 	private final static Class<?>[] inputPluginClasses = {

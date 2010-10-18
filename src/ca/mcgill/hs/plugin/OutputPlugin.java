@@ -37,6 +37,19 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	// before the previous one can be handled.
 	private final LinkedList<DataPacket> packetList = new LinkedList<DataPacket>();
 
+	protected boolean pluginEnabled;
+
+	protected void changePluginEnabledStatus(
+			final boolean newPluginEnabledStatus) {
+		if (pluginEnabled && !newPluginEnabledStatus) {
+			stopPlugin();
+			pluginEnabled = newPluginEnabledStatus;
+		} else if (!pluginEnabled && newPluginEnabledStatus) {
+			pluginEnabled = newPluginEnabledStatus;
+			startPlugin();
+		}
+	}
+
 	/**
 	 * Called when a DataPacket is sent from an InputPlugin. Adds the DataPacket
 	 * that is now ready to dpList.

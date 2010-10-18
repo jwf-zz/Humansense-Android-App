@@ -88,6 +88,16 @@ public class PreferenceFactory {
 		return root;
 	}
 
+	public static Preference getButtonPreference(
+			final PreferenceActivity activity, final String key,
+			final int titleResId, final int summaryDefResId) {
+		final Preference buttonPref = new Preference(activity);
+		buttonPref.setKey(key);
+		buttonPref.setTitle(titleResId);
+		buttonPref.setSummary(summaryDefResId);
+		return buttonPref;
+	}
+
 	/**
 	 * Returns a CheckBoxPreference preference specified by the parameters. This
 	 * method does not use resource IDs for its parameters.
@@ -111,7 +121,8 @@ public class PreferenceFactory {
 	public static CheckBoxPreference getCheckBoxPreference(
 			final PreferenceActivity activity, final String key,
 			final int titleResId, final int summaryDefResId,
-			final int summaryOnResId, final int summaryOffResId) {
+			final int summaryOnResId, final int summaryOffResId,
+			final boolean defaultValue) {
 		final CheckBoxPreference cbp = new CheckBoxPreference(activity);
 
 		cbp.setKey(key);
@@ -119,6 +130,7 @@ public class PreferenceFactory {
 		cbp.setSummary(summaryDefResId);
 		cbp.setSummaryOn(summaryOnResId);
 		cbp.setSummaryOff(summaryOffResId);
+		cbp.setDefaultValue(defaultValue);
 
 		cbp.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			public boolean onPreferenceChange(final Preference preference,
@@ -155,7 +167,8 @@ public class PreferenceFactory {
 	public static CheckBoxPreference getCheckBoxPreference(
 			final PreferenceActivity activity, final String key,
 			final String title, final String summaryDef,
-			final String summaryOn, final String summaryOff) {
+			final String summaryOn, final String summaryOff,
+			final boolean defaultValue) {
 		final CheckBoxPreference cbp = new CheckBoxPreference(activity);
 
 		cbp.setKey(key);
@@ -163,6 +176,7 @@ public class PreferenceFactory {
 		cbp.setSummary(summaryDef);
 		cbp.setSummaryOn(summaryOn);
 		cbp.setSummaryOff(summaryOff);
+		cbp.setDefaultValue(defaultValue);
 
 		cbp.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			public boolean onPreferenceChange(final Preference preference,

@@ -32,6 +32,9 @@
 
 	<!-- SimpleClassifierOutput plugin Strings -->
 	<string name="model_ini_path">hsandroidapp/models/models.ini</string>
+	<string name="models_path">hsandroidapp/models/</string>
+	<string name="manage_model_files_pref_title">Manage Model Files</string>
+	<string name="manage_model_files_pref_summary">Manage Model Files and choose which models to use for classification.</string>
 	
 	<!-- Object Strings -->
 	<string name="start_label">START SERVICE</string>
@@ -147,6 +150,7 @@
     <string name="sensorlogger_orientation_pref_on">Orientation Estimation is enabled.</string>
     <string name="sensorlogger_orientation_pref_off">Orientation Estimation is disabled.</string>
 
+
     <!--  WifiLogger plugin preferences -->
     <string name="wifilogger_enable_pref_label">Wifi Logging Plugin</string>
     <string name="wifilogger_enable_pref_summary">Enables or disables this plugin.</string>
@@ -174,6 +178,10 @@
     <string name="fileoutput_enable_pref_off">File output is off.</string>
     <string name="fileoutput_rolloverinterval_pref">File Rollover Interval</string>
     <string name="fileoutput_rolloverinterval_pref_summary">How often should new log files be started.</string>
+	<string name="fileoutput_log_sensor_data_pref_label">Log Sensor Data</string>
+    <string name="fileoutput_log_sensor_data_pref_summary">Log all sensor data (consumes a fair amount of disk space).</string>
+    <string name="fileoutput_log_sensor_data_pref_on">Sensor data logging is on.</string>
+    <string name="fileoutput_log_sensor_data_pref_off">Sensor data logging output is off.</string>
 
 	<!--  ScreenOutput plugin preferences -->
     <string name="screenoutput_enable_pref_label">Screen Output Plugin</string>

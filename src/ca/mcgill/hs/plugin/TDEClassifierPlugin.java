@@ -21,6 +21,11 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Xml;
+import android.widget.Button;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TableRow.LayoutParams;
+import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.classifiers.AccelerometerLingeringFilter;
 import ca.mcgill.hs.classifiers.LingeringNotificationWidget;
@@ -167,6 +172,8 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 
 	private final SharedPreferences prefs;
 
+	private TableRow buttonRow;
+
 	public TDEClassifierPlugin(final Context context) {
 		TDEClassifierPlugin.context = context;
 		prefs = PreferenceFactory.getSharedPreferences();
@@ -231,6 +238,36 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 			return;
 		}
 
+		// Set up the buttons on the main screen.
+		final TableLayout freeSpace = HSAndroid.getFreeSpace();
+
+		/* Create a new row to be added. */
+		buttonRow = new TableRow(context);
+		buttonRow.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,
+				LayoutParams.WRAP_CONTENT));
+
+		final Button buildButton = new Button(context);
+		buildButton.setPadding(5, 0, 5, 0);
+		buildButton.setText("Build");
+		buildButton.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,
+				LayoutParams.WRAP_CONTENT));
+
+		final Button classifyButton = new Button(context);
+		classifyButton.setLayoutParams(new LayoutParams(
+				LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+		classifyButton.setPadding(5, 0, 5, 0);
+		classifyButton.setText("Classify");
+
+		buttonRow.addView(buildButton);
+		buttonRow.addView(classifyButton);
+
+		/* Add row to TableLayout. */
+		freeSpace.addView(buttonRow, new TableLayout.LayoutParams(
+				LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+
+		Log.d(PLUGIN_NAME, "Added buttons! Freespace has "
+				+ freeSpace.getChildCount() + " childs");
+
 		final Thread t = new Thread() {
 			@Override
 			public void run() {
@@ -268,6 +305,10 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 
 	@Override
 	protected void onPluginStop() {
+		if (buttonRow != null) {
+			((TableLayout) buttonRow.getParent()).removeView(buttonRow);
+			buttonRow = null;
+		}
 		if (classifying) {
 			final Message msg = ClassifierThread.mHandler
 					.obtainMessage(QUIT_MESSAGE);

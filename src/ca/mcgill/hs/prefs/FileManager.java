@@ -94,9 +94,9 @@ public abstract class FileManager extends ListActivity {
 				 * R.layout.file_check_list is the layout for a single row in
 				 * the checkbox list
 				 */
-				final LayoutInflater inflater = (LayoutInflater) context
-						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-				v = inflater.inflate(R.layout.file_check_list, null);
+				v = ((LayoutInflater) context
+						.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+						.inflate(R.layout.file_check_list, null);
 			}
 			final CheckBox cBox = (CheckBox) v.findViewById(R.id.bcheck);
 

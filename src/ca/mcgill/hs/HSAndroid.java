@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TableLayout;
 import ca.mcgill.hs.plugin.PluginFactory;
 import ca.mcgill.hs.prefs.HSAndroidPreferences;
 import ca.mcgill.hs.prefs.PreferenceFactory;
@@ -32,6 +33,7 @@ public class HSAndroid extends Activity {
 	private boolean autoStartAppStart = false;
 	public static final String HSANDROID_PREFS_NAME = "HSAndroidPrefs";
 	private static Context context = null;
+	private static TableLayout freeSpace = null;
 
 	private static final int MENU_SETTINGS = 13371337;
 	private static final int MENU_UPLOAD = 13371338;
@@ -41,6 +43,10 @@ public class HSAndroid extends Activity {
 
 	public static String getAppString(final int resId) {
 		return context.getString(resId);
+	}
+
+	public static TableLayout getFreeSpace() {
+		return freeSpace;
 	}
 
 	/**
@@ -107,6 +113,7 @@ public class HSAndroid extends Activity {
 		// Sensor.sensors_module_init();
 
 		setContentView(R.layout.main);
+		freeSpace = (TableLayout) findViewById(R.id.free_space);
 
 		// Intent
 		serviceIntent = new Intent(this, HSService.class);

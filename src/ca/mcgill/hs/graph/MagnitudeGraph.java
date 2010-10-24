@@ -7,9 +7,18 @@ import ca.mcgill.hs.R;
 
 public class MagnitudeGraph extends Activity {
 
+	public static interface GraphClosedRunnable extends Runnable {
+		public void setLabelData(String label, float[] data);
+	}
+
+	private static final String TAG = "MagnitudeGraph";
 	// These are the values for the magnitude of the field.
-	private static float[] magValues = null;
+	private static Float[] magValues = null;
 	private static int[] magActivities = null;
+	private static boolean showLegendButton = true;
+	private static GraphClosedRunnable onGraphClosed = null;
+
+	private static boolean closeAfterOneActivity = false;
 
 	// This is the first timestamp, the START
 	private static long start = -1;
@@ -17,8 +26,21 @@ public class MagnitudeGraph extends Activity {
 	// This is the second timestamp, the END
 	private static long end = -1;
 
-	// MagnitudeGraphView
-	private MagnitudeGraphView mgv;
+	public static void disableCloseAfterOneActivity() {
+		closeAfterOneActivity = false;
+	}
+
+	public static void disableLegend() {
+		showLegendButton = false;
+	}
+
+	public static void enableCloseAfterOneActivity() {
+		closeAfterOneActivity = true;
+	}
+
+	public static void enableLegend() {
+		showLegendButton = true;
+	}
 
 	/**
 	 * This method sets the END timestamp. Both the START and END timestamps
@@ -29,6 +51,10 @@ public class MagnitudeGraph extends Activity {
 	 */
 	public static void setEndTimestamp(final long timestamp) {
 		end = timestamp;
+	}
+
+	public static void setOnGraphClosed(final GraphClosedRunnable runnable) {
+		onGraphClosed = runnable;
 	}
 
 	/**
@@ -47,13 +73,17 @@ public class MagnitudeGraph extends Activity {
 	 * method has to be called before the activity starts or else it doesn't
 	 * start.
 	 * 
-	 * @param values
+	 * @param magValues2
 	 *            The set of magnitude values required for this graph.
 	 */
-	protected static void setValues(final float[] values, final int[] activities) {
-		magValues = values;
+	public static void setValues(final Float[] magValues2,
+			final int[] activities) {
+		magValues = magValues2;
 		magActivities = activities;
 	}
+
+	// MagnitudeGraphView
+	private MagnitudeGraphView mgv;
 
 	/**
 	 * This method is called when the activity is first created. This method is
@@ -62,6 +92,7 @@ public class MagnitudeGraph extends Activity {
 	@Override
 	public void onCreate(final Bundle icicle) {
 		super.onCreate(icicle);
+		Log.d(TAG, "onCreate()");
 		if (magValues == null || start == -1 || end == -1 || start == end) {
 			Log
 					.e(
@@ -84,8 +115,9 @@ public class MagnitudeGraph extends Activity {
 		}
 
 		mgv = new MagnitudeGraphView(this, getResources().getString(
-				R.string.mag_graph_title), magValues, magActivities, start, end);
-
+				R.string.mag_graph_title), magValues, magActivities, start,
+				end, showLegendButton, closeAfterOneActivity, onGraphClosed);
+		onGraphClosed = null;
 		setContentView(mgv);
 	}
 
@@ -95,10 +127,10 @@ public class MagnitudeGraph extends Activity {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		Log.d(TAG, "onDestroy()");
 		magValues = null;
 		start = -1;
 		end = -1;
 		finish();
 	}
-
 }

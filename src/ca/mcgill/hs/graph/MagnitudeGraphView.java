@@ -40,14 +40,33 @@ import ca.mcgill.hs.util.ActivityIndex;
  * label activities.
  */
 public class MagnitudeGraphView extends View {
+	/**
+	 * Node class used only for storing labels and timestamps from this graph.
+	 * 
+	 * @author Cicerone Cojocaru
+	 * 
+	 */
+	public class Node {
+		public final String label;
+		public final long startTime;
+		public final long endTime;
+
+		private Node(final String label, final long startTime,
+				final long endTime) {
+			this.label = label;
+			this.startTime = startTime;
+			this.endTime = endTime;
+		}
+	}
+
 	// The title of the graph
 	private final String title;
-
 	// These are the values and the two timestamps that are given/required to
 	// draw the graph.
-	private final float[] values;
+	private final Float[] values;
 	private final int[] activities;
 	private final long start;
+
 	private final long end;
 
 	// List of the activities present in this data set, for faster lookup in
@@ -55,56 +74,69 @@ public class MagnitudeGraphView extends View {
 	private final int[] legendActs;
 
 	// Set of 16 colors used for legend drawing
-	private final int[] legendColors = { 0xFFFF0000, 0xFF00FF00, 0xFF0000FF,
-			0xFFFF8000, 0xFF00FFFF, 0xFF8000FF, 0xFFFFFF00, 0xFF339933,
-			0xFF0080FF, 0xFFF5B800, 0xFF80FF00, 0xFFFF0080, 0xFF00FF80,
-			0xFFFFFFFF, 0xFFB88A00, 0xFFFF00FF };
-
+	private final int[] legendColors = { 0x00000000, 0xFFFF0000, 0xFF00FF00,
+			0xFF0000FF, 0xFFFF8000, 0xFF00FFFF, 0xFF8000FF, 0xFFFFFF00,
+			0xFF339933, 0xFF0080FF, 0xFFF5B800, 0xFF80FF00, 0xFFFF0080,
+			0xFF00FF80, 0xFFFFFFFF, 0xFFB88A00, 0xFFFF00FF };
 	// These are Date objects relating to the start and end timestamps
 	private final Date startTime;
 	private final Date endTime;
+
 	private final SimpleDateFormat sdf;
 
 	// The Paint object used to paint lines, rectangles and text on the canvas.
 	private final Paint paint;
-
 	// These floats are used in order to calculate the appropriate scaling of
 	// the values.
 	private float max;
-	private float min;
 
+	private float min;
 	// These variables are used in order to correctly draw and label the
 	// activity selections.
 	private Rect tempRect;
+
 	private Rect legendRect;
+
+	private float legendBtnLeft;
+	private float legendBtnWidth;
+	private float legendBtnTop;
+	private float legendBtnHeight;
+
+	private float closeBtnLeft;
+	private float closeBtnWidth;
+	private float closeBtnTop;
+	private float closeBtnHeight;
+
+	private boolean showLegendButton = true;
 	private boolean legendOn;
+
 	private boolean possibleLegendPress;
 	private int originalLeft;
+
 	private String label;
 	private int minRectSize;
 	private final LinkedList<Rect> rectList = new LinkedList<Rect>();
 	private final LinkedList<Node> labels = new LinkedList<Node>();
-
 	// Get screen dimensions for this phone
 	private int height;
-	private int width;
 
+	private int width;
 	// Calculate graph edge locations
 	private int horizontalEdge;
-	private int verticalEdge;
 
+	private int verticalEdge;
 	// The net dimensions of the graph on screen
 	private int netGraphWidth;
-	private int netGraphHeight;
 
+	private int netGraphHeight;
 	// The vertical padding inside the graph
 	private int padding;
 
 	// Font sizes
 	private int titleSize;
+
 	private int axisTitleSize;
 	private int axisValueSize;
-
 	// X-axis jump factor, used if more data points than pixels
 	private int jumpFactor;
 
@@ -113,8 +145,8 @@ public class MagnitudeGraphView extends View {
 
 	// Trimmed array of data points, compressed from values using the jumpFactor
 	private float[] trimmedValues;
-	private int trimmedValuesLength;
 
+	private int trimmedValuesLength;
 	// Largest amplitude point
 	private float maxSpike;
 
@@ -128,7 +160,12 @@ public class MagnitudeGraphView extends View {
 	// calculations during onDraw()
 	private boolean instantiated;
 
+	// For retrieving a single label, set this to be true.
+	private boolean returnAfterFirstLabel = false;
+
 	private ActivityIndex indexOfActivities;
+
+	private MagnitudeGraph.GraphClosedRunnable onGraphClosed = null;
 
 	/**
 	 * The basic constructor for this object. This draws a graph with the
@@ -138,19 +175,23 @@ public class MagnitudeGraphView extends View {
 	 *            The context in which this View will be drawn.
 	 * @param title
 	 *            The graph title.
-	 * @param values
+	 * @param magValues
 	 *            The values which will be drawn in the graph.
 	 * @param start
 	 *            The start timestamp for the graph.
 	 * @param end
 	 *            The end timestamp for the graph.
+	 * @param closeAfterOneActivity
+	 * @param onGraphClosed2
 	 */
 	public MagnitudeGraphView(final Context context, final String title,
-			final float[] values, final int[] activities, final long start,
-			final long end) {
+			final Float[] magValues, final int[] activities, final long start,
+			final long end, final boolean showLegendButton,
+			final boolean closeAfterOneActivity,
+			final MagnitudeGraph.GraphClosedRunnable onGraphClosed) {
 		super(context);
 		this.title = title;
-		this.values = values;
+		this.values = magValues;
 		this.activities = activities;
 		this.start = start;
 		this.end = end;
@@ -159,8 +200,12 @@ public class MagnitudeGraphView extends View {
 		this.sdf = new SimpleDateFormat("H:mm:ss");
 		this.paint = new Paint();
 		paint.setAntiAlias(true);
-		this.max = values[0];
-		this.min = values[0];
+		this.max = magValues[0];
+		this.min = magValues[0];
+		this.showLegendButton = showLegendButton;
+		this.returnAfterFirstLabel = closeAfterOneActivity;
+		this.onGraphClosed = onGraphClosed;
+
 		instantiated = false;
 		this.indexOfActivities = null;
 		legendActs = new int[16];
@@ -168,14 +213,14 @@ public class MagnitudeGraphView extends View {
 			legendActs[i] = -1;
 		}
 		legendRect = null;
-		final boolean write = false;
+		final boolean write = true;
 		// Dummy code for testing only, used to generate a sample activity index
 		// file
 		if (write) {
-			final String[] acts = { "walking", "running", "jumping", "biking",
-					"driving", "sitting", "swimming", "nothing", "blah",
-					"failing", "writing", "talking", "standing", "sleeping",
-					"rollerblading", "kayaking" };
+			final String[] acts = { "no label", "walking", "running",
+					"jumping", "biking", "driving", "sitting", "swimming",
+					"nothing", "blah", "failing", "writing", "talking",
+					"standing", "sleeping", "rollerblading", "kayaking" };
 			final int[] codes = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8,
 					0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF };
 
@@ -273,6 +318,44 @@ public class MagnitudeGraphView extends View {
 		} else {
 			return false;
 		}
+	}
+
+	public void disableReturnAfterFirstLabel() {
+		returnAfterFirstLabel = false;
+	}
+
+	/**
+	 * Draws the close button.
+	 * 
+	 * @param canvas
+	 *            the canvas to draw on
+	 */
+	private void drawCloseButton(final Canvas canvas) {
+		// Draw the legend button
+		paint.setColor(Color.WHITE);
+
+		// final float legendBtnRight = width - width / 160.f;
+		// final float legendBtnBottom = height / 2.f + height / 13.f;
+		final float textPadding = 2.f;
+		final float cornerRadius = 5.f;
+		final RectF outerRect = new RectF(legendBtnLeft, legendBtnTop,
+				legendBtnLeft + legendBtnWidth, legendBtnTop + legendBtnHeight);
+		canvas.drawRoundRect(outerRect, cornerRadius, cornerRadius, paint);
+
+		paint.setColor(Color.BLACK);
+		final RectF innerRect = new RectF(legendBtnLeft + textPadding,
+				legendBtnTop + textPadding, legendBtnLeft + legendBtnWidth
+						- textPadding, legendBtnTop + legendBtnHeight
+						- textPadding);
+		canvas.drawRoundRect(innerRect, cornerRadius, cornerRadius, paint);
+
+		paint.setColor(Color.GREEN);
+		paint.setTextSize(axisTitleSize);
+		final float textX = width - horizontalEdge / 2.f;
+		final float textY = height / 2.f + height / 80.f - height / 13.f;
+		canvas
+				.drawText(getResources().getString(
+						R.string.mag_graph_close_label), textX, textY, paint);
 	}
 
 	/**
@@ -533,20 +616,28 @@ public class MagnitudeGraphView extends View {
 	private void drawLegendButton(final Canvas canvas) {
 		// Draw the legend button
 		paint.setColor(Color.WHITE);
-		RectF legendBtn = new RectF(width - horizontalEdge + width / 160,
-				height / 2 - height / 13, width - width / 160, height / 2
-						+ height / 13);
-		canvas.drawRoundRect(legendBtn, 5f, 5f, paint);
+
+		// final float legendBtnRight = width - width / 160.f;
+		// final float legendBtnBottom = height / 2.f + height / 13.f;
+		final float textPadding = 2.f;
+		final float cornerRadius = 5.f;
+		final RectF outerRect = new RectF(legendBtnLeft, legendBtnTop,
+				legendBtnLeft + legendBtnWidth, legendBtnTop + legendBtnHeight);
+		canvas.drawRoundRect(outerRect, cornerRadius, cornerRadius, paint);
+
 		paint.setColor(Color.BLACK);
-		legendBtn = new RectF(width - horizontalEdge + width / 160 + 2, height
-				/ 2 - height / 13 + 2, width - width / 160 - 2, height / 2
-				+ height / 13 - 2);
-		canvas.drawRoundRect(legendBtn, 5f, 5f, paint);
+		final RectF innerRect = new RectF(legendBtnLeft + textPadding,
+				legendBtnTop + textPadding, legendBtnLeft + legendBtnWidth
+						- textPadding, legendBtnTop + legendBtnHeight
+						- textPadding);
+		canvas.drawRoundRect(innerRect, cornerRadius, cornerRadius, paint);
+
 		paint.setColor(Color.GREEN);
 		paint.setTextSize(axisTitleSize);
+		final float textX = width - horizontalEdge / 2.f;
+		final float textY = height / 2.f + height / 80.f + 2.f * height / 13.f;
 		canvas.drawText(getResources().getString(
-				R.string.mag_graph_legend_label), width - horizontalEdge / 2,
-				height / 2 + height / 80, paint);
+				R.string.mag_graph_legend_label), textX, textY, paint);
 	}
 
 	/**
@@ -573,6 +664,20 @@ public class MagnitudeGraphView extends View {
 			canvas.drawLine(r.right + 1, r.bottom, r.right + 1, r.top, paint);
 		}
 		paint.setAntiAlias(true);
+	}
+
+	public void enableReturnAfterFirstLabel() {
+		returnAfterFirstLabel = true;
+	}
+
+	private boolean inCloseButton(final float x, final float y) {
+		return x >= closeBtnLeft && x <= closeBtnLeft + closeBtnWidth
+				&& y >= closeBtnTop && y <= closeBtnTop + closeBtnHeight;
+	}
+
+	private boolean inLegendButton(final float x, final float y) {
+		return x >= legendBtnLeft && x <= legendBtnLeft + legendBtnWidth
+				&& y >= legendBtnTop && y <= legendBtnTop + legendBtnHeight;
 	}
 
 	/**
@@ -617,6 +722,15 @@ public class MagnitudeGraphView extends View {
 
 		legendRect = new Rect(horizontalEdge + 1, verticalEdge + 1, width
 				- horizontalEdge - 1, height - verticalEdge - padding / 3);
+		legendBtnLeft = width - horizontalEdge + width / 160.f;
+		legendBtnWidth = horizontalEdge - 2.f * width / 160.f;
+		legendBtnTop = height / 2.f - 3.f * height / 13.f;
+		legendBtnHeight = 2.f * height / 13.f;
+
+		closeBtnLeft = width - horizontalEdge + width / 160.f;
+		closeBtnWidth = horizontalEdge - 2.f * width / 160.f;
+		closeBtnTop = height / 2.f + height / 13.f;
+		closeBtnHeight = 2.f * height / 13.f;
 
 		if (valuesLength > netGraphWidth) {
 			jumpFactor = (int) ((float) valuesLength / (float) netGraphWidth);
@@ -670,7 +784,10 @@ public class MagnitudeGraphView extends View {
 		drawRectangles(canvas);
 		drawGraph(canvas);
 		drawCurve(canvas);
+		// if (showLegendButton) {
 		drawLegendButton(canvas);
+		// }
+		drawCloseButton(canvas);
 
 		// If the legend button has been pressed, draw the legend
 		if (legendOn) {
@@ -691,9 +808,8 @@ public class MagnitudeGraphView extends View {
 		final int rightLimit = width - horizontalEdge - 1;
 		// Touch+drag rectangle code
 		if (action == MotionEvent.ACTION_DOWN) {
-			if (x >= width - horizontalEdge + width / 160
-					&& x <= width - width / 160 && y <= height / 2 + height / 8
-					&& y >= height / 2 - height / 8) {
+			possibleLegendPress = false;
+			if (showLegendButton && inLegendButton(x, y)) {
 				possibleLegendPress = true;
 			}
 			tempRect = new Rect((int) x, height - verticalEdge, (int) x,
@@ -718,10 +834,7 @@ public class MagnitudeGraphView extends View {
 				adjustRect();
 			}
 		} else if (action == MotionEvent.ACTION_UP) {
-			if (possibleLegendPress == true
-					&& x >= width - horizontalEdge + width / 160
-					&& x <= width - width / 160 && y <= height / 2 + height / 8
-					&& y >= height / 2 - height / 8) {
+			if (possibleLegendPress == true && inLegendButton(x, y)) {
 				if (legendOn == false) {
 					legendOn = true;
 				} else {
@@ -765,6 +878,7 @@ public class MagnitudeGraphView extends View {
 		final AlertDialog.Builder builder;
 		final LayoutInflater inflater = LayoutInflater.from(this.getContext());
 
+		final View thisView = this;
 		final View layout = inflater.inflate(R.layout.log_name_dialog,
 				(ViewGroup) findViewById(R.id.layout_root));
 		layout.setPadding(10, 10, 10, 10);
@@ -803,16 +917,41 @@ public class MagnitudeGraphView extends View {
 								}
 
 								rectList.add(tempRect);
-								long rectStart;
-								long rectEnd;
-								rectStart = tempRect.left;
-								rectEnd = tempRect.right;
-								rectStart = start
-										+ (long) (((float) rectStart / (float) netGraphWidth) * (end - start));
-								rectEnd = start
-										+ (long) (((float) rectStart / (float) netGraphWidth) * (end - start));
-								labels.add(new Node(label, rectStart, rectEnd));
+								final long rectStart = start
+										+ (long) (((float) tempRect.left / (float) netGraphWidth) * (end - start));
+								final long rectEnd = start
+										+ (long) (((float) tempRect.right / (float) netGraphWidth) * (end - start));
+								final int indexStart = (int) ((float) (rectStart - start)
+										/ (float) (end - start) * activities.length);
+								final int indexEnd = (int) ((float) (rectEnd - start)
+										/ (float) (end - start) * activities.length);
+								labels
+										.add(new Node(label, indexStart,
+												indexEnd));
 								tempRect = null;
+								if (returnAfterFirstLabel) {
+									if (onGraphClosed != null) {
+										// Log.d("MagnitudeGraphView", "Start: "
+										// + start + ", End: " + end
+										// + ", indexStart: " + indexStart
+										// + ", indexEnd: " + indexEnd
+										// + ", rectStart: " + rectStart
+										// + ", rectEnd: " + rectEnd);
+										final float[] data = new float[indexEnd
+												- indexStart + 1];
+										for (int i = 0; i < indexEnd
+												- indexStart + 1; i++) {
+											data[i] = values[i + indexStart];
+										}
+										onGraphClosed.setLabelData(label, data);
+										Log.d("MagnitudeGraphView", "Start: "
+												+ rectStart + ", End: "
+												+ rectEnd);
+										thisView.post(onGraphClosed);
+									}
+									((MagnitudeGraph) thisView.getContext())
+											.finish();
+								}
 								invalidate();
 							}
 						}).setNegativeButton(R.string.cancel,
@@ -824,24 +963,5 @@ public class MagnitudeGraphView extends View {
 							}
 						});
 		builder.show();
-	}
-
-	/**
-	 * Node class used only for storing labels and timestamps from this graph.
-	 * 
-	 * @author Cicerone Cojocaru
-	 * 
-	 */
-	public class Node {
-		public final String label;
-		public final long startTime;
-		public final long endTime;
-
-		private Node(final String label, final long startTime,
-				final long endTime) {
-			this.label = label;
-			this.startTime = startTime;
-			this.endTime = endTime;
-		}
 	}
 }

@@ -12,6 +12,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.util.Log;
+import ca.mcgill.hs.widget.LocationStatusWidget;
 
 public class MotionStateClusterer {
 	// Contains the timestamp for the observation as well as the index in the
@@ -227,18 +228,17 @@ public class MotionStateClusterer {
 			current_cluster = -1;
 			currentlyMoving = true;
 		}
-		final Date d = new Date(System.currentTimeMillis());
-		LocationStatusWidget.updateText("Update at: " + dfm.format(d)
-				+ "\nClustered " + clustered_points + " of " + pool_size
-				+ " points.\nCurrently in location: " + current_cluster + "\n",
-				currentlyMoving);
 		try {
 			if (outputLog != null) {
-				outputLog.write(dfm.format(d) + "," + current_cluster + "\n");
+				outputLog.write(dfm
+						.format(new Date(System.currentTimeMillis()))
+						+ "," + current_cluster + "\n");
 			}
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
+		LocationStatusWidget.updateWidget(clustered_points, pool_size,
+				current_cluster, currentlyMoving);
 	}
 
 	public void close() {

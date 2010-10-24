@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -14,6 +15,7 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.util.AttributeSet;
+import android.util.Log;
 import ca.mcgill.hs.plugin.Plugin;
 
 /**
@@ -22,6 +24,8 @@ import ca.mcgill.hs.plugin.Plugin;
 public class PreferenceFactory {
 
 	public static final String PREFERENCES_CHANGED_INTENT = "ca.mcgill.hs.HSAndroidApp.PREFERENCES_CHANGED_INTENT";
+
+	protected static final String TAG = "PreferenceFactory";
 
 	private static Context context = null;
 
@@ -188,6 +192,39 @@ public class PreferenceFactory {
 		});
 
 		return cbp;
+	}
+
+	public static Preference getEditTextPreference(
+			final PreferenceActivity activity, final String key,
+			final int titleResId, final int summaryDefResId,
+			final int dialogMessageResId, final int dialogTitleResId,
+			final String defaultValue) {
+		final EditTextPreference pref = new EditTextPreference(activity) {
+			@Override
+			protected void onDialogClosed(final boolean positiveResult) {
+				super.onDialogClosed(positiveResult);
+			}
+
+		};
+
+		pref.setKey(key);
+		pref.setTitle(titleResId);
+		pref.setSummary(summaryDefResId);
+		pref.setDialogMessage(dialogMessageResId);
+		pref.setDialogTitle(dialogTitleResId);
+		pref.setDefaultValue(defaultValue);
+
+		pref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			public boolean onPreferenceChange(final Preference preference,
+					final Object newValue) {
+				Log.d(TAG, "onPreferenceChanged");
+				pref.setText((String) newValue);
+				broadcastIntent(context);
+				return false;
+			}
+		});
+
+		return pref;
 	}
 
 	/**

@@ -23,7 +23,7 @@
 
 Classifier *classifier;
 
-void loadModels(const char* ms_file) {
+void loadModels(const char* ms_file, int numNeighbours, int matchSteps) {
 	NamedModel *model;
     FILE* models_file;
     FILE* model_file;
@@ -53,7 +53,7 @@ void loadModels(const char* ms_file) {
     		models->push_back(model);
     	}
     }
-    classifier = new Classifier(models);
+    classifier = new Classifier(models, (uint)numNeighbours, (uint)matchSteps);
     __android_log_print(ANDROID_LOG_DEBUG, HS_TAG, "Loaded %d models.", classifier->getNumModels());
     __android_log_print(ANDROID_LOG_DEBUG, HS_TAG, "Window Size is %d.", classifier->getWindowSize());
 }

@@ -26,7 +26,7 @@ public class NewActivityNotificationLauncher extends Service {
 	// beforehand.
 	private static long start = -1;
 	private static long end = -1;
-	private static float[] magValues = null;
+	private static Float[] magValues = null;
 	private static int[] magActivities = null;
 
 	// Notification ID, randomly chosen
@@ -46,11 +46,11 @@ public class NewActivityNotificationLauncher extends Service {
 	/**
 	 * This method sets the magValues.
 	 * 
-	 * @param values
+	 * @param data
 	 *            An array of floats for the magnitude values.
 	 */
-	public static void setMagValues(final float[] values, final int[] activities) {
-		magValues = values;
+	public static void setMagValues(final Float[] data, final int[] activities) {
+		magValues = data;
 		magActivities = activities;
 	}
 

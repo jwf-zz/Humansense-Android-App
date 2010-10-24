@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/location_labeler_main_layout"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content">
+  	<TextView
+		android:id="@+id/location_labeler_top_text"
+		android:gravity="center_horizontal"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content" 
+	/>
+</LinearLayout>

@@ -7,6 +7,7 @@
     <!--  Widget Strings -->
     <string name="lingering_notification_widget_name">Lingering Notification</string>
     <string name="location_status_widget_name">Location Status</string>
+    <string name="location_labeler_dialog_label">Location Labeler</string>
     
     <!--  Notification Strings -->
     <string name="notification_ticker">Humansense</string>
@@ -29,13 +30,18 @@
     <string name="mag_graph_label_hint">Enter an activity (e.g. jogging)</string>
     <string name="mag_graph_incorrect_input_toast">Please enter letters, dashes and apostrophes only.</string>
 	<string name="mag_graph_legend_label">Legend</string>
+	<string name="mag_graph_close_label">Close</string>
 
-	<!-- SimpleClassifierOutput plugin Strings -->
+	<!-- TDEClassifier plugin Strings -->
 	<string name="model_ini_path">hsandroidapp/models/models.ini</string>
 	<string name="models_path">hsandroidapp/models/</string>
 	<string name="manage_model_files_pref_title">Manage Model Files</string>
 	<string name="manage_model_files_pref_summary">Manage Model Files and choose which models to use for classification.</string>
-	
+	<string name="start_building_button_text">Build</string>
+	<string name="stop_building_button_text">Stop Building</string>
+	<string name="start_classifying_button_text">Classify</string>
+	<string name="stop_classifying_button_text">Stop Classifying</string>
+
 	<!-- Object Strings -->
 	<string name="start_label">START SERVICE</string>
 	<string name="started_notification_text">Service Started</string>
@@ -206,6 +212,14 @@
     <string name="accelerometerLingeringWindow">Lingering Power Window</string>
     <string name="accelerometerLingeringWindowDefault">25</string>
     <string name="accelerometerLingeringWindowSummary">The number of samples to consider for lingering classification.</string>
+    <string name="simpleclassifier_enable_remote_logging_pref_label">Log to Remote Server</string>
+    <string name="simpleclassifier_enable_remote_logging_pref_summary">Send classification results to a remote log server.</string>
+    <string name="simpleclassifier_enable_remote_logging_pref_on">Remote Logging is enabled.</string>
+    <string name="simpleclassifier_enable_remote_logging_pref_off">Remote Logging is disabled.</string>
+    <string name="simpleclassifier_remote_logging_host_pref_label">Log to Remote Server</string>
+    <string name="simpleclassifier_remote_logging_host_pref_summary">Send classification results to a remote log server.</string>
+    <string name="simpleclassifier_remote_logging_host_pref_dialogmsg">Enter the username and hostname to connect to. Should be of the form: username@hostname.</string>
+    <string name="simpleclassifier_remote_logging_host_pref_dialogtitle">Remote Logging Server</string>
 
     <!--  Notification-related preferences -->    
     <string name="notification_prefs_cat">Notification Settings</string>

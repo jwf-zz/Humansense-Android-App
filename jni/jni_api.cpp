@@ -38,12 +38,12 @@ NATIVE_CLASSIFIER_CALL(void, annClose)(JNIEnv* env, jobject obj) {
 	annClose();
 }
 
-NATIVE_CLASSIFIER_CALL(void, classifyTrajectory)(JNIEnv* env, jobject obj, jstring inputFile, jstring outputFile, jstring modelsFile) {
+NATIVE_CLASSIFIER_CALL(void, classifyTrajectory)(JNIEnv* env, jobject obj, jstring inputFile, jstring outputFile, jstring modelsFile, jint numNeighbours, jint matchSteps) {
 	const char *fin_name = env->GetStringUTFChars(inputFile, 0);
 	const char *fout_name = env->GetStringUTFChars(outputFile, 0);
 	const char *fmodel_name = env->GetStringUTFChars(modelsFile, 0);
 
-	loadModels(fmodel_name);
+	loadModels(fmodel_name, numNeighbours, matchSteps);
 	classifyTrajectory(fin_name, fout_name);
 	cleanUpModels();
 
@@ -60,10 +60,10 @@ NATIVE_CLASSIFIER_CALL(void, buildTree)(JNIEnv* env, jobject obj, jstring inputF
 	env->ReleaseStringUTFChars(inputFile, in_file);
 }
 
-NATIVE_CLASSIFIER_CALL(void, loadModels)(JNIEnv* env, jobject obj, jstring modelsFile) {
+NATIVE_CLASSIFIER_CALL(void, loadModels)(JNIEnv* env, jobject obj, jstring modelsFile, jint numNeighbours, jint matchSteps) {
 	const char *fmodel_name = env->GetStringUTFChars(modelsFile, 0);
 
-	loadModels(fmodel_name);
+	loadModels(fmodel_name, numNeighbours, matchSteps);
 
 	env->ReleaseStringUTFChars(modelsFile, fmodel_name);
 }
@@ -121,14 +121,14 @@ NATIVE_CLASSIFIER_CALL(void, classifySample)(JNIEnv* env, jobject obj, jfloatArr
 	CvMat *dists;
 	data = new ANNcoord*[M];
 	for (i = 0; i < M; i++ ) {
-		data[i] = classifier->getProjectedData(i, sample+startIndex, Classifier::MATCH_STEPS+1);
+		data[i] = classifier->getProjectedData(i, sample+startIndex, classifier->getMatchSteps()+1);
 		/*
 		__android_log_print(ANDROID_LOG_DEBUG, HS_TAG, "%G %G %G %G %G",
 				data[i][0], data[i][1], data[i][2], data[i][3], data[i][4]);
 		*/
 	}
 
-	probs = classifier->classify(data, Classifier::MATCH_STEPS);
+	probs = classifier->classify(data, classifier->getMatchSteps());
 	// Use JNI_ABORT because this array was read-only
 	env->ReleasePrimitiveArrayCritical(in, sample, JNI_ABORT);
 

@@ -46,7 +46,8 @@ public class NativeClassifier {
 	public native int getWindowSize();
 
 	// Loads models from models_file.
-	public native void loadModels(String models_file);
+	public native void loadModels(String models_file, int numNeighbours,
+			int matchSteps);
 
 	public native void setAlgorithmNumber(int algNum);
 

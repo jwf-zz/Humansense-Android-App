@@ -21,7 +21,7 @@ public:
 	virtual ~ClassifyTrajectory();
 };
 
-void loadModels(const char* ms_file);
+void loadModels(const char* ms_file, int numNeighbours=2, int matchSteps=16);
 void classifyTrajectory(const char* in_file, const char* out_file);
 void cleanUpModels();
 

@@ -36,6 +36,11 @@ public class TimeDelayEmbeddingClassifier {
 		return index;
 	}
 
+	public void buildModel(final String modelFile, final int m, final int p,
+			final int d) {
+		nativeClassifier.buildTree(modelFile, m, p, d);
+	}
+
 	public float[] classify(final int index) {
 		if (index < bufferMidPoint) {
 			return null;
@@ -63,13 +68,21 @@ public class TimeDelayEmbeddingClassifier {
 		nativeClassifier.annClose();
 	}
 
+	/**
+	 * Gets the loaded model names as a tab-separated list.
+	 * 
+	 * @return A tab-separated list of model names.
+	 */
+	public String getLoadedModelNames() {
+		return nativeClassifier.getModelNames();
+	}
+
 	public int getNumModels() {
-		// TODO Auto-generated method stub
 		return nativeClassifier.getNumModels();
 	}
 
 	public void loadModels(final File models) {
-		nativeClassifier.loadModels(models.getAbsolutePath());
+		nativeClassifier.loadModels(models.getAbsolutePath(), 2, 16);
 		nativeClassifier.setAlgorithmNumber(1);
 
 		// Prepare the buffer

@@ -45,7 +45,7 @@ public final class TestMagOutputPlugin extends OutputPlugin {
 		return true;
 	}
 
-	private final float[] magValues = new float[MAX_INDEX];
+	private final Float[] magValues = new Float[MAX_INDEX];
 
 	private final int[] magActivities = new int[MAX_INDEX];
 	private int index;

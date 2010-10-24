@@ -11,11 +11,13 @@
 #include "ClassifyTrajectory.h"
 #include "Classifier.h"
 
-Classifier::Classifier(std::vector<NamedModel*> *models) {
+Classifier::Classifier(std::vector<NamedModel*> *models, uint numNeighbours, uint matchSteps) {
 	int pcaembdim, i, W;
 	TDEModel *model;
 	windowSize = 0;
 	algorithm = 1; // Default to first algorithm
+	this->numNeighbours = numNeighbours;
+	this->matchSteps = matchSteps;
 	if (models == NULL) {
 		this->models = NULL;
 		this->numModels = 0;
@@ -30,15 +32,15 @@ Classifier::Classifier(std::vector<NamedModel*> *models) {
 		nnn = new CvMat*[numModels];
 		for (i = 0; i < numModels; i++) {
 			model = (*models)[i]->model;
-			W = (model->getEmbDim() - 1) * model->getDelay() + MATCH_STEPS + 1;
+			W = (model->getEmbDim() - 1) * model->getDelay() + matchSteps + 1;
 			if (W > windowSize)
 				windowSize = W;
 			pcaembdim = model->getPCAEmbDim();
 			navg[i] = cvCreateMat(1, pcaembdim, MAT_TYPE);
 			navg_next[i] = cvCreateMat(1, pcaembdim, MAT_TYPE);
 			proj_next[i] = cvCreateMat(1, pcaembdim, MAT_TYPE);
-			nn[i] = cvCreateMat(NEIGHBOURS, pcaembdim, MAT_TYPE);
-			nnn[i] = cvCreateMat(NEIGHBOURS, pcaembdim, MAT_TYPE);
+			nn[i] = cvCreateMat(numNeighbours, pcaembdim, MAT_TYPE);
+			nnn[i] = cvCreateMat(numNeighbours, pcaembdim, MAT_TYPE);
 		}
 	}
 }
@@ -67,11 +69,19 @@ Classifier::~Classifier() {
 	}
 }
 
-int Classifier::getNumModels() {
+uint Classifier::getNumModels() {
 	return numModels;
 }
 
-int Classifier::getWindowSize() {
+uint Classifier::getNumNeighbours() {
+	return numNeighbours;
+}
+
+uint Classifier::getMatchSteps() {
+	return matchSteps;
+}
+
+uint Classifier::getWindowSize() {
 	return windowSize;
 }
 
@@ -120,38 +130,38 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 	char* model_name;
 	ANNcoord *projected_data;
 	ANNpointArray ap;
-	ANNidx nn_idx[NEIGHBOURS + extra_neighbours + 1];
-	ANNdist dists[NEIGHBOURS + extra_neighbours + 1];
+	ANNidx nn_idx[numNeighbours + extra_neighbours + 1];
+	ANNdist dists[numNeighbours + extra_neighbours + 1];
 	ANNdist mdist;
 	CvMat p, np, *mdists;
 	uint i, j, k, l, a, pcaembdim;
 	uint N;
 	ANNdist dist, dist_next, *dst, l1, l2;
 	ANNcoord *p1, *p2, *p3, *p4, *p5, interpcoeff;
-	mdists = cvCreateMat(length - MATCH_STEPS + 1, M, MAT_TYPE);
+	mdists = cvCreateMat(length - matchSteps + 1, M, MAT_TYPE);
 	cvZero(mdists);
 
-	for (i = 0; i < length - MATCH_STEPS + 1; i++) {
+	for (i = 0; i < length - matchSteps + 1; i++) {
 		for (k = 0; k < M; k++) {
 			model = (*models)[k]->model;
 			model_name = (*models)[k]->name;
 			N = model->getLength();
 			pcaembdim = model->getPCAEmbDim();
 			mdist = 0.0;
-			ap = annAllocPts(MATCH_STEPS+1,pcaembdim);
-			convert_to_ann_points(ap, data[k] + i * pcaembdim, MATCH_STEPS + 1, pcaembdim);
+			ap = annAllocPts(matchSteps+1,pcaembdim);
+			convert_to_ann_points(ap, data[k] + i * pcaembdim, matchSteps + 1, pcaembdim);
 			if (algorithm == 1) {
 				// Get the next MATCH_STEP+1 data points, and convert them to the appropriate
 				// format, stored in ap.
-				for (j = 0; j < MATCH_STEPS; j++) {
-					model->getKNN(ap[j], NEIGHBOURS + 1, nn_idx, dists);
-					for (l = 0; l < NEIGHBOURS; l++) {
+				for (j = 0; j < matchSteps; j++) {
+					model->getKNN(ap[j], numNeighbours + 1, nn_idx, dists);
+					for (l = 0; l < numNeighbours; l++) {
 
-						// Make sure none of the first NEIGHBOURS neighbours is N
+						// Make sure none of the first numNeighbours neighbours is N
 						if (nn_idx[l] == ANN_NULL_IDX)
 							break;
 						else if ((uint) nn_idx[l] == N - 1)
-							nn_idx[l] = nn_idx[NEIGHBOURS];
+							nn_idx[l] = nn_idx[numNeighbours];
 
 						// p1 and p2 are just pointers to the data in nn and nnn, respectively.
 						p1 = (ANNcoord*) (nn[k]->data.ptr + l * nn[k]->step);
@@ -167,8 +177,8 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 							*p2++ = *p4++;
 						}
 					}
-					if (l < NEIGHBOURS) {
-						HS_LOG2("Couldn't find enough neighbours (found: %d, required: %d).", l, NEIGHBOURS);
+					if (l < numNeighbours) {
+						HS_LOG2("Couldn't find enough neighbours (found: %d, required: %d).", l, numNeighbours);
 					}
 
 					// Computes the mean of the nearest neighbours.
@@ -212,20 +222,20 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 			}
 			else if (algorithm == 2) {
 				// Just get the nearest neighbour of the first point.
-				model->getKNN(ap[0], NEIGHBOURS + extra_neighbours + 1, nn_idx, dists);
-				for (j = 0; j < MATCH_STEPS; j++) {
-					for (l = 0; l < NEIGHBOURS; l++) {
-						// Make sure none of the first NEIGHBOURS neighbours is N
+				model->getKNN(ap[0], numNeighbours + extra_neighbours + 1, nn_idx, dists);
+				for (j = 0; j < matchSteps; j++) {
+					for (l = 0; l < numNeighbours; l++) {
+						// Make sure none of the first numNeighbours neighbours is N
 						if (nn_idx[l] == ANN_NULL_IDX) {
 							break;
 						}
 						a = 0;
-						while ((uint)nn_idx[l] > N-MATCH_STEPS-1) {
+						while ((uint)nn_idx[l] > N-matchSteps-1) {
 //							__android_log_print(
 //									ANDROID_LOG_DEBUG,
 //									HS_TAG,
 //									"Bad neighbour %d.", nn_idx[l]);
-							nn_idx[l] = nn_idx[NEIGHBOURS+a++];
+							nn_idx[l] = nn_idx[numNeighbours+a++];
 							if (a >= extra_neighbours) {
 								HS_LOG("Couldn't find enough good neighbours.");
 								nn_idx[l] = 0;
@@ -247,8 +257,8 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 							*p2++ = *p4++;
 						}
 					}
-					if (l < NEIGHBOURS) {
-						HS_LOG2("Couldn't find enough neighbours (found: %d, required: %d).", l, NEIGHBOURS);
+					if (l < numNeighbours) {
+						HS_LOG2("Couldn't find enough neighbours (found: %d, required: %d).", l, numNeighbours);
 					}
 
 					// Computes the mean of the nearest neighbours.
@@ -294,15 +304,15 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 			else if (algorithm == 3) {
 				// Try to reduce score variance by taking account distance from
 				// line segments when constructing expected next points.
-				for (j = 0; j < MATCH_STEPS; j++) {
-					model->getKNN(ap[j], NEIGHBOURS+extra_neighbours+1, nn_idx, dists);
+				for (j = 0; j < matchSteps; j++) {
+					model->getKNN(ap[j], numNeighbours+extra_neighbours+1, nn_idx, dists);
 
-					for (l = 0; l < NEIGHBOURS; l++) {
+					for (l = 0; l < numNeighbours; l++) {
 						// Make sure none of the first neighbours is N, 0, or invalid.
 						if (nn_idx[l] == ANN_NULL_IDX) break;
 						a = 0;
 						while ((uint)nn_idx[l] >= N-3 || (uint)nn_idx[l] == 0) {
-							nn_idx[l] = nn_idx[NEIGHBOURS+a++];
+							nn_idx[l] = nn_idx[numNeighbours+a++];
 							if (a >= extra_neighbours) {
 								HS_LOG("Couldn't find enough good neighbours.");
 								nn_idx[l] = 0;
@@ -340,7 +350,7 @@ CvMat* Classifier::classify(ANNcoord** data, ulong length) {
 							p3++; p4++; p5++;
 						}
 					}
-					if (l < NEIGHBOURS)
+					if (l < numNeighbours)
 						HS_LOG("Couldn't find enough good neighbours.");
 
 					// Computes the mean of the nearest neighbours.

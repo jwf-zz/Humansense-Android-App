@@ -16,14 +16,14 @@
 class Classifier {
 
 private:
-	int numModels, windowSize;
-	int algorithm;
-
+	uint numModels, windowSize;
+	uint algorithm;
+	uint numNeighbours, matchSteps;
+	const static int DEFAULT_NEIGHBOURS = 2;
+	const static int DEFAULT_MATCH_STEPS = 16;
 public:
-	const static int NEIGHBOURS = 2;
-	const static int MATCH_STEPS = 16;
 
-	Classifier(std::vector<NamedModel*> *models);
+	Classifier(std::vector<NamedModel*> *models, uint numNeighbours=DEFAULT_NEIGHBOURS, uint matchSteps=DEFAULT_MATCH_STEPS);
 	virtual ~Classifier();
 
 	void classifyAndSave(ANNcoord** data, ulong length, FILE *fout);
@@ -34,8 +34,12 @@ public:
 	// length should be the number of "rows" that are expected,
 	// not the length of the input.
 	ANNcoord* getProjectedData(int model, ANNcoord* input, int length);
-	int getNumModels();
-	int getWindowSize();
+
+	uint getNumModels();
+	uint getWindowSize();
+	uint getNumNeighbours();
+	uint getMatchSteps();
+
 	void setAlgorithmNumber(int alg);
 	char* getModelNames();
 

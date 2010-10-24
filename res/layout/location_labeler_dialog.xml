@@ -3,11 +3,40 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/location_labeler_main_layout"
 	android:layout_width="wrap_content"
-	android:layout_height="wrap_content">
+	android:layout_height="wrap_content"
+	android:orientation="vertical" >
   	<TextView
 		android:id="@+id/location_labeler_top_text"
 		android:gravity="center_horizontal"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content" 
 	/>
+	<EditText 
+		android:id="@+id/location_input_edittext" 
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:hint="@string/location_input_edittext_hint"
+		></EditText>
+	<TableLayout
+		android:stretchColumns="*" 
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+	>
+	<TableRow		
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:gravity="bottom"
+	>
+	<Button
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/location_input_ok_button"
+		android:text="@string/OK" />
+	<Button
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:id="@+id/location_input_cancel_button"
+		android:text="@string/cancel" />
+	</TableRow>
+	</TableLayout>
 </LinearLayout>

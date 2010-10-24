@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.util.Log;
@@ -22,6 +24,31 @@ import ca.mcgill.hs.prefs.PreferenceFactory;
  * locations that users have visited on multiple occasions.
  */
 public class LocationClusterer extends OutputPlugin {
+	public static class LocationDictionaryOpenHelper extends SQLiteOpenHelper {
+
+		private static final int DATABASE_VERSION = 1;
+		private static final String DATABASE_NAME = "LocationDictionary";
+		private static final String DICTIONARY_TABLE_NAME = "locations";
+		private static final String DICTIONARY_TABLE_CREATE = "CREATE TABLE "
+				+ DICTIONARY_TABLE_NAME + " (" + "id INTEGER PRIMARY KEY, "
+				+ "location_name" + " TEXT);";
+
+		public LocationDictionaryOpenHelper(final Context context) {
+			super(context, DATABASE_NAME, null, DATABASE_VERSION);
+		}
+
+		@Override
+		public void onCreate(final SQLiteDatabase db) {
+			db.execSQL(DICTIONARY_TABLE_CREATE);
+		}
+
+		@Override
+		public void onUpgrade(final SQLiteDatabase db, final int oldVersion,
+				final int newVersion) {
+			// Nothing to do yet.
+		}
+	}
+
 	class WifiObservationConsumer implements Runnable {
 		private final BlockingQueue<WifiObservation> queue;
 		private boolean stopped;
@@ -50,15 +77,13 @@ public class LocationClusterer extends OutputPlugin {
 						}
 						if (previouslyMoving && !currentlyMoving) {
 							// User has stopped moving, disable GPS
-							Log
-									.d(PLUGIN_NAME,
-											"User went from moving to stationary, disabling GPS");
+							Log.d(PLUGIN_NAME,
+									"User went from moving to stationary, disabling GPS");
 							gpsLogger.disableAfterNextScan();
 						} else if (!previouslyMoving && currentlyMoving) {
 							// User has started moving, enable GPS
-							Log
-									.d(PLUGIN_NAME,
-											"User went from stationary to moving, enabling GPS");
+							Log.d(PLUGIN_NAME,
+									"User went from stationary to moving, enabling GPS");
 							gpsLogger.enable();
 						}
 						previouslyMoving = currentlyMoving;
@@ -84,8 +109,8 @@ public class LocationClusterer extends OutputPlugin {
 	}
 
 	private static final String PLUGIN_NAME = "LocationClusterer";
-
 	private static final String LOCATION_CLUSTERER_ENABLED_PREF = "locationClustererEnabledPref";
+
 	private static final String LOCATION_CLUSTERER_USE_RESULTS_TO_MANAGE_GPS = "locationClustererManageGPS";
 
 	/**
@@ -170,8 +195,8 @@ public class LocationClusterer extends OutputPlugin {
 			return;
 		}
 		wifiClusterer = new WifiClusterer(context);
-		gpsClusterer = new GPSClusterer(context
-				.getDatabasePath("gpsclusters.db"));
+		gpsClusterer = new GPSClusterer(
+				context.getDatabasePath("gpsclusters.db"));
 		wifiObservationConsumer = new WifiObservationConsumer(
 				wifiObservationQueue);
 		new Thread(wifiObservationConsumer).start();

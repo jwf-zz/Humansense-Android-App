@@ -10,10 +10,13 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.util.Log;
 import android.widget.RemoteViews;
 import ca.mcgill.hs.R;
+import ca.mcgill.hs.plugin.LocationClusterer;
 
 public class LocationStatusWidget extends HSWidget {
 	private static final String TAG = "LocationStatusWidget";
@@ -23,6 +26,24 @@ public class LocationStatusWidget extends HSWidget {
 	private static final HashMap<Integer, RemoteViews> widgetViews = new HashMap<Integer, RemoteViews>();
 
 	private static long mostRecentLocation = 0;
+	private static SQLiteDatabase locationDatabase = null;
+
+	private static String getClusterName(final long currentCluster) {
+		String clusterName = Long.toString(currentCluster);
+		final Cursor cursor = locationDatabase.query("locations",
+				new String[] { "location_name" }, "id=?",
+				new String[] { clusterName }, null, null, null, "1");
+		if (cursor.moveToFirst()) {
+			clusterName = cursor.getString(0);
+			Log.d(TAG, "Found a location name '" + clusterName + "' for id "
+					+ currentCluster + ".");
+		} else {
+			Log.d(TAG, "Could not find a location name for id "
+					+ currentCluster + ".");
+		}
+		cursor.close();
+		return clusterName;
+	}
 
 	public static long getLastLocationId() {
 		return mostRecentLocation;
@@ -38,7 +59,8 @@ public class LocationStatusWidget extends HSWidget {
 				+ dfm.format(new Date(System.currentTimeMillis())) + "\n");
 		buf.append("Clustered " + clusteredPoints + " of " + poolSize
 				+ " points.\n");
-		buf.append("Currently in location: " + currentCluster + "\n");
+		final String clusterName = getClusterName(currentCluster);
+		buf.append("Currently in location: " + clusterName + "\n");
 		final String text = buf.toString();
 		for (final Integer key : widgetComponentNames.keySet()) {
 			if (currentlyMoving) {
@@ -86,10 +108,13 @@ public class LocationStatusWidget extends HSWidget {
 	@Override
 	protected void onStart(final int appWidgetId, final Context context) {
 		Log.d(TAG, "onStart");
-		final Intent locationLabeler = new Intent(context
-				.getApplicationContext(), LocationLabelerDialog.class);
+		final Intent locationLabeler = new Intent(
+				context.getApplicationContext(), LocationLabelerDialog.class);
 		final PendingIntent pendingIntent = PendingIntent.getActivity(context,
 				0, locationLabeler, Intent.FLAG_ACTIVITY_NEW_TASK);
+		final LocationClusterer.LocationDictionaryOpenHelper dbOpener = new LocationClusterer.LocationDictionaryOpenHelper(
+				context);
+		locationDatabase = dbOpener.getReadableDatabase();
 		widgetViews.get(appWidgetId).setOnClickPendingIntent(
 				R.id.location_status_text, pendingIntent);
 	}

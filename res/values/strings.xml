@@ -174,6 +174,7 @@
     <string name="locationclusterer_manage_gps_pref_summary">Use the results of the motion estimation algorithm to enable and disable the GPS sensor.</string>
     <string name="locationclusterer_manage_gps_pref_on">GPS Management is on.</string>
 	<string name="locationclusterer_manage_gps_pref_off">GPS Management is off.</string> 
+	<string name="location_input_edittext_hint">location name (e.g., home, my office, etc.)</string>
 
 	<!--  FileOutput plugin preferences -->
     <string name="fileoutput_buffersize_pref">Buffer Size</string>
@@ -216,8 +217,8 @@
     <string name="simpleclassifier_enable_remote_logging_pref_summary">Send classification results to a remote log server.</string>
     <string name="simpleclassifier_enable_remote_logging_pref_on">Remote Logging is enabled.</string>
     <string name="simpleclassifier_enable_remote_logging_pref_off">Remote Logging is disabled.</string>
-    <string name="simpleclassifier_remote_logging_host_pref_label">Log to Remote Server</string>
-    <string name="simpleclassifier_remote_logging_host_pref_summary">Send classification results to a remote log server.</string>
+    <string name="simpleclassifier_remote_logging_host_pref_label">Set Remote Server</string>
+    <string name="simpleclassifier_remote_logging_host_pref_summary">Set the remote server hostname.</string>
     <string name="simpleclassifier_remote_logging_host_pref_dialogmsg">Enter the username and hostname to connect to. Should be of the form: username@hostname.</string>
     <string name="simpleclassifier_remote_logging_host_pref_dialogtitle">Remote Logging Server</string>
 

@@ -452,6 +452,12 @@ public class LogFileUploaderService extends Service {
 		httppost = new HttpPost(UPLOAD_URL);
 		final File file = new File(Environment.getExternalStorageDirectory(),
 				fileName);
+		if (!file.exists()) {
+			// File may be deleted while in the queue for uploading
+			Log.d(TAG, "Unable to upload " + fileName
+					+ ". File does not exist.");
+			return TEMP_ERROR_CODE;
+		}
 		httppost.addHeader("MAC", wifiInfo.getMacAddress());
 		final MultipartEntity mpEntity = new MultipartEntity();
 		final ContentBody cbFile = new FileBody(file, "binary/octet-stream");

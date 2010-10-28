@@ -14,6 +14,7 @@ public abstract class HSWidget extends android.appwidget.AppWidgetProvider {
 
 	private void addWidget(final int appWidgetId, final Context context,
 			final AppWidgetManager appWidgetManager) {
+		Log.d(TAG, "addWidget");
 		final RemoteViews views = new RemoteViews(context.getPackageName(),
 				getLayoutResId());
 		getWidgetComponentNames().put(appWidgetId, getComponentName(context));
@@ -77,6 +78,7 @@ public abstract class HSWidget extends android.appwidget.AppWidgetProvider {
 	}
 
 	private void removeWidget(final int appWidgetId) {
+		Log.d(TAG, "removeWidget");
 		onStop(appWidgetId);
 		getWidgetComponentNames().remove(appWidgetId);
 		getWidgetManagers().remove(appWidgetId);

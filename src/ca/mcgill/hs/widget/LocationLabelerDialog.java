@@ -85,7 +85,9 @@ public class LocationLabelerDialog extends android.app.Activity {
 		setContentView(R.layout.location_labeler_dialog);
 		final TextView text = (TextView) findViewById(R.id.location_labeler_top_text);
 		locationId = LocationStatusWidget.getLastLocationId();
-		text.setText("Please enter a location label for location " + locationId);
+		text
+				.setText("Please enter a location label for location "
+						+ locationId);
 		final Button okButton = (Button) findViewById(R.id.location_input_ok_button);
 		final Button cancelButton = (Button) findViewById(R.id.location_input_cancel_button);
 		final EditText textInput = (EditText) findViewById(R.id.location_input_edittext);

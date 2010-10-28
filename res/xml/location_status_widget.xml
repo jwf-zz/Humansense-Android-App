@@ -2,7 +2,7 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="294dp"
     android:minHeight="144dp"
-    android:updatePeriodMillis="0"
+	android:updatePeriodMillis="86400000" 
     android:initialLayout="@layout/location_status_appwidget"
 >
 </appwidget-provider>

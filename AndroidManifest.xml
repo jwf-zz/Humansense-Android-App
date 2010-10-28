@@ -2,57 +2,70 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="ca.mcgill.hs"
       android:versionCode="1"
-      android:versionName="1.0"
-      android:installLocation="internalOnly" >
+      android:versionName="1.0">
     <application android:label="@string/app_name"
-    	android:icon="@drawable/icon">
+    			 android:icon="@drawable/icon">
         <activity android:name=".HSAndroid"
                   android:label="@string/app_name"
  		 		  android:configChanges="keyboard|keyboardHidden|orientation"
  		 		  android:screenOrientation="portrait"
- 		 		  android:launchMode="singleInstance"
- 		>
+ 		 		  android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="hsandroid" android:host="lookup" />
+            </intent-filter>
+            
         </activity>
         <activity
 			android:name=".prefs.HSAndroidPreferences"
-			android:label="@string/set_preferences">
+			android:label="@string/set_preferences"
+			android:launchMode="singleTop">
 		</activity>
 		<activity
 			android:name=".prefs.InputPluginPreferences"
-			android:label="@string/set_input_preferences">
+			android:label="@string/set_input_preferences"
+			android:launchMode="singleTop">
 		</activity>
 		<activity
 			android:name=".prefs.OutputPluginPreferences"
-			android:label="@string/set_output_preferences">
+			android:label="@string/set_output_preferences"
+			android:launchMode="singleTop">
 		</activity>
 		<activity
 			android:name=".prefs.DeleteUnUploadedFileManager"
-			android:label="@string/manage_files">
+			android:label="@string/manage_files"
+			android:launchMode="singleTop">
 		</activity>
 		<activity
 			android:name=".prefs.ManageModelsFileManager"
-			android:label="@string/manage_files">
+			android:label="@string/manage_files"
+			android:launchMode="singleTop">
 		</activity>
 		<activity
 			android:name=".widget.LocationLabelerDialog"
 			android:label="@string/location_labeler_dialog_label"
-			android:launchMode="singleInstance"
-			android:configChanges="orientation"
+			android:launchMode="singleTop"
 		>
 		</activity>
 		<activity
 			android:name=".graph.MagnitudeGraph"
 			android:label="@string/activity_magnitude_graph_label"
-			android:screenOrientation="landscape">
+			android:screenOrientation="landscape"
+			android:launchMode="singleTop">
 		</activity>
-        <service android:name="ca.mcgill.hs.serv.HSService"/>
-        <service android:name="ca.mcgill.hs.serv.LogFileUploaderService"/>
-        <service android:name="ca.mcgill.hs.graph.NewActivityNotificationLauncher"/>
-        <receiver android:name="ca.mcgill.hs.serv.HSServAutoStart" 
+
+        <service android:name=".serv.HSService"/>
+        <service android:name=".serv.LogFileUploaderService"/>
+        <service android:name=".graph.NewActivityNotificationLauncher"/>
+
+        <receiver android:name=".serv.HSServAutoStart" 
 			 android:enabled="true" 
 			 android:exported="false"
 			 android:label="HSServAutoStart">
@@ -62,22 +75,27 @@
 		</receiver>
 
 		<!-- Broadcast Receiver that will process AppWidget updates -->
-		<receiver android:name=".widget.LingeringNotificationWidget" android:label="@string/lingering_notification_widget_name">
+		<receiver android:name=".widget.LingeringNotificationWidget" 
+			      android:label="@string/lingering_notification_widget_name">
 	    	<intent-filter>
 	        	<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
 		    </intent-filter>
-	    	<meta-data android:name="android.appwidget.provider" android:resource="@xml/lingering_notification_widget" />
+	    	<meta-data android:name="android.appwidget.provider"  
+	    			   android:resource="@xml/lingering_notification_widget" />
 		</receiver>
 
 		<!-- Broadcast Receiver that will process AppWidget updates -->
-		<receiver android:name=".widget.LocationStatusWidget" android:label="@string/location_status_widget_name">
+		<receiver android:name=".widget.LocationStatusWidget" 
+				  android:label="@string/location_status_widget_name">
 	    	<intent-filter>
 	        	<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
 		    </intent-filter>
-	    	<meta-data android:name="android.appwidget.provider" android:resource="@xml/location_status_widget" />
+	    	<meta-data android:name="android.appwidget.provider" 
+	    			   android:resource="@xml/location_status_widget" />
 		</receiver>
 
     </application>
+    
     <uses-sdk android:minSdkVersion="8" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"></uses-permission>

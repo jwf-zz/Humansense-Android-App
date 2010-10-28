@@ -4,8 +4,7 @@
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
   android:orientation="vertical"
-  android:id="@+id/location_status_background" 
->
+  android:id="@+id/location_status_background" >
 	<TextView android:text="Results Currently Unavailable" 
 			  android:id="@+id/location_status_text" 
 			  android:layout_width="fill_parent" 

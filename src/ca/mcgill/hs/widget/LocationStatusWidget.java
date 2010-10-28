@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -28,8 +29,18 @@ public class LocationStatusWidget extends HSWidget {
 	private static long mostRecentLocation = 0;
 	private static SQLiteDatabase locationDatabase = null;
 
+	private static Context context = null;
+
 	private static String getClusterName(final long currentCluster) {
 		String clusterName = Long.toString(currentCluster);
+		if (locationDatabase == null) {
+			if (context == null) {
+				return clusterName;
+			}
+			final LocationClusterer.LocationDictionaryOpenHelper dbOpener = new LocationClusterer.LocationDictionaryOpenHelper(
+					context);
+			locationDatabase = dbOpener.getReadableDatabase();
+		}
 		final Cursor cursor = locationDatabase.query("locations",
 				new String[] { "location_name" }, "id=?",
 				new String[] { clusterName }, null, null, null, "1");
@@ -52,17 +63,22 @@ public class LocationStatusWidget extends HSWidget {
 	public static void updateWidget(final int clusteredPoints,
 			final int poolSize, final long currentCluster,
 			final boolean currentlyMoving) {
-		mostRecentLocation = currentCluster;
 		Log.d(TAG, "updateWidget");
+		mostRecentLocation = currentCluster;
+		final String clusterName = getClusterName(currentCluster);
+		final Set<Integer> keys = widgetComponentNames.keySet();
+		Log.d(TAG, "Updating " + keys.size() + " widgets.");
+		if (keys.size() == 0 || context == null) {
+			return;
+		}
 		final StringBuffer buf = new StringBuffer();
 		buf.append("Update at: "
 				+ dfm.format(new Date(System.currentTimeMillis())) + "\n");
 		buf.append("Clustered " + clusteredPoints + " of " + poolSize
 				+ " points.\n");
-		final String clusterName = getClusterName(currentCluster);
 		buf.append("Currently in location: " + clusterName + "\n");
 		final String text = buf.toString();
-		for (final Integer key : widgetComponentNames.keySet()) {
+		for (final Integer key : keys) {
 			if (currentlyMoving) {
 				widgetViews.get(key).setInt(R.id.location_status_text,
 						"setBackgroundResource",
@@ -108,8 +124,9 @@ public class LocationStatusWidget extends HSWidget {
 	@Override
 	protected void onStart(final int appWidgetId, final Context context) {
 		Log.d(TAG, "onStart");
-		final Intent locationLabeler = new Intent(
-				context.getApplicationContext(), LocationLabelerDialog.class);
+		LocationStatusWidget.context = context;
+		final Intent locationLabeler = new Intent(context
+				.getApplicationContext(), LocationLabelerDialog.class);
 		final PendingIntent pendingIntent = PendingIntent.getActivity(context,
 				0, locationLabeler, Intent.FLAG_ACTIVITY_NEW_TASK);
 		final LocationClusterer.LocationDictionaryOpenHelper dbOpener = new LocationClusterer.LocationDictionaryOpenHelper(
@@ -121,5 +138,6 @@ public class LocationStatusWidget extends HSWidget {
 
 	@Override
 	protected void onStop(final int appWidgetId) {
+		Log.d(TAG, "onStop");
 	}
 }

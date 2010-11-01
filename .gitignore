@@ -1,0 +1,6 @@
+bin/
+ext/
+gen/
+javadoc/
+libs/
+obj/

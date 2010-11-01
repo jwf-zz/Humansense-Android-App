@@ -1,4 +1,22 @@
 HumanSense Android Application
 
-TODO: Insert good description.
+This project provides a framework for developing applications that make use of
+the various types of data that can be collected from the sensors built into most
+Android devices. Modules are developed in the form of plugins that either 
+produce or consume data packets. 
 
+The current system has been developed as a research prototype. It contains input
+plugins that collect data from the GPS, Wifi, and GSM sensors, as well as the
+temperature, compass, magnetometer, and accelerometer sensors. The included 
+output plugins can be used to classify accelerometer data, cluster and identify
+locations based on visible Wifi Access Points, and store the data in binary-
+formatted log files which can be uploaded to a web service.
+
+This project is distributed under the MIT license, details of which are included
+in the LICENSE file. It is meant to be a framework for research, although the 
+license permits its use in commercial applications provided that proper 
+attribution is present.
+
+Enjoy,
+Jordan Frank
+jordan.frank@cs.mcgill.ca

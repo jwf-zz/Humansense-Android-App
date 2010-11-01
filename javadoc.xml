@@ -4,14 +4,25 @@
     <property environment="env"/>
     <target name="javadoc">
         <javadoc 
-        	access="private" 
+        	access="public" 
         	author="false" 
         	classpath="ext/httpcomponents-client-4.0.2/apache-mime4j-0.6.jar:ext/httpcomponents-client-4.0.2/httpmime-4.0.2.jar:${android.sdk}/platforms/android-8/android.jar:${env.ANDROID_HOME}/platforms/android-8/android.jar" 
         	destdir="doc" 
         	doctitle="HumanSense Android Data Collection Platform" 
         	nodeprecated="false" nodeprecatedlist="false" 
         	noindex="false" nonavbar="false" notree="false" 
-        	packagenames="ca.mcgill.hs.util,ca.mcgill.hs.classifiers,ca.mcgill.hs.serv,ca.mcgill.hs,ca.mcgill.hs.hardware,ca.mcgill.hs.prefs,ca.mcgill.hs.classifiers.location,ca.mcgill.hs.graph,ca.mcgill.hs.plugin,ca.mcgill.hs.uploader" 
+        	packagenames="ca.mcgill.hs,
+						  ca.mcgill.hs.classifiers,
+						  ca.mcgill.hs.classifiers.location,
+						  ca.mcgill.hs.graph,
+						  ca.mcgill.hs.hardware,
+        				  ca.mcgill.hs.network,
+						  ca.mcgill.hs.plugin,
+						  ca.mcgill.hs.prefs,
+						  ca.mcgill.hs.serv,
+						  ca.mcgill.hs.uploader,
+						  ca.mcgill.hs.util,
+        				  ca.mcgill.hs.widget" 
         	source="1.6" sourcepath="gen:src" splitindex="true" use="true" version="false">
             <link offline="true" href="http://d.android.com/reference" packagelistLoc="file:${android.sdk}/docs/reference"/>
             <link href="http://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/"/>

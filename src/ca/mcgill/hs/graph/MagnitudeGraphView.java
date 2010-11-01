@@ -187,7 +187,6 @@ public class MagnitudeGraphView extends View {
 	 * @param end
 	 *            The end timestamp for the graph.
 	 * @param closeAfterOneActivity
-	 * @param onGraphClosed2
 	 */
 	public MagnitudeGraphView(final Context context, final String title,
 			final Float[] magValues, final int[] activities, final long start,

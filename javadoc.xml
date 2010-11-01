@@ -3,11 +3,13 @@
     <!-- Imports environment variables, required for ANDROID_HOME variable -->
     <property environment="env"/>
     <target name="javadoc">
+    	<!-- Make sure that the results are copied into the doc directory 
+    		 in the gh-pages branch. -->
         <javadoc 
         	access="public" 
         	author="false" 
         	classpath="ext/httpcomponents-client-4.0.2/apache-mime4j-0.6.jar:ext/httpcomponents-client-4.0.2/httpmime-4.0.2.jar:${android.sdk}/platforms/android-8/android.jar:${env.ANDROID_HOME}/platforms/android-8/android.jar" 
-        	destdir="doc" 
+        	destdir="javadoc" 
         	doctitle="HumanSense Android Data Collection Platform" 
         	nodeprecated="false" nodeprecatedlist="false" 
         	noindex="false" nonavbar="false" notree="false" 

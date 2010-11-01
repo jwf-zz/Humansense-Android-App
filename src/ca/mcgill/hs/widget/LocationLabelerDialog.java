@@ -1,5 +1,6 @@
 package ca.mcgill.hs.widget;
 
+import android.app.Activity;
 import android.appwidget.AppWidgetManager;
 import android.content.ContentValues;
 import android.content.Context;
@@ -16,7 +17,7 @@ import android.widget.TextView;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.LocationClusterer;
 
-public class LocationLabelerDialog extends android.app.Activity {
+public class LocationLabelerDialog extends Activity {
 	public static final String TAG = "LocationLabelerDialog";
 	private int appWidgetId;
 	private long locationId = -1;
@@ -84,7 +85,7 @@ public class LocationLabelerDialog extends android.app.Activity {
 
 		setContentView(R.layout.location_labeler_dialog);
 		final TextView text = (TextView) findViewById(R.id.location_labeler_top_text);
-		locationId = LocationStatusWidget.getLastLocationId();
+		locationId = LocationStatusWidget.getMostRecentClusterId();
 		text
 				.setText("Please enter a location label for location "
 						+ locationId);

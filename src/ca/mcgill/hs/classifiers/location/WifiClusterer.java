@@ -26,6 +26,10 @@ public class WifiClusterer {
 		pool.addObservation(observation.getTimeStamp(), observation);
 	}
 
+	public long getCurrentCluster() {
+		return pool.getMostRecentClusterId();
+	}
+
 	public boolean isMoving() {
 		return pool.lastObservationWasMoving();
 	}

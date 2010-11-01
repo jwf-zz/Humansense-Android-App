@@ -1,4 +1,4 @@
-Copyright (c) 2010 HumanSense Project, McGill University
+Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,8 +19,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-A number of authors have contributed to this project. Please see CREDITS.txt for author information.
+A number of authors have contributed to this project. Please see CREDITS for 
+author information.
 
-This project makes use of part of the Apache HTTPComponents library, which is licensed according to the Apache License, Version 2.0. A copy of the license can be found in ext/httpcomponents-client-4.0.2/LICENSE.txt
+This project makes use of part of the Apache HTTPComponents library, which is 
+licensed according to the Apache License, Version 2.0. A copy of the license 
+can be found in ext/httpcomponents-client-4.0.2/LICENSE.txt
 
-This project links with LRUCache.java which is Copyright (c) Christian d'Heureuse (http://www.source-code.biz), and licensed under the LGPL (http://www.gnu.org/licenses/lgpl.html. The package name was changed, but no other modifications were made.
+This project links with LRUCache.java which is Copyright (c) Christian 
+d'Heureuse (http://www.source-code.biz), and licensed under the LGPL 
+(http://www.gnu.org/licenses/lgpl.html. The package name was changed, but 
+no other modifications were made.

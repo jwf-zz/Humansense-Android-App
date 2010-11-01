@@ -73,11 +73,11 @@ public final class ScreenOutput extends OutputPlugin {
 	 */
 	private static void dataParse(final WifiPacket packet) {
 		Log.i(PLUGIN_NAME, "Time: " + packet.timestamp);
-		Log.i(PLUGIN_NAME, "Neighbors: " + packet.neighbors);
-		final int j = packet.levels.length;
+		Log.i(PLUGIN_NAME, "Neighbors: " + packet.numAccessPoints);
+		final int j = packet.signalStrengths.length;
 		for (int i = 0; i < j; i++) {
 			Log.i(PLUGIN_NAME, "SSID: " + packet.SSIDs[i]);
-			Log.i(PLUGIN_NAME, "Level: " + packet.levels[i]);
+			Log.i(PLUGIN_NAME, "Level: " + packet.signalStrengths[i]);
 			Log.i(PLUGIN_NAME, "BSSID: " + packet.BSSIDs[i]);
 			Log.i(PLUGIN_NAME, " ");
 		}

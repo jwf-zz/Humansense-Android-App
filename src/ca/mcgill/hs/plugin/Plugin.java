@@ -1,6 +1,5 @@
 package ca.mcgill.hs.plugin;
 
-
 /**
  * A simple interface describing the behaviour of plugins, both input and
  * output. Only two classes implement this, the abstract InputPlugin and
@@ -12,6 +11,13 @@ package ca.mcgill.hs.plugin;
  */
 public interface Plugin {
 	/**
+	 * Returns the status of the plugin.
+	 * 
+	 * @return True if the plugin is enabled or false otherwise
+	 */
+	public abstract boolean isEnabled();
+
+	/**
 	 * Sets up the plugin in order for it to run.
 	 */
 	public abstract void startPlugin();
@@ -20,5 +26,4 @@ public interface Plugin {
 	 * Cleans up once the plugin execution is halted.
 	 */
 	public abstract void stopPlugin();
-
 }

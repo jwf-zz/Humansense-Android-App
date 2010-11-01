@@ -169,10 +169,10 @@ public class FileOutput extends OutputPlugin {
 	private static void dataParse(final WifiPacket packet,
 			final DataOutputStream outputStream) {
 		try {
-			outputStream.writeInt(packet.neighbors);
+			outputStream.writeInt(packet.numAccessPoints);
 			outputStream.writeLong(packet.timestamp);
-			for (int i = 0; i < packet.neighbors; i++) {
-				outputStream.writeInt(packet.levels[i]);
+			for (int i = 0; i < packet.numAccessPoints; i++) {
+				outputStream.writeInt(packet.signalStrengths[i]);
 				outputStream.writeUTF(packet.SSIDs[i]);
 				outputStream.writeUTF(packet.BSSIDs[i]);
 			}

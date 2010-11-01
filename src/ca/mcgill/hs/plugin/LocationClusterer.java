@@ -5,6 +5,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -17,6 +18,7 @@ import ca.mcgill.hs.classifiers.location.WifiClusterer;
 import ca.mcgill.hs.classifiers.location.WifiObservation;
 import ca.mcgill.hs.plugin.WifiLogger.WifiPacket;
 import ca.mcgill.hs.prefs.PreferenceFactory;
+import ca.mcgill.hs.widget.LocationStatusWidget;
 
 /**
  * Estimates a users' location based on wifi and gps signals. Does not try to
@@ -90,6 +92,8 @@ public class LocationClusterer extends OutputPlugin {
 						}
 						previouslyMoving = currentlyMoving;
 					}
+					context.startService(new Intent(context,
+							LocationStatusWidget.UpdateService.class));
 				}
 			}
 		}
@@ -165,7 +169,23 @@ public class LocationClusterer extends OutputPlugin {
 		this.context = context;
 
 		prefs = PreferenceFactory.getSharedPreferences();
+	}
 
+	public long getCurrentCluster() {
+		if (wifiClusterer != null) {
+			return wifiClusterer.getCurrentCluster();
+		} else {
+			return -1;
+		}
+
+	}
+
+	public boolean isMoving() {
+		if (wifiClusterer != null) {
+			return wifiClusterer.isMoving();
+		} else {
+			return false;
+		}
 	}
 
 	@Override
@@ -176,11 +196,18 @@ public class LocationClusterer extends OutputPlugin {
 		if (packet.getDataPacketId() == WifiPacket.PACKET_ID) {
 			final WifiPacket wifiPacket = (WifiPacket) packet;
 			final double timestamp = wifiPacket.timestamp / 1000.0;
+			final int numAccessPoints = wifiPacket.numAccessPoints;
+			if (numAccessPoints < 1) {
+				// Only cluster if there is at least one access point in range.
+				return;
+			}
 			final WifiObservation observation = new WifiObservation(timestamp,
-					wifiPacket.neighbors);
-			for (int i = 0; i < wifiPacket.neighbors; i++) {
-				observation.addObservation(wifiPacket.BSSIDs[i].hashCode(),
-						wifiPacket.levels[i]);
+					numAccessPoints);
+			final String[] bssids = wifiPacket.BSSIDs;
+			final int[] signalStrengths = wifiPacket.signalStrengths;
+			for (int i = 0; i < numAccessPoints; i++) {
+				observation.addObservation(bssids[i].hashCode(),
+						signalStrengths[i]);
 			}
 			wifiObservationQueue.add(observation);
 		}

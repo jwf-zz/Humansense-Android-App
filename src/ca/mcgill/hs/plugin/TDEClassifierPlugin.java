@@ -104,19 +104,17 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 	private long timeMoving = 0;
 	private long timeMovingWithoutStopping = 0;
 	private static float[] cumulativeClassProbs = null;
-
 	// Preference key for this plugin's state
 	private final static String PLUGIN_ACTIVE_KEY = "tdeClassifierEnabled";
 	private final static String ACCEL_THRESHOLD_KEY = "accelerometerThreshold";
 	private final static int ACCEL_THRESHOLD_DEFAULT = 100;
+
 	private final static String ACCEL_WINDOW_KEY = "accelerometerWindowSize";
 	private final static String ACCEL_WINDOW_DEFAULT = "25";
 	public static final String MANAGE_MODELS_PREF = "manageModels";
 	private static final String ENABLE_REMOTE_LOGGING_KEY = "tdeClassifierEnableRemoteLogging";
 	private static final String REMOTE_LOGGING_HOST_KEY = "tdeClassifierRemoteLoggingHost";
-
 	private final static String PLUGIN_NAME = "TDEClassifierPlugin";
-
 	private static final int LOG_MESSAGE = 0;
 	private static final int QUIT_MESSAGE = 1;
 
@@ -221,6 +219,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 	private TableRow buttonRow;
 
 	private BufferedWriter modelFileWriter = null;
+
 	private File modelFile = null;
 
 	private final OnClickListener startBuildingModel = new OnClickListener() {
@@ -266,7 +265,6 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 			buildButton.setOnClickListener(startBuildingModel);
 		}
 	};
-
 	private final OnClickListener startClassifying = new OnClickListener() {
 
 		@Override
@@ -291,7 +289,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 							ACCEL_WINDOW_KEY, ACCEL_WINDOW_DEFAULT));
 					final File modelsFile = ManageModelsFileManager.MODELS_INI_FILE;
 					if (modelsFile.canRead()) {
-						getModelNames();
+						loadModelNames();
 						classifierThread = new ClassifierThread();
 						classifierThread.start();
 						tdeClassifier.loadModels(modelsFile);
@@ -332,11 +330,13 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 	};
 
 	private static final LogServerClient remoteLoggingClient = new LogServerClient();
+
 	private static boolean remoteLoggingClientConnected = false;
+
 	private List<String> modelNames = null;
+
 	private static DataOutputStream remoteLoggingClassOutputStream = null;
 	private static DataOutputStream remoteLoggingCDataOutputStream = null;
-
 	private final OnClickListener stopClassifying = new OnClickListener() {
 
 		@Override
@@ -364,14 +364,12 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 			classifyButton.setOnClickListener(startClassifying);
 		}
 	};
-
 	private long startTimeStamp;
 	private long endTimeStamp;
 
 	private boolean enableRemoteLogging;
 
 	private boolean sshForwardingEnabled;
-
 	private static Process tunnel = null;
 
 	public TDEClassifierPlugin(final Context context) {
@@ -455,7 +453,23 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 		}
 	}
 
-	private void getModelNames() {
+	public float[] getCumulativeClassProbs() {
+		return cumulativeClassProbs;
+	}
+
+	public List<String> getModelNames() {
+		return modelNames;
+	}
+
+	public long getTimeLingering() {
+		return timeLingering;
+	}
+
+	public long getTimeMoving() {
+		return timeMoving;
+	}
+
+	private void loadModelNames() {
 		final File modelsFile = ManageModelsFileManager.MODELS_INI_FILE;
 		try {
 			final BufferedReader reader = new BufferedReader(new FileReader(

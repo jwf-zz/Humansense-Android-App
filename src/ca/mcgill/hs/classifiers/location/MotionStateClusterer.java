@@ -12,7 +12,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.util.Log;
-import ca.mcgill.hs.widget.LocationStatusWidget;
 
 public class MotionStateClusterer {
 	// Contains the timestamp for the observation as well as the index in the
@@ -38,7 +37,7 @@ public class MotionStateClusterer {
 	private final SignificantLocationClusterer slClusterer;
 	private final LocationSet locations;
 	private Timer resetMovementTimer;
-	private long current_cluster = -1;
+	private long currentCluster = -1;
 
 	// Maintain a queue of the Tuples for the observations that are
 	// currently being clustered.
@@ -58,11 +57,12 @@ public class MotionStateClusterer {
 	// are sets of measurements taken at an instance in time.
 	private final HashMap<Double, Observation> observations;
 
-	private final double[][] dist_matrix;
+	private final double[][] distMatrix;
 
 	// True if the previous window was labelled as stationary.
 	private boolean previouslyMoving = true;
 	private boolean currentlyMoving = false;
+	private long mostRecentClusterId = -1;
 
 	// True if the current window was labelled as stationary.
 	// private boolean curStationaryStatus = false;
@@ -76,13 +76,13 @@ public class MotionStateClusterer {
 		WINDOW_LENGTH = locations.getWindowLength();
 		DELTA = locations.pctOfWindowRequiredToBeStationary();
 
-		dist_matrix = new double[WINDOW_LENGTH][WINDOW_LENGTH];
+		distMatrix = new double[WINDOW_LENGTH][WINDOW_LENGTH];
 		observations = new HashMap<Double, Observation>(
 				(int) (WINDOW_LENGTH / 0.75f), 0.75f);
 
 		for (int i = 0; i < WINDOW_LENGTH; i++) {
 			for (int j = 0; j < WINDOW_LENGTH; j++) {
-				dist_matrix[i][j] = -1;
+				distMatrix[i][j] = -1;
 			}
 		}
 		slClusterer = new SignificantLocationClusterer(locations);
@@ -103,15 +103,16 @@ public class MotionStateClusterer {
 
 	// Adds a new observation to the pool, does some clustering, and then
 	// returns the statuses of each point in the pool.
-	public void addObservation(double timestamp, final Observation observation) {
+	public void addObservation(final double timestamp,
+			final Observation observation) {
 
 		// Delete observation outside MAX_TIME window.
 		deleteOldObservations(timestamp);
-		int index = getAvailableIndex();
+		final int index = getAvailableIndex();
 
 		// Update distance matrix
 		for (final Tuple tuple : pool) {
-			dist_matrix[index][tuple.index] = dist_matrix[tuple.index][index] = observation
+			distMatrix[index][tuple.index] = distMatrix[tuple.index][index] = observation
 					.distanceFrom(observations.get(tuple.timestamp));
 		}
 		observations.put(timestamp, observation);
@@ -128,117 +129,8 @@ public class MotionStateClusterer {
 				|| (!TIME_BASED_WINDOW && pool_size < WINDOW_LENGTH)) {
 			return;
 		}
-		// Perform the clustering
-		final boolean[] cluster_status = new boolean[WINDOW_LENGTH];
-		for (int i = 0; i < WINDOW_LENGTH; i++) {
-			// Set initial cluster status to false
-			cluster_status[i] = false;
-		}
-		for (final Tuple tuple : pool) {
-			final int i = tuple.index;
 
-			// Not the most efficient way to do things, but not too bad
-			// First we check how many neighbours are within epsilon
-			int neighbours = 0;
-			for (final Tuple tuple2 : pool) {
-				final int j = tuple2.index;
-				if (i != j && dist_matrix[i][j] < observation.getEPS()
-						&& dist_matrix[i][j] > 0.0) {
-					neighbours += 1;
-				}
-			}
-
-			// Then, if enough neighbours exist, set ourself and our neighbours
-			// to be in a cluster
-			if (neighbours >= (int) (DELTA * (double) pool_size)) {
-				cluster_status[i] = true;
-				for (int j = 0; j < WINDOW_LENGTH; j++) {
-					if (dist_matrix[i][j] < observation.getEPS()
-							&& dist_matrix[i][j] > 0.0) {
-						cluster_status[j] = true;
-					}
-				}
-			}
-		}
-		// And finally, update the statuses
-		Location location = null;
-		int clustered_points = 0;
-		int status = 0;
-		for (final Tuple tuple : pool) {
-			timestamp = tuple.timestamp;
-			index = tuple.index;
-			if (cluster_status[index]) {
-				status -= 1; // Vote for stationarity
-				clustered_points += 1;
-				/*
-				 * If we were moving on the last step and now we've stopped,
-				 * create a new significant location candidate.
-				 */
-				if (previouslyMoving) {
-					if (location == null) {
-						location = locations.newLocation(timestamp);
-					}
-					location.addObservation(observations.get(timestamp));
-				}
-			} else {
-				status += 1; // Vote for motion.
-			}
-		}
-		Log.d(TAG, "Clustered " + clustered_points + " of " + pool_size
-				+ " points.");
-
-		if (location != null) {
-			current_cluster = slClusterer.addNewLocation(location);
-			currentlyMoving = false;
-			Log.d(TAG,
-					"WifiClusterer thinks we're stationary and in location: "
-							+ current_cluster);
-			if (current_cluster > 0) {
-				/*
-				 * The purpose of this timer is to avoid continually updating
-				 * the location if the user remains stationary in a known
-				 * location. We start with a timer that resets the motion state
-				 * every RESET_UPDATE_STATUS_TIME_IN_SECONDS seconds, and then
-				 * after an update we double the time before the next update.
-				 */
-				resetMovementTimer.schedule(new TimerTask() {
-					@Override
-					public void run() {
-						previouslyMoving = true;
-					}
-
-				}, timerDelay);
-				timerDelay *= 2;
-				previouslyMoving = false;
-			}
-		} else if (!previouslyMoving && clustered_points == 0) {
-			/*
-			 * If we were stationary, but now we are moving, then we cancel the
-			 * timer that should only be running if we're stationary.
-			 */
-			current_cluster = -1;
-			timerDelay = RESET_MOVEMENT_STATE_TIME_IN_SECONDS * 1000;
-			previouslyMoving = true;
-			currentlyMoving = true;
-			resetMovementTimer.cancel();
-			resetMovementTimer.purge();
-			resetMovementTimer = new Timer(RESET_MOVEMENT_STATE_TIMER_NAME);
-		} else if (clustered_points == 0) {
-			/* User was moving previously, and is still moving */
-			current_cluster = -1;
-			currentlyMoving = true;
-		}
-		try {
-			if (outputLog != null) {
-				outputLog.write(dfm
-						.format(new Date(System.currentTimeMillis()))
-						+ "," + current_cluster + "\n");
-			}
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-		LocationStatusWidget.updateWidget(clustered_points, pool_size,
-				current_cluster, currentlyMoving);
+		cluster(observation.getEPS());
 	}
 
 	public void close() {
@@ -264,6 +156,123 @@ public class MotionStateClusterer {
 		}
 	}
 
+	protected void cluster(final double eps) {
+		// Perform the clustering
+		final int pool_size = pool.size();
+		final boolean[] clusterStatus = new boolean[WINDOW_LENGTH];
+		for (int i = 0; i < WINDOW_LENGTH; i++) {
+			// Set initial cluster status to false
+			clusterStatus[i] = false;
+		}
+		for (final Tuple tuple : pool) {
+			final int i = tuple.index;
+
+			// Not the most efficient way to do things, but not too bad
+			// First we check how many neighbours are within epsilon
+			int neighbours = 0;
+			for (final Tuple tuple2 : pool) {
+				final int j = tuple2.index;
+				if (i != j && distMatrix[i][j] < eps && distMatrix[i][j] > 0.0) {
+					neighbours += 1;
+				}
+			}
+
+			// Then, if enough neighbours exist, set ourself and our neighbours
+			// to be in a cluster
+			if (neighbours >= (int) (DELTA * (double) pool_size)) {
+				clusterStatus[i] = true;
+				for (int j = 0; j < WINDOW_LENGTH; j++) {
+					if (distMatrix[i][j] < eps && distMatrix[i][j] > 0.0) {
+						clusterStatus[j] = true;
+					}
+				}
+			}
+		}
+		// And finally, update the statuses
+		Location location = null;
+		int clusteredPoints = 0;
+		int status = 0;
+		double timestamp;
+		int index;
+		for (final Tuple tuple : pool) {
+			timestamp = tuple.timestamp;
+			index = tuple.index;
+			if (clusterStatus[index]) {
+				status -= 1; // Vote for stationarity
+				clusteredPoints += 1;
+				/*
+				 * If we were moving on the last step and now we've stopped,
+				 * create a new significant location candidate.
+				 */
+				if (previouslyMoving) {
+					if (location == null) {
+						location = locations.newLocation(timestamp);
+					}
+					location.addObservation(observations.get(timestamp));
+				}
+			} else {
+				status += 1; // Vote for motion.
+			}
+		}
+		Log.d(TAG, "Clustered " + clusteredPoints + " of " + pool_size
+				+ " points.");
+
+		if (location != null) {
+			currentCluster = slClusterer.addNewLocation(location);
+			currentlyMoving = false;
+			Log.d(TAG,
+					"WifiClusterer thinks we're stationary and in location: "
+							+ currentCluster);
+			if (currentCluster > 0) {
+				/*
+				 * The purpose of this timer is to avoid continually updating
+				 * the location if the user remains stationary in a known
+				 * location. We start with a timer that resets the motion state
+				 * every RESET_UPDATE_STATUS_TIME_IN_SECONDS seconds, and then
+				 * after an update we double the time before the next update.
+				 */
+				resetMovementTimer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						previouslyMoving = true;
+					}
+
+				}, timerDelay);
+				timerDelay *= 2;
+				previouslyMoving = false;
+			}
+		} else if (!previouslyMoving && clusteredPoints == 0) {
+			/*
+			 * If we were stationary, but now we are moving, then we cancel the
+			 * timer that should only be running if we're stationary.
+			 */
+			currentCluster = -1;
+			timerDelay = RESET_MOVEMENT_STATE_TIME_IN_SECONDS * 1000;
+			previouslyMoving = true;
+			currentlyMoving = true;
+			resetMovementTimer.cancel();
+			resetMovementTimer.purge();
+			resetMovementTimer = new Timer(RESET_MOVEMENT_STATE_TIMER_NAME);
+		} else if (clusteredPoints == 0) {
+			/* User was moving previously, and is still moving */
+			currentCluster = -1;
+			currentlyMoving = true;
+		}
+		try {
+			if (outputLog != null) {
+				outputLog.write(dfm
+						.format(new Date(System.currentTimeMillis()))
+						+ "," + currentCluster + "\n");
+			}
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+		// LocationStatusWidget.updateWidget(clustered_points, pool_size,
+		// current_cluster, currentlyMoving);
+		mostRecentClusterId = currentCluster;
+
+	}
+
 	// Deletes the oldest observation from the pool and returns the index
 	// for that point in the distance matrix, so that it can be reused.
 	private void deleteOldObservations(final double timestamp) {
@@ -277,8 +286,8 @@ public class MotionStateClusterer {
 				observations.remove(first.timestamp);
 				final int idx = first.index;
 				for (int i = 0; i < WINDOW_LENGTH; i++) {
-					dist_matrix[i][idx] = -1;
-					dist_matrix[idx][i] = -1;
+					distMatrix[i][idx] = -1;
+					distMatrix[idx][i] = -1;
 				}
 				pool.removeFirst();
 			}
@@ -292,8 +301,8 @@ public class MotionStateClusterer {
 				observations.remove(first.timestamp);
 				final int idx = first.index;
 				for (int i = 0; i < WINDOW_LENGTH; i++) {
-					dist_matrix[i][idx] = -1;
-					dist_matrix[idx][i] = -1;
+					distMatrix[i][idx] = -1;
+					distMatrix[idx][i] = -1;
 				}
 				pool.removeFirst();
 			}
@@ -303,7 +312,7 @@ public class MotionStateClusterer {
 	// Returns the first available index in the distance matrix.
 	public int getAvailableIndex() {
 		int idx = 0;
-		while (dist_matrix[0][idx] >= 0) {
+		while (distMatrix[0][idx] >= 0) {
 			idx++;
 		}
 		return idx;
@@ -315,6 +324,10 @@ public class MotionStateClusterer {
 
 	public int getMaxTime() {
 		return WINDOW_LENGTH;
+	}
+
+	public long getMostRecentClusterId() {
+		return currentCluster;
 	}
 
 	public int getPoolSize() {

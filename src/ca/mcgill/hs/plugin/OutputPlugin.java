@@ -50,6 +50,10 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 		}
 	}
 
+	public boolean isEnabled() {
+		return pluginEnabled;
+	}
+
 	/**
 	 * Called when a DataPacket is sent from an InputPlugin. Adds the DataPacket
 	 * that is now ready to dpList.

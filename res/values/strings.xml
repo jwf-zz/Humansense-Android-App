@@ -8,6 +8,13 @@
     <string name="lingering_notification_widget_name">Lingering Notification</string>
     <string name="location_status_widget_name">Location Status</string>
     <string name="location_labeler_dialog_label">Location Labeler</string>
+    <string name="location_widget_moving_label">Currently Moving</string>
+    <string name="location_widget_location_prefix">Currently in location:</string>
+    <string name="location_widget_unknown_location">Unknown</string>
+    <string name="widget_loading">Loading data</string>
+    <string name="widget_error">Data currently unavailable</string>
+    
+    
     
     <!--  Notification Strings -->
     <string name="notification_ticker">Humansense</string>

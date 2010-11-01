@@ -40,9 +40,9 @@ public final class WifiLogger extends InputPlugin {
 
 	public final static class WifiPacket implements DataPacket {
 
-		final int neighbors;
+		final int numAccessPoints;
 		final long timestamp;
-		final int[] levels;
+		final int[] signalStrengths;
 		final String[] SSIDs;
 		final String[] BSSIDs;
 		final static String PACKET_NAME = "WifiPacket";
@@ -51,7 +51,7 @@ public final class WifiLogger extends InputPlugin {
 		/**
 		 * Constructor for this DataPacket.
 		 * 
-		 * @param neighbors
+		 * @param numAccessPoints
 		 *            the number of access points detected.
 		 * @param timestamp
 		 *            the time of the scan.
@@ -62,18 +62,18 @@ public final class WifiLogger extends InputPlugin {
 		 * @param BSSID
 		 *            the BSSID of each access point.
 		 */
-		public WifiPacket(final int neighbors, final long timestamp,
+		public WifiPacket(final int numAccessPoints, final long timestamp,
 				final int[] level, final String[] SSID, final String[] BSSID) {
-			this.neighbors = neighbors;
+			this.numAccessPoints = numAccessPoints;
 			this.timestamp = timestamp;
-			this.levels = level;
+			this.signalStrengths = level;
 			this.SSIDs = SSID;
 			this.BSSIDs = BSSID;
 		}
 
 		@Override
 		public DataPacket clone() {
-			return new WifiPacket(neighbors, timestamp, levels, SSIDs, BSSIDs);
+			return new WifiPacket(numAccessPoints, timestamp, signalStrengths, SSIDs, BSSIDs);
 		}
 
 		@Override

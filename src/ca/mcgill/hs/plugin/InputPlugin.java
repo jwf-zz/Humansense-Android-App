@@ -48,6 +48,10 @@ public abstract class InputPlugin implements Plugin {
 		}
 	}
 
+	public boolean isEnabled() {
+		return pluginEnabled;
+	}
+
 	/**
 	 * Called when this InputPlugin is started. This method is meant to be
 	 * overridden.

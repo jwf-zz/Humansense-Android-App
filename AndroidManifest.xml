@@ -93,6 +93,7 @@
 	    	<meta-data android:name="android.appwidget.provider" 
 	    			   android:resource="@xml/location_status_widget" />
 		</receiver>
+		<service android:name=".widget.LocationStatusWidget$UpdateService" />
 
     </application>
     

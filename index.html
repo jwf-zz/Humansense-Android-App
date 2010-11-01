@@ -62,9 +62,49 @@
     <h2>Documentation</h2>
     <p>JavaDocs are available <a href="doc/index.html">here</a>. Other documentation to come.</p>
 
+    <h2>Quick Start</h2>
+    <p>To see the app do something cool, try out the location
+    recognition plugin. This plugin will learn to recognize places
+    that you spend time, based on building fingerprints from
+    observable wifi base stations. To try it out, first install the
+    application, then start the app and go into the Settings
+    menu. Choose input plugins, and enable the Wifi Logger, and choose
+    1 minute for the update interval. Next, go back into the Setting
+    menu and choose the Output Plugins settings. Enable the Location
+    clustering plugin. Now, go back to your home screen and press and
+    hold anywhere on the screen. This should bring up a menu that
+    allows you to add a Widget to your home screen. Add the Location
+    Status widget. Now, go back into the HumanSense application and
+    start the service.
+    <p>The service collects data in the background, so you can go back
+    to your home screen (press the Home button) and use other
+    apps. The widget on your home screen should be updated with your
+    status (green means you're moving, read means you're stationary)
+    and a location ID, which is UNKNOWN if you have not been
+    stationary in a location for long enough for it to be considered a
+    significant location, or a positive integer denoting the ID
+    associated with the current location. If a positive integer
+    appears, you can assign a textual label to this location by
+    clicking on the widget. This should bring up a new dialog window
+    that allows you to provide a name for the location. From then on,
+    if you are in that location, the name should appear instead of the
+    ID number.
+
+    <p>Cool, eh? Of course, this is a work in progress, so please
+    let <a href="mailto:jordan.frank@cs.mcgill.ca">me</a> know how it
+    works.</p>
+
     <h2>Download</h2>
     <p>
-      You can download this project in either
+      You can download a compiled version, ready to
+      install, <a href="http://github.com/downloads/jwf/Humansense-Android-App/HumanSense-Android-App.apk/qr_code">here</a>.
+      Included on that page is a QR code for easy installation on your
+      phone. Note that it may not be the most up-to-date version, but
+      it should be fairly current, and is most likely a version that
+      has been tested a bit.
+    </p>
+    <p>
+      You can download this code for the project in either
       <a href="http://github.com/jwf/Humansense-Android-App/zipball/master">zip</a> or
       <a href="http://github.com/jwf/Humansense-Android-App/tarball/master">tar</a> formats.
     </p>
@@ -76,7 +116,6 @@
     <div class="footer">
       get the source code on GitHub : <a href="http://github.com/jwf/Humansense-Android-App">jwf/Humansense-Android-App</a>
     </div>
-
   </div>
 
   <script type="text/javascript">

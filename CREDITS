@@ -1,9 +1,21 @@
 Authors:
 
-Main Author:
-	Jordan Frank <jordan.frank@cs.mcgill.ca>
+We have chosen not to include author information in the individual source
+files, since the publicly available revision history details exactly which 
+authors contributed to which modules.
 
-Substantial contributors:
-	Jonathan Pitre <jonathan.pitre@gmail.com>
-	Cicerone Cojocaru <cicerone.cojocaru@mail.mcgill.ca>
+	Main Author:
+		Jordan Frank <jordan.frank@cs.mcgill.ca>
+	
+	Substantial contributors:
+		Jonathan Pitre <jonathan.pitre@gmail.com> *
+		Cicerone Cojocaru <cicerone.cojocaru@mail.mcgill.ca> *
+	
+
+
+
+* Jonathan and Cicerone contributed in large part to the Plugin and 
+  Preference systems, and to many other parts of the project during an 
+  internship at McGill University, taking place in the Summer of 2010.
+
  

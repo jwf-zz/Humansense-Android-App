@@ -1,18 +1,9 @@
-//============================================================================
-// Name        : ManifoldExperiment.cpp
-// Author      :
-// Version     :
-// Copyright   : BSD
-// Description : Constructs a time-delay embedding of the data, equipped with
-//               a model of the dynamics using an approximation of the
-//               one step transition matrix based on averaging the sample
-//               dynamics of the k-nearest neighbours.
-//============================================================================
 /*
- * main.cpp
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information
  *
- *  Created on: Jun 28, 2009
- *      Author: jordan
+ * BuildTree.cpp
  */
 
 #include <stdlib.h>

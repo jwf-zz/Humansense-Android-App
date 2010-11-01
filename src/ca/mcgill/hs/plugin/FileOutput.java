@@ -1,3 +1,8 @@
+/* 
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information 
+ */
 package ca.mcgill.hs.plugin;
 
 import java.io.BufferedOutputStream;
@@ -29,8 +34,6 @@ import ca.mcgill.hs.serv.LogFileUploaderService;
 
 /**
  * An OutputPlugin which writes data to files.
- * 
- * @author Cicerone Cojocaru, Jonathan Pitre
  * 
  */
 public class FileOutput extends OutputPlugin {

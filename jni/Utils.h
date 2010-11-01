@@ -1,8 +1,9 @@
 /*
- * Utils.h
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information
  *
- *  Created on: 2009-06-30
- *      Author: jfrank8
+ * Utils.h
  */
 
 #include <stdlib.h>

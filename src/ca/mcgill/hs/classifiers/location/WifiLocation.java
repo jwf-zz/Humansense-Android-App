@@ -1,9 +1,14 @@
+/* 
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information 
+ */
 package ca.mcgill.hs.classifiers.location;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -124,8 +129,8 @@ public class WifiLocation extends Location {
 		}
 
 		if ((double) num_common
-				/ (double) Math.min(this.getNumObservations(),
-						location.getNumObservations()) < ETA) {
+				/ (double) Math.min(this.getNumObservations(), location
+						.getNumObservations()) < ETA) {
 			dist = Double.POSITIVE_INFINITY;
 		} else {
 			dist = Math.sqrt((1.0 / num_common) * dist);
@@ -142,11 +147,10 @@ public class WifiLocation extends Location {
 	 */
 	public double getAvgStrength(final int wap_id) {
 		double avgStrength = 0.0;
-		final Cursor cursor = db
-				.rawQuery("SELECT average_strength FROM "
-						+ WifiLocationSet.OBSERVATIONS_TABLE
-						+ " WHERE location_id=? AND wap_id=?", new String[] {
-						Long.toString(getId()), Integer.toString(wap_id) });
+		final Cursor cursor = db.rawQuery("SELECT average_strength FROM "
+				+ WifiLocationSet.OBSERVATIONS_TABLE
+				+ " WHERE location_id=? AND wap_id=?", new String[] {
+				Long.toString(getId()), Integer.toString(wap_id) });
 		try {
 			cursor.moveToNext();
 			avgStrength = cursor.getDouble(0);
@@ -185,8 +189,8 @@ public class WifiLocation extends Location {
 		final Cursor cursor = db.rawQuery(
 				"SELECT wap_id,average_strength FROM "
 						+ WifiLocationSet.OBSERVATIONS_TABLE
-						+ " WHERE location_id=?",
-				new String[] { Long.toString(getId()) });
+						+ " WHERE location_id=?", new String[] { Long
+						.toString(getId()) });
 		try {
 			while (cursor.moveToNext()) {
 				observation.addObservation(cursor.getInt(0), cursor.getInt(1));

@@ -1,3 +1,8 @@
+/* 
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information 
+ */
 package ca.mcgill.hs.serv;
 
 import java.io.File;
@@ -43,11 +48,11 @@ import ca.mcgill.hs.prefs.HSAndroidPreferences;
 import ca.mcgill.hs.prefs.PreferenceFactory;
 
 /**
- * A new uploader service for the HSAndroid Application. When this service
- * starts, it retrieves the list of saved files. Then, if an option is set, it
- * will attempt to connect 3 times to a wifi connection. Afterwards, it will
- * upload the files, recording error codes. Finally, it will toast the user to
- * alert them of the success or failure of the operation.
+ * A service for uploading data files to a web server. When this service starts,
+ * it retrieves the list of saved files. Then, if an option is set, it will
+ * attempt to connect 3 times to a wifi connection. Afterwards, it will upload
+ * the files, recording error codes. Finally, it will toast the user to alert
+ * them of the success or failure of the operation.
  * 
  * If the service was already started, then it will simply update the list of
  * files and resume its operations.

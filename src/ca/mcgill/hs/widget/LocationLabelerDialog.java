@@ -1,3 +1,8 @@
+/* 
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information 
+ */
 package ca.mcgill.hs.widget;
 
 import android.app.Activity;
@@ -17,6 +22,10 @@ import android.widget.TextView;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.LocationClusterer;
 
+/**
+ * The dialog for labeling locations. This is called by the LocationStatusWidget
+ * when someone
+ */
 public class LocationLabelerDialog extends Activity {
 	public static final String TAG = "LocationLabelerDialog";
 	private int appWidgetId;

@@ -1,3 +1,8 @@
+/* 
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information 
+ */
 package ca.mcgill.hs.uploader;
 
 import android.content.BroadcastReceiver;
@@ -7,7 +12,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 /**
- * Receives system broadcasts (boot, network connectivity)
+ * Receives system broadcasts (network connectivity)
  */
 public class UploadReceiver extends BroadcastReceiver {
 

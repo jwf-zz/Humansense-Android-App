@@ -1,3 +1,8 @@
+/* 
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information 
+ */
 package ca.mcgill.hs.serv;
 
 import java.util.LinkedList;
@@ -22,7 +27,8 @@ import ca.mcgill.hs.plugin.PluginFactory;
 import ca.mcgill.hs.prefs.PreferenceFactory;
 
 /**
- * The main service that runs in the background and manages the plugins.
+ * The main service that runs in the background and manages the communication
+ * between plugins.
  */
 public class HSService extends Service {
 

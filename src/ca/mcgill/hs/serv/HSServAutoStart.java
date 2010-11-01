@@ -1,3 +1,8 @@
+/* 
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information 
+ */
 package ca.mcgill.hs.serv;
 
 import android.content.BroadcastReceiver;
@@ -6,6 +11,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
+
+/**
+ * Used to start the service when the phone boots up, by listening for the
+ * BOOT_COMPLETED intent.
+ */
 
 public class HSServAutoStart extends BroadcastReceiver {
 

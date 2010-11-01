@@ -1,3 +1,8 @@
+/* 
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information 
+ */
 package ca.mcgill.hs.widget;
 
 import java.text.DecimalFormat;
@@ -17,6 +22,10 @@ import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.PluginFactory;
 import ca.mcgill.hs.plugin.TDEClassifierPlugin;
 
+/**
+ * A widget for displaying the output of the activity classifier and lingering
+ * filter.
+ */
 public class LingeringNotificationWidget extends AppWidgetProvider {
 	public static class UpdateService extends Service {
 		private static final SimpleDateFormat dfm = new SimpleDateFormat(

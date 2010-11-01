@@ -1,3 +1,8 @@
+/* 
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information 
+ */
 package ca.mcgill.hs.uploader;
 
 import java.io.File;
@@ -21,6 +26,10 @@ import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.HSAndroidPreferences;
 import ca.mcgill.hs.prefs.PreferenceFactory;
 
+/**
+ * Work in progress. A new, more modular file uploader. Still does not work.
+ * 
+ */
 public class UploadService extends Service {
 
 	private class DirectoryObserver extends FileObserver {

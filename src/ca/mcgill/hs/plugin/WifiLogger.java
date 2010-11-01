@@ -1,3 +1,8 @@
+/* 
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information 
+ */
 package ca.mcgill.hs.plugin;
 
 import java.util.List;
@@ -73,7 +78,8 @@ public final class WifiLogger extends InputPlugin {
 
 		@Override
 		public DataPacket clone() {
-			return new WifiPacket(numAccessPoints, timestamp, signalStrengths, SSIDs, BSSIDs);
+			return new WifiPacket(numAccessPoints, timestamp, signalStrengths,
+					SSIDs, BSSIDs);
 		}
 
 		@Override

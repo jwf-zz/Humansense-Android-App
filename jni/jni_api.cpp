@@ -1,8 +1,10 @@
 /*
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information
+ *
  * jni_api.cpp
  *
- *  Created on: 15-Sep-2009
- *      Author: jfrank8
  */
 
 

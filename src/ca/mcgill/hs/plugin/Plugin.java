@@ -1,3 +1,8 @@
+/* 
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information 
+ */
 package ca.mcgill.hs.plugin;
 
 /**
@@ -5,8 +10,6 @@ package ca.mcgill.hs.plugin;
  * output. Only two classes implement this, the abstract InputPlugin and
  * OutputPlugin classes. Plugins should extend these classes instead of
  * implementing this interface.
- * 
- * @author Cicerone Cojocaru, Jonathan Pitre
  * 
  */
 public interface Plugin {

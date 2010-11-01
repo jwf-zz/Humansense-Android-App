@@ -1,6 +1,7 @@
-/**
-
- * TODO: Insert licenses here.
+/* 
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information 
  */
 package ca.mcgill.hs.prefs;
 
@@ -24,8 +25,6 @@ import ca.mcgill.hs.serv.LogFileUploaderService;
  * HSAndroidPreferences is a class extending PreferenceActivity which defines
  * the settings menu for the HSAndroid Activity. Whenever the user accesses the
  * settings from the options menu, this PreferenceActivity is launched.
- * 
- * @author Cicerone Cojocaru, Jonathan Pitre
  * 
  */
 public class HSAndroidPreferences extends PreferenceActivity {

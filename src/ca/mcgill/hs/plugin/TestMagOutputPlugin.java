@@ -1,3 +1,8 @@
+/* 
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information 
+ */
 package ca.mcgill.hs.plugin;
 
 import android.content.Context;
@@ -11,6 +16,12 @@ import ca.mcgill.hs.graph.NewActivityNotificationLauncher;
 import ca.mcgill.hs.plugin.SensorLogger.SensorPacket;
 import ca.mcgill.hs.prefs.PreferenceFactory;
 
+/**
+ * An example output plugin for testing the sensor data graphing classes. Just
+ * collects data from the accelerometer for a short period of time, then
+ * displays a notification that allows the operator to view the data and play
+ * with the labeling functionality.
+ */
 public final class TestMagOutputPlugin extends OutputPlugin {
 
 	public static final String PLUGIN_NAME = "TestMagOutput";

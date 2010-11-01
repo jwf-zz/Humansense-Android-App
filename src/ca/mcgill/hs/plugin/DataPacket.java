@@ -1,10 +1,13 @@
+/* 
+ * Copyright (c) 2010 Jordan Frank, HumanSense Project, McGill University
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+ * See LICENSE for more information 
+ */
 package ca.mcgill.hs.plugin;
 
 /**
  * Interface implemented by all data packet classes contained within InputPlugin
  * implementations.
- * 
- * @author Cicerone Cojocaru, Jonathan Pitre
  * 
  */
 public interface DataPacket {

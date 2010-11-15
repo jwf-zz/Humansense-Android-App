@@ -16,7 +16,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.PreferenceFactory;
 
@@ -211,7 +211,7 @@ public class BluetoothLogger extends InputPlugin {
 			}
 		}
 		this.context = context;
-		prefs = PreferenceFactory.getSharedPreferences();
+		prefs = PreferenceFactory.getSharedPreferences(context);
 
 		forceBluetoothActivation = prefs.getBoolean(FORCE_BLUETOOTH_ON_PREF,
 				false);

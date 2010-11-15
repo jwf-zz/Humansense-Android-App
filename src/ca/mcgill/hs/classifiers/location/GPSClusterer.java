@@ -7,13 +7,15 @@ package ca.mcgill.hs.classifiers.location;
 
 import java.io.File;
 
+import android.content.Context;
+
 public class GPSClusterer {
 	private final GPSLocationSet locations;
 	private final MotionStateClusterer pool;
 
-	public GPSClusterer(final File dbFile) {
+	public GPSClusterer(final File dbFile, final Context context) {
 		locations = new GPSLocationSet(dbFile);
-		pool = new MotionStateClusterer(locations);
+		pool = new MotionStateClusterer(locations, context);
 	}
 
 	/**

@@ -13,7 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.PreferenceFactory;
 
@@ -102,7 +102,7 @@ public class NewActivityNotificationLauncher extends Service {
 	@Override
 	public void onStart(final Intent intent, final int startId) {
 		final SharedPreferences prefs = PreferenceFactory
-				.getSharedPreferences();
+				.getSharedPreferences(this);
 		if (start == -1 || end == -1 || start == end || magValues == null
 				|| magActivities == null
 				|| !prefs.getBoolean("notificationEnablePref", true)) {

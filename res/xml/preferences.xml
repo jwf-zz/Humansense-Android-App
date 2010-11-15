@@ -19,6 +19,15 @@
 		
 	</PreferenceCategory>
 	
+	<PreferenceCategory android:title="@string/battery_life_options_cat">
+	
+		<CheckBoxPreference
+		android:title="@string/watch_for_low_battery_pref_title"
+		android:defaultValue="false"
+		android:key="watchForLowBatteryPref"
+		android:summary="@string/watch_for_low_battery_pref"
+		/>
+	</PreferenceCategory>
 	
 	<PreferenceCategory android:title="@string/plugin_options_cat">
 	

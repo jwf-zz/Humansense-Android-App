@@ -65,6 +65,18 @@
         <service android:name=".serv.LogFileUploaderService"/>
         <service android:name=".graph.NewActivityNotificationLauncher"/>
 
+		<!--  Broadcast Receiver that will process Battery low and okay messages -->
+        <receiver android:name=".serv.LowBatteryMonitorService"
+			 android:enabled="true" 
+			 android:exported="false"
+			 android:label="LowBatteryMonitorService">
+		   	 <intent-filter>
+		     	<action android:name="android.intent.action.ACTION_BATTERY_LOW" />
+		     	<action android:name="android.intent.action.ACTION_BATTERY_OKAY" />
+		   	 </intent-filter>
+		</receiver>
+
+		<!-- Broadcast Receiver that will process Boot Completed intent -->
         <receiver android:name=".serv.HSServAutoStart" 
 			 android:enabled="true" 
 			 android:exported="false"

@@ -17,7 +17,7 @@ import android.net.wifi.WifiManager;
 import android.os.PowerManager;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.PreferenceFactory;
 
@@ -171,7 +171,7 @@ public final class WifiLogger extends InputPlugin {
 	 */
 	public WifiLogger(final Context context) {
 		this.context = context;
-		prefs = PreferenceFactory.getSharedPreferences();
+		prefs = PreferenceFactory.getSharedPreferences(context);
 
 		wifiManager = (WifiManager) context
 				.getSystemService(Context.WIFI_SERVICE);

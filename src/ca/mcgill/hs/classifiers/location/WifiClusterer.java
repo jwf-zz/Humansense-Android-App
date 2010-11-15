@@ -13,7 +13,7 @@ public class WifiClusterer {
 
 	public WifiClusterer(final Context context) {
 		locations = new WifiLocationSet(context);
-		pool = new MotionStateClusterer(locations);
+		pool = new MotionStateClusterer(locations, context);
 	}
 
 	/**

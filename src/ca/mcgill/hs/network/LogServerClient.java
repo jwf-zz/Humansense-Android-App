@@ -13,7 +13,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
 
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 
 public class LogServerClient {
 	private static final String TAG = "LogServerClient";

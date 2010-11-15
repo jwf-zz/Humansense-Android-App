@@ -29,7 +29,7 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Paint.Align;
 import android.os.Environment;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;

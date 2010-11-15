@@ -37,6 +37,7 @@ public class HSAndroidPreferences extends PreferenceActivity {
 	public static final String OUTPUT_PLUGIN_PREFS = "outputPluginPrefs";
 	public static final String INPUT_PLUGIN_PREFS = "inputPluginPrefs";
 	public static final String AUTO_START_AT_APP_START_PREF = "autoStartAtAppStart";
+	public static final String WATCH_FOR_LOW_BATTERY_PREF = "watchForLowBatteryPref";
 
 	private static void broadcastAutoUploaderIntent(final Context c) {
 		final Intent i = new Intent();

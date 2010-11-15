@@ -19,7 +19,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.IBinder;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import android.widget.RemoteViews;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.LocationClusterer;
@@ -101,13 +101,15 @@ public class LocationStatusWidget extends AppWidgetProvider {
 					views.setInt(R.id.location_status_text,
 							"setBackgroundResource",
 							R.drawable.location_status_widget_bg_stationary);
-					final Intent locationLabeler = new Intent(context
-							.getApplicationContext(),
-							LocationLabelerDialog.class);
-					final PendingIntent pendingIntent = PendingIntent
-							.getActivity(context, 0, locationLabeler, 0);
-					views.setOnClickPendingIntent(R.id.location_status_text,
-							pendingIntent);
+					if (mostRecentClusterId > 0) {
+						final Intent locationLabeler = new Intent(context
+								.getApplicationContext(),
+								LocationLabelerDialog.class);
+						final PendingIntent pendingIntent = PendingIntent
+								.getActivity(context, 0, locationLabeler, 0);
+						views.setOnClickPendingIntent(
+								R.id.location_status_text, pendingIntent);
+					}
 				}
 				views.setTextViewText(R.id.location_status_text, text);
 				views.setTextColor(R.id.location_status_text, Color.WHITE);

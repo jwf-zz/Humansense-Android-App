@@ -11,7 +11,7 @@ import java.util.LinkedList;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.util.LRUCache;
 
 /**

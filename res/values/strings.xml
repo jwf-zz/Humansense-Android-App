@@ -15,7 +15,6 @@
     <string name="widget_error">Data currently unavailable</string>
     
     
-    
     <!--  Notification Strings -->
     <string name="notification_ticker">Humansense</string>
     <string name="notification_text">Select to provide more information.</string>
@@ -85,6 +84,9 @@
 	<string name="auto_start_at_app_start_pref_title">Auto-Start at App Start</string>
 	<string name="auto_start_at_phone_boot_pref">Automatically start logging when phone starts.</string>
 	<string name="auto_start_at_phone_boot_pref_title">Auto-Start at Phone Boot</string>
+	<string name="battery_life_options_cat">Power Management Preferences</string>
+	<string name="watch_for_low_battery_pref_title">Stop service on Low Battery</string>
+	<string name="watch_for_low_battery_pref">Stops the service when the battery is low, and restarts once it has been charged.</string>
 	<string name="settingString">Settings</string>
 	<string name="uploadString">Upload</string>
     <string name="start_phone_boot_label">Start at phone boot.</string>

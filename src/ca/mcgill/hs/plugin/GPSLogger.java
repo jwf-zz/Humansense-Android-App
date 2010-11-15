@@ -15,7 +15,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.PreferenceFactory;
 
@@ -267,7 +267,7 @@ public final class GPSLogger extends InputPlugin {
 				.getSystemService(Context.LOCATION_SERVICE);
 		locationListener = new GPSLocationListener(locationManager);
 
-		prefs = PreferenceFactory.getSharedPreferences();
+		prefs = PreferenceFactory.getSharedPreferences(context);
 	}
 
 	public void disableAfterNextScan() {

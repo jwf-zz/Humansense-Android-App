@@ -20,7 +20,7 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.util.AttributeSet;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.plugin.Plugin;
 
 /**
@@ -351,8 +351,9 @@ public class PreferenceFactory {
 		return result;
 	}
 
-	public static SharedPreferences getSharedPreferences() {
-		return PreferenceManager.getDefaultSharedPreferences(context);
+	public static SharedPreferences getSharedPreferences(final Context context) {
+		return PreferenceManager.getDefaultSharedPreferences(context
+				.getApplicationContext());
 	}
 
 	/**

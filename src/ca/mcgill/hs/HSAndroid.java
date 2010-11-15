@@ -33,6 +33,7 @@ public class HSAndroid extends Activity {
 	private Intent serviceIntent;
 
 	private boolean autoStartAppStart = false;
+
 	public static final String HSANDROID_PREFS_NAME = "HSAndroidPrefs";
 	private static Context context = null;
 	private static TableLayout freeSpace = null;
@@ -69,7 +70,7 @@ public class HSAndroid extends Activity {
 	 */
 	private void getPrefs() {
 		final SharedPreferences prefs = PreferenceFactory
-				.getSharedPreferences();
+				.getSharedPreferences(this);
 		autoStartAppStart = prefs.getBoolean(
 				HSAndroidPreferences.AUTO_START_AT_APP_START_PREF, false);
 	}

@@ -14,7 +14,7 @@ import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 
 /**
  * Represents a location, not necessarily physical, but characterized by a set

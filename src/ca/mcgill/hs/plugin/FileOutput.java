@@ -22,7 +22,7 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSPacket;
@@ -46,6 +46,8 @@ public class FileOutput extends OutputPlugin {
 
 	private static final String PLUGIN_NAME = "FileOutput";
 
+	// File Extensions to be added at the end of each file.
+	private static final String WIFI_EXT = "-wifiloc.log";
 	private static final String GPS_EXT = "-gpsloc.log";
 	private static final String SENS_EXT = "-raw.log";
 	private static final String GSM_EXT = "-gsmloc.log";
@@ -218,9 +220,6 @@ public class FileOutput extends OutputPlugin {
 	// each input plugin connected.
 	private final HashMap<Integer, DataOutputStream> fileHandles = new HashMap<Integer, DataOutputStream>();
 
-	// File Extensions to be added at the end of each file.
-	private static final String WIFI_EXT = "-wifiloc.log";
-
 	// Size of BufferedOutputStream buffer
 	private int bufferSize;
 
@@ -317,7 +316,7 @@ public class FileOutput extends OutputPlugin {
 		pluginStopping = false;
 		numThreadsWriting = 0;
 
-		prefs = PreferenceFactory.getSharedPreferences();
+		prefs = PreferenceFactory.getSharedPreferences(context);
 	}
 
 	/**

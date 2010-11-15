@@ -16,7 +16,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import android.widget.RemoteViews;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.PluginFactory;

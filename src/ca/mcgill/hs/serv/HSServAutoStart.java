@@ -10,7 +10,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
+import ca.mcgill.hs.prefs.HSAndroidPreferences;
+import ca.mcgill.hs.prefs.PreferenceFactory;
 
 /**
  * Used to start the service when the phone boots up, by listening for the
@@ -19,20 +21,19 @@ import android.util.Log;
 
 public class HSServAutoStart extends BroadcastReceiver {
 
-	public static final String HSANDROID_PREFS_NAME = "HSAndroidPrefs";
 	private ComponentName comp;
 	private ComponentName svc;
 
 	@Override
 	public void onReceive(final Context context, final Intent intent) {
 		// check the user settings to see if we should start the service at boot
-		final SharedPreferences prefs = context.getSharedPreferences(
-				"ca.mcgill.hs_preferences", 0);
+		final SharedPreferences prefs = PreferenceFactory
+				.getSharedPreferences(context);
 
-		if (prefs.getBoolean("autoStartAtPhoneBoot", false)) {
+		if (prefs.getBoolean(HSAndroidPreferences.AUTO_START_AT_APP_START_PREF,
+				false)) {
 			// check if the received intent is BOOT_COMPLETED
-			if ("android.intent.action.BOOT_COMPLETED".equals(intent
-					.getAction())) {
+			if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
 				comp = new ComponentName(context.getPackageName(),
 						HSService.class.getName());
 				svc = context.startService(new Intent().setComponent(comp));

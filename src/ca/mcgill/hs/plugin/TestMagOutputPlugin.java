@@ -10,7 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.graph.NewActivityNotificationLauncher;
 import ca.mcgill.hs.plugin.SensorLogger.SensorPacket;
@@ -75,7 +75,7 @@ public final class TestMagOutputPlugin extends OutputPlugin {
 
 		Log.i(PLUGIN_NAME, "Max Index: " + MAX_INDEX);
 
-		prefs = PreferenceFactory.getSharedPreferences();
+		prefs = PreferenceFactory.getSharedPreferences(context);
 
 	}
 

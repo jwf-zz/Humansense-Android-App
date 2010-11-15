@@ -13,7 +13,7 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.SystemClock;
 import android.telephony.TelephonyManager;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 
 public class NetworkHelper {
 	private static final String TAG = "NetworkHelper";
@@ -38,7 +38,7 @@ public class NetworkHelper {
 		final ConnectivityManager connectivity = (ConnectivityManager) context
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
 		if (connectivity == null) {
-			Log.w(TAG, "couldn't get connectivity manager");
+			Log.w(TAG, "Couldn not get connectivity manager");
 		} else {
 			final NetworkInfo[] info = connectivity.getAllNetworkInfo();
 			if (info != null) {

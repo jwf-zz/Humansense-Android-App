@@ -9,7 +9,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSPacket;
@@ -129,7 +129,7 @@ public final class ScreenOutput extends OutputPlugin {
 	 *            the context in which this plugin is created.
 	 */
 	public ScreenOutput(final Context context) {
-		prefs = PreferenceFactory.getSharedPreferences();
+		prefs = PreferenceFactory.getSharedPreferences(context);
 	}
 
 	/**

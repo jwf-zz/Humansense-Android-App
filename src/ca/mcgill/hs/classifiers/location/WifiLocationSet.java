@@ -16,7 +16,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.util.LRUCache;
 
 /**
@@ -140,25 +140,24 @@ public final class WifiLocationSet extends LocationSet {
 	 * statements, and it is possible that this doesn't speed anything up.
 	 */
 	SQLiteStatement retrieveNumMergedStmt = null;
+	private final boolean copyFromSDCard = false;
 
 	public WifiLocationSet(final Context context) {
-		try {
-			/*
-			 * We currently copy the database from the sdcard. This is mainly
-			 * used for debugging so that we can make changes to the database
-			 * offline and then use those changes next time we start the
-			 * service. This should eventually be removed.
-			 */
-			DBHelpers
-					.copy(
-							new File(
-									"/sdcard/hsandroidapp/data/wificlusters.db"),
-							new File(
-									"/data/data/ca.mcgill.hs/databases/wificlusters.db"));
-		} catch (final IOException e) {
-			e.printStackTrace();
+		if (copyFromSDCard) {
+			try {
+				/*
+				 * We currently copy the database from the sdcard. This is
+				 * mainly used for debugging so that we can make changes to the
+				 * database offline and then use those changes next time we
+				 * start the service. This should eventually be removed.
+				 */
+				DBHelpers.copy(new File(
+						"/sdcard/hsandroidapp/data/wificlusters.db"), new File(
+						"/data/data/ca.mcgill.hs/databases/wificlusters.db"));
+			} catch (final IOException e) {
+				e.printStackTrace();
+			}
 		}
-
 		dbHelper = new WifiDatabaseHelper(context, "wificlusters.db", null, 1);
 		db = dbHelper.getWritableDatabase();
 
@@ -282,7 +281,6 @@ public final class WifiLocationSet extends LocationSet {
 				 */
 				DBHelpers.copy(dbFile, new File(
 						"/sdcard/hsandroidapp/data/wificlusters.db"));
-
 			}
 		} catch (final IOException e) {
 			e.printStackTrace();

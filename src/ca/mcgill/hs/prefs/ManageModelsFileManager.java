@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.HashSet;
 
 import android.os.Environment;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;

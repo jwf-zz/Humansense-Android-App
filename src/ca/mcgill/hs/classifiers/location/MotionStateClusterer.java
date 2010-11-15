@@ -16,7 +16,10 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.util.Log;
+import android.content.Context;
+import android.os.Environment;
+import ca.mcgill.hs.R;
+import ca.mcgill.hs.util.Log;
 
 public class MotionStateClusterer {
 	// Contains the timestamp for the observation as well as the index in the
@@ -67,16 +70,17 @@ public class MotionStateClusterer {
 	// True if the previous window was labelled as stationary.
 	private boolean previouslyMoving = true;
 	private boolean currentlyMoving = false;
-	private long mostRecentClusterId = -1;
 
 	// True if the current window was labelled as stationary.
 	// private boolean curStationaryStatus = false;
 
-	private final SimpleDateFormat dfm = new SimpleDateFormat("HH:mm:ss");
+	private final SimpleDateFormat dfm = new SimpleDateFormat(
+			"yy-MM-dd-HH:mm:ss");
 
 	private int timerDelay = 1000 * RESET_MOVEMENT_STATE_TIME_IN_SECONDS;
 
-	public MotionStateClusterer(final LocationSet locations) {
+	public MotionStateClusterer(final LocationSet locations,
+			final Context context) {
 		TIME_BASED_WINDOW = locations.usesTimeBasedWindow();
 		WINDOW_LENGTH = locations.getWindowLength();
 		DELTA = locations.pctOfWindowRequiredToBeStationary();
@@ -96,12 +100,16 @@ public class MotionStateClusterer {
 
 		final Date d = new Date(System.currentTimeMillis());
 		final SimpleDateFormat dfm = new SimpleDateFormat("yy-MM-dd-HHmmss");
-		final File f = new File("/sdcard/hsandroidapp/data/recent/"
-				+ dfm.format(d) + "-clusters.log");
+
+		final File recent_dir = new File(Environment
+				.getExternalStorageDirectory(), (String) context.getResources()
+				.getText(R.string.recent_file_path));
+		final File f = new File(recent_dir, dfm.format(d) + "-clusters.log");
 		try {
 			outputLog = new BufferedWriter(new FileWriter(f));
 		} catch (final IOException e) {
 			e.printStackTrace();
+			outputLog = null;
 		}
 
 	}
@@ -272,10 +280,6 @@ public class MotionStateClusterer {
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
-		// LocationStatusWidget.updateWidget(clustered_points, pool_size,
-		// current_cluster, currentlyMoving);
-		mostRecentClusterId = currentCluster;
-
 	}
 
 	// Deletes the oldest observation from the pool and returns the index

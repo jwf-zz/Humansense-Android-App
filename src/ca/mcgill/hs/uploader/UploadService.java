@@ -21,7 +21,7 @@ import android.os.Environment;
 import android.os.FileObserver;
 import android.os.IBinder;
 import android.os.Process;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.HSAndroidPreferences;
 import ca.mcgill.hs.prefs.PreferenceFactory;
@@ -239,7 +239,7 @@ public class UploadService extends Service {
 				(String) getResources().getText(R.string.recent_file_path));
 		dirObserver = new DirectoryObserver(recentDir.getAbsolutePath(),
 				FileObserver.MOVED_TO);
-		prefs = PreferenceFactory.getSharedPreferences();
+		prefs = PreferenceFactory.getSharedPreferences(this);
 		registerReceiver(wifiOnlyPrefChanged, new IntentFilter(
 				WIFI_ONLY_CHANGED_INTENT));
 		registerReceiver(autoPrefChanged, new IntentFilter(

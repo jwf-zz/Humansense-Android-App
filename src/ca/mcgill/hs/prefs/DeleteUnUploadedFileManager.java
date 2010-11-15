@@ -10,7 +10,7 @@ import java.io.File;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Environment;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;

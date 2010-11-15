@@ -17,7 +17,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.DataPacket;

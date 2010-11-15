@@ -34,7 +34,7 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.util.AttributeSet;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import android.util.Xml;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -283,8 +283,6 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 			final Thread t = new Thread() {
 				@Override
 				public void run() {
-					final SharedPreferences prefs = PreferenceFactory
-							.getSharedPreferences();
 					final float threshold = prefs.getInt(ACCEL_THRESHOLD_KEY,
 							ACCEL_THRESHOLD_DEFAULT) / 100.0f;
 
@@ -379,7 +377,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 
 	public TDEClassifierPlugin(final Context context) {
 		TDEClassifierPlugin.context = context;
-		prefs = PreferenceFactory.getSharedPreferences();
+		prefs = PreferenceFactory.getSharedPreferences(context);
 	}
 
 	private void displayModelData() throws IOException {

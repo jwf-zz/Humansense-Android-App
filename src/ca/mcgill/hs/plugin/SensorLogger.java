@@ -13,7 +13,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.PreferenceFactory;
 
@@ -141,7 +141,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 		sensorManager = (SensorManager) context
 				.getSystemService(Context.SENSOR_SERVICE);
 
-		prefs = PreferenceFactory.getSharedPreferences();
+		prefs = PreferenceFactory.getSharedPreferences(context);
 	}
 
 	/**

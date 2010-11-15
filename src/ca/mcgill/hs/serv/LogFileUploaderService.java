@@ -41,7 +41,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.os.IBinder;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import android.widget.Toast;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.HSAndroidPreferences;
@@ -236,7 +236,7 @@ public class LogFileUploaderService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		prefs = PreferenceFactory.getSharedPreferences();
+		prefs = PreferenceFactory.getSharedPreferences(this);
 		FINAL_ERROR_CODE = NO_ERROR_CODE;
 		shutdownIntent = new Intent(this, LogFileUploaderService.class);
 		UNUPLOADED_PATH = (String) getBaseContext().getResources().getText(
@@ -507,15 +507,15 @@ public class LogFileUploaderService extends Service {
 			}
 
 		} catch (final MalformedURLException ex) {
-			Log.e(TAG, "error: " + ex.getMessage(), ex);
+			Log.e(TAG, android.util.Log.getStackTraceString(ex));
 			FINAL_ERROR_CODE = MALFORMEDURLEXCEPTION_ERROR_CODE;
 			return MALFORMEDURLEXCEPTION_ERROR_CODE;
 		} catch (final UnknownHostException uhe) {
-			Log.w(TAG, "Unable to connect...");
+			Log.e(TAG, android.util.Log.getStackTraceString(uhe));
 			FINAL_ERROR_CODE = UNKNOWNHOSTEXCEPTION_ERROR_CODE;
 			return UNKNOWNHOSTEXCEPTION_ERROR_CODE;
 		} catch (final IOException ioe) {
-			Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+			Log.e(TAG, android.util.Log.getStackTraceString(ioe));
 			FINAL_ERROR_CODE = IOEXCEPTION_ERROR_CODE;
 			return IOEXCEPTION_ERROR_CODE;
 		}

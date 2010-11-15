@@ -7,7 +7,7 @@ package ca.mcgill.hs.prefs;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.plugin.InputPlugin;
 import ca.mcgill.hs.serv.HSService;
 

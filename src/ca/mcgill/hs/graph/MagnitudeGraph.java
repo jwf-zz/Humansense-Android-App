@@ -7,7 +7,7 @@ package ca.mcgill.hs.graph;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 
 public class MagnitudeGraph extends Activity {

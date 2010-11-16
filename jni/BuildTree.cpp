@@ -12,7 +12,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <ANN/ANN.h>
-#include <Tisean/tsa.h>
 #include <android/log.h>
 #include "Utils.h"
 #include "BuildTree.h"

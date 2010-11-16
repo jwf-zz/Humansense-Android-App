@@ -14,7 +14,7 @@ public class LowBatteryMonitor extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(final Context context, final Intent intent) {
-		Log.d(TAG, "onReceive");
+		Log.d(TAG, "Received Intent: " + intent.getAction());
 		final SharedPreferences prefs = PreferenceFactory
 				.getSharedPreferences(context);
 		final boolean watchForLowBattery = prefs.getBoolean(

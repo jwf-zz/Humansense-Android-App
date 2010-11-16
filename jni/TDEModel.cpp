@@ -10,10 +10,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdio.h>
-#include <Tisean/tsa.h>
 #include <ANN/ANN.h>
 #include <cxcore/cxcore.h>
-#include "MersenneTwister.h"
+//#include "MersenneTwister.h"
 #include <android/log.h>
 
 #include "Classifier.h"

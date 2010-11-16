@@ -43,11 +43,31 @@ void get_embedding(Settings* settings, ANNcoord*& data, uint &length);
 void convert_to_ann_points(ANNpointArray &dataPts, ANNcoord* series, uint rows, uint cols);
 void get_ann_points(ANNpointArray &dataPts, ANNcoord* series, unsigned long rows, uint cols);
 void print_matrix(CvMat* matrix, FILE *fout);
+void check_alloc(void *pointer);
+double **get_multi_series(char *name, unsigned long *l, unsigned long ex,
+		unsigned int *col, char *which, char colfix, unsigned int verbosity);
+char* getline(char *str, int *size, FILE *fin, unsigned int verbosity);
 
 #define HS_TAG "HUMANSENSE"
 #define MAT_TYPE CV_32FC1
 #define FLOAT_SCAN "%G"
 #define FLOAT_OUT "%.8G"
+#define CHECK_ALLOC_NOT_ENOUGH_MEMORY 12
+#define GET_MULTI_SERIES_WRONG_TYPE_OF_C 21
+#define GET_MULTI_SERIES_NO_LINES 22
+
+// Defines the buffer size for reading lines.
+#define INPUT_SIZE 1024
+
+/* The possible names of the verbosity levels */
+#define VER_INPUT 0x1
+#define VER_USR1 0x2
+#define VER_USR2 0x4
+#define VER_USR3 0x8
+#define VER_USR4 0x10
+#define VER_USR5 0x20
+#define VER_USR6 0x40
+#define VER_FIRST_LINE 0x80
 
 #define HS_LOG(s) __android_log_print(ANDROID_LOG_DEBUG, HS_TAG, s)
 #define HS_LOG2(s,...) __android_log_print(ANDROID_LOG_DEBUG, HS_TAG, s, __VA_ARGS__)

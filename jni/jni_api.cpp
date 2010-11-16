@@ -17,8 +17,8 @@
 #include "ClassifyTrajectory.h"
 
 // Sensor stuff
-#include <hardware/sensors.h>
-#include <cutils/native_handle.h>
+//#include <hardware/sensors.h>
+//#include <cutils/native_handle.h>
 
 #define NATIVE_CLASSIFIER_CALL(type, name) extern "C" JNIEXPORT type JNICALL Java_ca_mcgill_hs_classifiers_NativeClassifier_ ## name
 

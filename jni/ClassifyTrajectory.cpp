@@ -12,7 +12,6 @@
 #include <ctype.h>
 #include <vector>
 #include <ANN/ANN.h>
-#include <Tisean/tsa.h>
 #include <android/log.h>
 
 #include "Utils.h"

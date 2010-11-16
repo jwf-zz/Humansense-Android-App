@@ -139,9 +139,8 @@ double **get_multi_series(char *name, unsigned long *l, unsigned long ex,
 		for (i = 0; i < strlen(which) - 1; i++) {
 			if (!isdigit((unsigned int) which[i]) && (which[i] != ',')) {
 				__android_log_print(ANDROID_LOG_ERROR, "HUMANSENSE",
-						"Wrong format in the column string."
-							" Has to be num,num,num,...,num\n");
-				exit( GET_MULTI_SERIES_WRONG_TYPE_OF_C);
+						"Wrong format in the column string. Has to be num,num,num,...,num");
+				return NULL;
 			}
 			if (which[i] == ',') {
 				colcount++;
@@ -150,92 +149,99 @@ double **get_multi_series(char *name, unsigned long *l, unsigned long ex,
 		}
 		if (!isdigit((unsigned int) which[strlen(which) - 1])) {
 			__android_log_print(ANDROID_LOG_ERROR, "HUMANSENSE",
-					"Wrong format in the column string."
-						" Has to be num,num,num,...,num\n");
-			exit( GET_MULTI_SERIES_WRONG_TYPE_OF_C);
+					"Wrong format in the column string. Has to be num,num,num,...,num");
+			return NULL;
 		}
 	}
-	if (!colfix && (*col < colcount))
+	if (!colfix && (*col < colcount)) {
 		*col = colcount;
+	}
 
 	check_alloc(input = (char*) calloc((size_t) input_size, (size_t) 1));
 	check_alloc(hcol = (unsigned int*) malloc(sizeof(unsigned int) * *col));
-	while ((int) (*which) && isspace((unsigned int) (*which)))
+	while ((int) (*which) && isspace((unsigned int) (*which))) {
 		which++;
-	if (*which)
+	}
+	if (*which) {
 		for (i = 0; i < *col - 1; i++) {
 			sscanf(which, "%u", &hcol[i]);
-			if (hcol[i] > maxcol)
+			if (hcol[i] > maxcol) {
 				maxcol = hcol[i];
-			while ((int) (*which) && !isspace((unsigned int) (*which)))
+			}
+			while ((int) (*which) && !isspace((unsigned int) (*which))) {
 				which++;
-			while ((int) (*which) && isspace((unsigned int) (*which)))
+			}
+			while ((int) (*which) && isspace((unsigned int) (*which))) {
 				which++;
-			if (!((int) (*which)))
+			}
+			if (!((int) (*which))) {
 				break;
+			}
 		}
-	else
+	}
+	else {
 		i = -1;
-
-	if (*which)
-		sscanf(which, "%u", &hcol[i]);
-	else
-		for (j = i + 1; j < *col; j++)
-			hcol[j] = ++maxcol;
-
-	if (verbosity & VER_INPUT) {
-		__android_log_print(ANDROID_LOG_DEBUG, "HUMANSENSE", "Using columns: ");
-		for (i = 0; i < *col; i++)
-			__android_log_print(ANDROID_LOG_DEBUG, "HUMANSENSE", "%d ", hcol[i]);
-		__android_log_print(ANDROID_LOG_DEBUG, "HUMANSENSE", "\n");
 	}
 
+	if (*which) {
+		sscanf(which, "%u", &hcol[i]);
+	}
+	else {
+		for (j = i + 1; j < *col; j++) {
+			hcol[j] = ++maxcol;
+		}
+	}
 	check_alloc(format = (char**) malloc(sizeof(char*) * *col));
 	for (i = 0; i < *col; i++) {
-		check_alloc(format[i] = (char*) calloc((size_t)(4 * hcol[i]),
-				(size_t) 1));
+		check_alloc(format[i] = (char*) calloc((size_t)(4 * hcol[i]), (size_t) 1));
 		strcpy(format[i], "");
-		for (j = 1; j < hcol[i]; j++)
+		for (j = 1; j < hcol[i]; j++) {
 			strcat(format[i], "%*lf");
+		}
 		strcat(format[i], "%lf");
 	}
 	free(hcol);
 
 	check_alloc(x = (double**) malloc(sizeof(double*) * *col));
-	for (i = 0; i < *col; i++)
+	for (i = 0; i < *col; i++) {
 		check_alloc(x[i] = (double*) malloc(sizeof(double) * max_size));
+	}
 	hl = *l;
 
 	count = 0;
 	allcount = 0;
 	if (name == NULL) {
-		for (i = 0; i < ex; i++)
-			if ((input = getline(input, &input_size, stdin, verbosity)) == NULL)
+		for (i = 0; i < ex; i++) {
+			if ((input = getline(input, &input_size, stdin, verbosity)) == NULL) {
 				break;
+			}
+		}
 		while ((count < hl) && ((input = getline(input, &input_size, stdin,
 				verbosity)) != NULL)) {
 			if (count == max_size) {
 				max_size += SIZE_STEP;
-				for (i = 0; i < *col; i++)
+				for (i = 0; i < *col; i++) {
 					check_alloc(x[i] = (double*) realloc(x[i], sizeof(double)
 							* max_size));
+				}
 			}
 			allcount++;
-			for (i = 0; i < *col; i++)
+			for (i = 0; i < *col; i++) {
 				if (sscanf(input, format[i], &x[i][count]) != 1) {
-					if (verbosity & VER_INPUT)
-						__android_log_print(ANDROID_LOG_DEBUG, "HUMANSENSE",
-								"Line %lu ignored: %s", allcount, input);
 					break;
 				}
-			if (i == *col)
+			}
+			if (i == *col) {
 				count++;
+			}
 		}
 	} else {
 		fin = fopen(name, "r");
-		for (i = 0; i < ex; i++)
-			if ((input = getline(input, &input_size, fin, verbosity)) == NULL)
+		for (i = 0; i < ex; i++) {
+			if ((input = getline(input, &input_size, fin, verbosity)) == NULL) {
 				break;
+			}
+		}
 		while ((count < hl) && ((input = getline(input, &input_size, fin,
 				verbosity)) != NULL)) {
 			if (count == max_size) {
@@ -245,46 +251,34 @@ double **get_multi_series(char *name, unsigned long *l, unsigned long ex,
 							* max_size));
 			}
 			allcount++;
-			for (i = 0; i < *col; i++)
+			for (i = 0; i < *col; i++) {
 				if (sscanf(input, format[i], &x[i][count]) != 1) {
-					if (verbosity & VER_INPUT)
-						__android_log_print(ANDROID_LOG_DEBUG, "HUMANSENSE",
-								"Line %lu ignored: %s", allcount, input);
 					break;
 				}
-			if ((count == 0) && (i == *col) && (verbosity & VER_FIRST_LINE)) {
-				__android_log_print(ANDROID_LOG_DEBUG, "HUMANSENSE",
-						"get_multi_series: first data item(s) used:\n");
-				for (i = 0; i < *col; i++)
-					__android_log_print(ANDROID_LOG_DEBUG, "HUMANSENSE",
-							"%lf ", x[i][0]);
-				__android_log_print(ANDROID_LOG_DEBUG, "HUMANSENSE", "\n");
 			}
-			if (i == *col)
+			if (i == *col) {
 				count++;
+			}
 		}
 		fclose(fin);
 	}
 
-	for (i = 0; i < *col; i++)
+	for (i = 0; i < *col; i++) {
 		free(format[i]);
+	}
 	free(format);
 	free(input);
 
 	*l = count;
 	if (*l == 0) {
-		__android_log_print(ANDROID_LOG_ERROR, "HUMANSENSE",
-				"0 lines read. It makes no sense to continue. Exiting!\n");
-		exit( GET_MULTI_SERIES_NO_LINES);
-	} else {
-		if (verbosity & VER_INPUT)
-			__android_log_print(ANDROID_LOG_DEBUG, "HUMANSENSE",
-					"Use %lu lines.\n", *l);
+		__android_log_print(ANDROID_LOG_ERROR, "HUMANSENSE", "0 lines read.");
+		return NULL;
 	}
-
-	if (max_size > count)
-		for (i = 0; i < *col; i++)
+	if (max_size > count) {
+		for (i = 0; i < *col; i++) {
 			check_alloc(x[i] = (double*) realloc(x[i], sizeof(double) * count));
+		}
+	}
 
 	return x;
 }
@@ -300,22 +294,16 @@ char* getline(char *str, int *size, FILE *fin, unsigned int verbosity) {
 	last = str[strlen(str) - 1];
 
 	while (last != '\n') {
+		// If the line is too long, increase the length and read more data.
 		*size += INPUT_SIZE;
 		check_alloc(hstr = (char*) calloc((size_t) INPUT_SIZE, (size_t) 1));
 		check_alloc(str = (char*) realloc(str, (size_t) * size));
 		ret = fgets(hstr, INPUT_SIZE, fin);
 		strcat(str, hstr);
-		if (verbosity & VER_INPUT)
-			__android_log_print(ANDROID_LOG_DEBUG, "HUMANSENSE",
-					"Line in file too long. Increasing input size\n");
 		last = str[strlen(str) - 1];
 		free(hstr);
 	}
-
-	if (ret == NULL)
-		return NULL;
-	else
-		return str;
+	return str;
 }
 
 #undef SIZE_STEP

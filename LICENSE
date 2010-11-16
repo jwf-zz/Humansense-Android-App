@@ -19,6 +19,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
+Contributors and dependencies:
+------------------------------
+
 A number of authors have contributed to this project. Please see CREDITS for 
 author information.
 
@@ -30,3 +33,15 @@ This project links with LRUCache.java which is Copyright (c) Christian
 d'Heureuse (http://www.source-code.biz), and licensed under the LGPL 
 (http://www.gnu.org/licenses/lgpl.html. The package name was changed, but 
 no other modifications were made.
+
+This project links to a slightly modified version of the Approximate Nearest
+Neighbour (ANN) library, which is found in jni/ANN. The code was changed to 
+allow it to be built for the Android platform. The ANN code is licensed under 
+the GNU Lesser General Public Library license, a copy of which can be found in 
+jni/ANN/License.txt.
+
+This project makes use of a modified version of the cxcore library from the 
+OpenCV project. Changes were made to this code to allow it to be built for the
+Android platform, and all of the code is included in jni/cxcore. The license
+for these files are included at the beginning of the files.
+ 

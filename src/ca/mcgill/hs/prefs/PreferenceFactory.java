@@ -20,8 +20,8 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.util.AttributeSet;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.plugin.Plugin;
+import ca.mcgill.hs.util.Log;
 
 /**
  * An API allowing plugin programmers to easily generate preference objects.
@@ -84,15 +84,15 @@ public class PreferenceFactory {
 				}
 			}
 		} catch (final IllegalArgumentException e) {
-			e.printStackTrace();
+			Log.e(TAG, e);
 		} catch (final SecurityException e) {
-			e.printStackTrace();
+			Log.e(TAG, e);
 		} catch (final IllegalAccessException e) {
-			e.printStackTrace();
+			Log.e(TAG, e);
 		} catch (final InvocationTargetException e) {
-			e.printStackTrace();
+			Log.e(TAG, e);
 		} catch (final NoSuchMethodException e) {
-			e.printStackTrace();
+			Log.e(TAG, e);
 		}
 		return root;
 	}

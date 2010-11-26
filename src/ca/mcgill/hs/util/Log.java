@@ -46,14 +46,26 @@ public class Log {
 		android.util.Log.d(tag, msg);
 	}
 
+	public static void d(final String tag, final Throwable e) {
+		d(tag, android.util.Log.getStackTraceString(e));
+	}
+
 	public static void e(final String tag, final String msg) {
 		log(tag, msg, "E");
 		android.util.Log.e(tag, msg);
 	}
 
+	public static void e(final String tag, final Throwable e) {
+		e(tag, android.util.Log.getStackTraceString(e));
+	}
+
 	public static void i(final String tag, final String msg) {
 		log(tag, msg, "I");
 		android.util.Log.e(tag, msg);
+	}
+
+	public static void i(final String tag, final Throwable e) {
+		i(tag, android.util.Log.getStackTraceString(e));
 	}
 
 	private static void log(final String tag, final String msg,
@@ -76,9 +88,17 @@ public class Log {
 		android.util.Log.e(tag, msg);
 	}
 
+	public static void v(final String tag, final Throwable e) {
+		v(tag, android.util.Log.getStackTraceString(e));
+	}
+
 	public static void w(final String tag, final String msg) {
 		log(tag, msg, "W");
 		android.util.Log.e(tag, msg);
+	}
+
+	public static void w(final String tag, final Throwable e) {
+		w(tag, android.util.Log.getStackTraceString(e));
 	}
 
 }

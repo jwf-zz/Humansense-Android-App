@@ -246,7 +246,7 @@ public abstract class Location {
 				timestamp = cursor.getDouble(0);
 			} catch (final CursorIndexOutOfBoundsException e) {
 				Log.e(TAG, "UNABLE TO GET TIMESTAMP FOR LOCATION " + getId());
-				e.printStackTrace();
+				Log.e(TAG, e);
 			} finally {
 				cursor.close();
 			}

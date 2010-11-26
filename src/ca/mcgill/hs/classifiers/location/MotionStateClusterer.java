@@ -108,7 +108,7 @@ public class MotionStateClusterer {
 		try {
 			outputLog = new BufferedWriter(new FileWriter(f));
 		} catch (final IOException e) {
-			e.printStackTrace();
+			Log.e(TAG, e);
 			outputLog = null;
 		}
 
@@ -157,7 +157,7 @@ public class MotionStateClusterer {
 					statsDmp.write(slClusterer.toString());
 					statsDmp.flush();
 				} catch (final IOException e) {
-					e.printStackTrace();
+					Log.e(TAG, e);
 				} finally {
 					statsDmp.close();
 				}
@@ -165,7 +165,7 @@ public class MotionStateClusterer {
 				outputLog.close();
 			}
 		} catch (final IOException e) {
-			e.printStackTrace();
+			Log.e(TAG, e);
 		}
 	}
 
@@ -278,7 +278,7 @@ public class MotionStateClusterer {
 						+ "," + currentCluster + "\n");
 			}
 		} catch (final IOException e) {
-			e.printStackTrace();
+			Log.e(TAG, e);
 		}
 	}
 

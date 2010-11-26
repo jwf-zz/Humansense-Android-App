@@ -41,11 +41,11 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.os.IBinder;
-import ca.mcgill.hs.util.Log;
 import android.widget.Toast;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.HSAndroidPreferences;
 import ca.mcgill.hs.prefs.PreferenceFactory;
+import ca.mcgill.hs.util.Log;
 
 /**
  * A service for uploading data files to a web server. When this service starts,
@@ -402,7 +402,11 @@ public class LogFileUploaderService extends Service {
 	private void unregisterConnectReceiver() {
 		if (connectionReceiverRegistered) {
 			connectionReceiverRegistered = false;
-			unregisterReceiver(connectReceiver);
+			try {
+				unregisterReceiver(connectReceiver);
+			} catch (final IllegalArgumentException e) {
+				Log.e(TAG, e.getMessage());
+			}
 		}
 	}
 

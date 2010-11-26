@@ -16,8 +16,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.util.LRUCache;
+import ca.mcgill.hs.util.Log;
 
 /**
  * Manages a set of Wifi-based Location fingerprints
@@ -155,7 +155,7 @@ public final class WifiLocationSet extends LocationSet {
 						"/sdcard/hsandroidapp/data/wificlusters.db"), new File(
 						"/data/data/ca.mcgill.hs/databases/wificlusters.db"));
 			} catch (final IOException e) {
-				e.printStackTrace();
+				Log.e(TAG, e);
 			}
 		}
 		dbHelper = new WifiDatabaseHelper(context, "wificlusters.db", null, 1);
@@ -283,7 +283,7 @@ public final class WifiLocationSet extends LocationSet {
 						"/sdcard/hsandroidapp/data/wificlusters.db"));
 			}
 		} catch (final IOException e) {
-			e.printStackTrace();
+			Log.e(TAG, e);
 		} finally {
 			db = null;
 		}

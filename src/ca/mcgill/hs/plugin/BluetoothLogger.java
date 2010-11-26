@@ -16,9 +16,9 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.PreferenceFactory;
+import ca.mcgill.hs.util.Log;
 
 /**
  * Logs observable bluetooth devices
@@ -254,7 +254,7 @@ public class BluetoothLogger extends InputPlugin {
 						Log.e(BLUETOOTH_THREAD_TAG,
 								"Expected thread interruption");
 					} else {
-						e.printStackTrace();
+						Log.e(BLUETOOTH_THREAD_TAG, e);
 					}
 				}
 			}

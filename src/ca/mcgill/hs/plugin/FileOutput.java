@@ -22,7 +22,6 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSPacket;
@@ -31,6 +30,7 @@ import ca.mcgill.hs.plugin.SensorLogger.SensorPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiPacket;
 import ca.mcgill.hs.prefs.PreferenceFactory;
 import ca.mcgill.hs.serv.LogFileUploaderService;
+import ca.mcgill.hs.util.Log;
 
 /**
  * An OutputPlugin which writes data to files.
@@ -74,8 +74,7 @@ public class FileOutput extends OutputPlugin {
 						: packet.addresses.get(i));
 			}
 		} catch (final IOException e) {
-			Log.e(PLUGIN_NAME, "Caught IOException (BluetoothPacket parsing)");
-			e.printStackTrace();
+			Log.e(PLUGIN_NAME, e);
 		}
 	}
 
@@ -98,10 +97,7 @@ public class FileOutput extends OutputPlugin {
 			outputStream.writeDouble(packet.latitude);
 			outputStream.writeDouble(packet.longitude);
 		} catch (final IOException e) {
-			Log
-					.e(PLUGIN_NAME,
-							"Caught IOException (GPSLocationPacket parsing)");
-			e.printStackTrace();
+			Log.e(PLUGIN_NAME, e);
 		}
 	}
 
@@ -129,8 +125,7 @@ public class FileOutput extends OutputPlugin {
 				outputStream.writeInt(packet.rssis[i]);
 			}
 		} catch (final IOException e) {
-			Log.e(PLUGIN_NAME, "Caught IOException (GSMLoggerPacket parsing)");
-			e.printStackTrace();
+			Log.e(PLUGIN_NAME, e);
 		}
 	}
 
@@ -158,8 +153,7 @@ public class FileOutput extends OutputPlugin {
 				outputStream.writeFloat(packet.orientation[i]);
 			}
 		} catch (final IOException e) {
-			Log.e(PLUGIN_NAME, "Caught IOException (WifiLoggerPacket parsing)");
-			e.printStackTrace();
+			Log.e(PLUGIN_NAME, e);
 		}
 	}
 
@@ -182,8 +176,7 @@ public class FileOutput extends OutputPlugin {
 				outputStream.writeUTF(packet.BSSIDs[i]);
 			}
 		} catch (final IOException e) {
-			Log.e(PLUGIN_NAME, "Caught IOException (WifiLoggerPacket parsing)");
-			e.printStackTrace();
+			Log.e(PLUGIN_NAME, e);
 		}
 	}
 
@@ -332,7 +325,7 @@ public class FileOutput extends OutputPlugin {
 				it.remove();
 			} catch (final IOException e) {
 				Log.e(PLUGIN_NAME, "Caught IOException");
-				e.printStackTrace();
+				Log.e(PLUGIN_NAME, e);
 			}
 		}
 
@@ -376,8 +369,8 @@ public class FileOutput extends OutputPlugin {
 					}
 				}
 			}
-		} catch (final IOException ioe) {
-			ioe.printStackTrace();
+		} catch (final IOException e) {
+			Log.e(PLUGIN_NAME, e);
 		}
 
 		if (prefs.getBoolean("autoUploadData", false)) {
@@ -415,7 +408,7 @@ public class FileOutput extends OutputPlugin {
 								new FileOutputStream(fh), bufferSize))));
 			} catch (final IOException e) {
 				Log.e(PLUGIN_NAME, "Caught IOException");
-				e.printStackTrace();
+				Log.e(PLUGIN_NAME, e);
 				return null;
 			}
 		}

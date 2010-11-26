@@ -34,7 +34,6 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.util.AttributeSet;
-import ca.mcgill.hs.util.Log;
 import android.util.Xml;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -52,6 +51,7 @@ import ca.mcgill.hs.network.LogServerClient;
 import ca.mcgill.hs.plugin.SensorLogger.SensorPacket;
 import ca.mcgill.hs.prefs.ManageModelsFileManager;
 import ca.mcgill.hs.prefs.PreferenceFactory;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.widget.LingeringNotificationWidget;
 
 /**
@@ -86,7 +86,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 										.writeFloat(classProbs[i]);
 							} catch (final IOException e) {
 								// TODO Auto-generated catch block
-								e.printStackTrace();
+								Log.e(PLUGIN_NAME, e);
 							}
 
 						}
@@ -197,9 +197,9 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 				eventType = xpp.next();
 			}
 		} catch (final XmlPullParserException e) {
-			e.printStackTrace();
+			Log.e(PLUGIN_NAME, e);
 		} catch (final IOException e) {
-			e.printStackTrace();
+			Log.e(PLUGIN_NAME, e);
 		}
 		return attrs;
 	}
@@ -250,7 +250,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 					building = true;
 				} catch (final IOException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					Log.e(PLUGIN_NAME, e);
 				}
 
 			}
@@ -419,7 +419,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 							makeToast("Saved model for activity: " + label);
 						} catch (final IOException e) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							Log.e(PLUGIN_NAME, e);
 						}
 					}
 
@@ -437,7 +437,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 			graphIntent.send();
 		} catch (final CanceledException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.e(PLUGIN_NAME, e);
 		}
 	}
 
@@ -451,7 +451,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 				displayModelData();
 			} catch (final IOException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.e(PLUGIN_NAME, e);
 			}
 		}
 	}
@@ -484,9 +484,9 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 				modelNames.add(f.getName().split("\\.")[0]);
 			}
 		} catch (final FileNotFoundException e) {
-			e.printStackTrace();
+			Log.e(PLUGIN_NAME, e);
 		} catch (final IOException e) {
-			e.printStackTrace();
+			Log.e(PLUGIN_NAME, e);
 		}
 
 	}
@@ -514,7 +514,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 				try {
 					modelFileWriter.write(m.toString() + "\n");
 				} catch (final IOException e) {
-					e.printStackTrace();
+					Log.e(PLUGIN_NAME, e);
 				}
 			}
 		} else if (classifying) {
@@ -692,9 +692,9 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 						Log
 								.d(PLUGIN_NAME,
 										"Error setting up SSH tunnel. Cannot find ssh command in /data/local/bin.");
-						e.printStackTrace();
+						Log.e(PLUGIN_NAME, e);
 					} catch (final InterruptedException e) {
-						e.printStackTrace();
+						Log.e(PLUGIN_NAME, e);
 					}
 				}
 			}
@@ -712,7 +712,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 				Log
 						.d(PLUGIN_NAME,
 								"Error tearing down SSH tunnel. Cannot find busybox command in /data/local.");
-				e.printStackTrace();
+				Log.e(PLUGIN_NAME, e);
 			} finally {
 				tunnel.destroy();
 			}

@@ -29,7 +29,6 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Paint.Align;
 import android.os.Environment;
-import ca.mcgill.hs.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -38,6 +37,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.util.ActivityIndex;
+import ca.mcgill.hs.util.Log;
 
 /**
  * This is the main view for the MagnitudeGraph activity. It draws the activity
@@ -171,6 +171,7 @@ public class MagnitudeGraphView extends View {
 	private ActivityIndex indexOfActivities;
 
 	private MagnitudeGraph.GraphClosedRunnable onGraphClosed = null;
+	private static final String TAG = "MagnitudeGraphView";
 
 	/**
 	 * The basic constructor for this object. This draws a graph with the
@@ -251,9 +252,9 @@ public class MagnitudeGraphView extends View {
 				oos.close();
 				fos.close();
 			} catch (final FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (final IOException i) {
-				i.printStackTrace();
+				Log.e(TAG, e);
+			} catch (final IOException e) {
+				Log.e(TAG, e);
 			}
 		} else {
 			// Code to read the activity index file, this will stay here.
@@ -269,13 +270,13 @@ public class MagnitudeGraphView extends View {
 				ois.close();
 				fis.close();
 			} catch (final FileNotFoundException e) {
-				e.printStackTrace();
+				Log.e(TAG, e);
 			} catch (final OptionalDataException e) {
-				e.printStackTrace();
+				Log.e(TAG, e);
 			} catch (final ClassNotFoundException e) {
-				e.printStackTrace();
+				Log.e(TAG, e);
 			} catch (final IOException e) {
-				e.printStackTrace();
+				Log.e(TAG, e);
 			}
 		}
 

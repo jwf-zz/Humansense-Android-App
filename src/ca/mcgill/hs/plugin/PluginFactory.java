@@ -10,9 +10,11 @@ import java.util.Map;
 
 import android.content.Context;
 import android.content.res.XmlResourceParser;
+import ca.mcgill.hs.util.Log;
 
 public final class PluginFactory {
 	private static Context context = null;
+	private static final String TAG = "PluginFactory";
 
 	private static final Map<Class<? extends OutputPlugin>, OutputPlugin> outputPlugins = new HashMap<Class<? extends OutputPlugin>, OutputPlugin>();
 	private final static Class<?>[] outputPluginClasses = { FileOutput.class,
@@ -41,7 +43,7 @@ public final class PluginFactory {
 				plugin = type.getConstructor(Context.class)
 						.newInstance(context);
 			} catch (final Exception e) {
-				e.printStackTrace();
+				Log.e(TAG, e);
 			}
 			inputPlugins.put(type, plugin);
 		}
@@ -70,7 +72,7 @@ public final class PluginFactory {
 				plugin = type.getConstructor(Context.class)
 						.newInstance(context);
 			} catch (final Exception e) {
-				e.printStackTrace();
+				Log.e(TAG, e);
 			}
 			outputPlugins.put(type, plugin);
 		}

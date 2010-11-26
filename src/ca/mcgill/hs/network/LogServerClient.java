@@ -62,7 +62,7 @@ public class LogServerClient {
 				cdataOut.writeUTF(joinCommas(classNames));
 				Log.d(TAG, "Initialied CDATA Connection.");
 			} catch (final IOException e) {
-				e.printStackTrace();
+				Log.e(TAG, e);
 				return null;
 			}
 		}
@@ -79,7 +79,7 @@ public class LogServerClient {
 				classOut.writeUTF(joinCommas(classNames));
 				Log.d(TAG, "Initialied Classify Connection.");
 			} catch (final IOException e) {
-				e.printStackTrace();
+				Log.e(TAG, e);
 				return null;
 			}
 		}

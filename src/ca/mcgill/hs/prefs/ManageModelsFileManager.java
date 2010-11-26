@@ -15,13 +15,13 @@ import java.io.IOException;
 import java.util.HashSet;
 
 import android.os.Environment;
-import ca.mcgill.hs.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ListView;
 import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
+import ca.mcgill.hs.util.Log;
 
 public class ManageModelsFileManager extends FileManager {
 
@@ -104,14 +104,14 @@ public class ManageModelsFileManager extends FileManager {
 					}
 					writer.close();
 				} catch (final IOException e) {
-					e.printStackTrace();
+					Log.e(TAG, e);
 				} finally {
 					if (writer != null) {
 						try {
 							writer.close();
 						} catch (final IOException e) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							Log.e(TAG, e);
 						}
 					}
 				}

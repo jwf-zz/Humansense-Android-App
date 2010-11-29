@@ -16,13 +16,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.classifiers.location.GPSClusterer;
 import ca.mcgill.hs.classifiers.location.WifiClusterer;
 import ca.mcgill.hs.classifiers.location.WifiObservation;
 import ca.mcgill.hs.plugin.WifiLogger.WifiPacket;
 import ca.mcgill.hs.prefs.PreferenceFactory;
+import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.widget.LocationStatusWidget;
 
 /**
@@ -172,7 +172,6 @@ public class LocationClusterer extends OutputPlugin {
 
 	public LocationClusterer(final Context context) {
 		this.context = context;
-
 		prefs = PreferenceFactory.getSharedPreferences(context);
 	}
 

@@ -26,6 +26,10 @@ public final class PluginFactory {
 			BluetoothLogger.class, GPSLogger.class, GSMLogger.class,
 			SensorLogger.class, WifiLogger.class };
 
+	public static Context getContext() {
+		return context;
+	}
+
 	/**
 	 * Creates a new Input Plugin or returns the already-created plugin. This
 	 * ensures that plugins are singletons. Context must be set before calling
@@ -42,10 +46,10 @@ public final class PluginFactory {
 			try {
 				plugin = type.getConstructor(Context.class)
 						.newInstance(context);
+				inputPlugins.put(type, plugin);
 			} catch (final Exception e) {
 				Log.e(TAG, e);
 			}
-			inputPlugins.put(type, plugin);
 		}
 		return plugin;
 	}
@@ -71,10 +75,10 @@ public final class PluginFactory {
 			try {
 				plugin = type.getConstructor(Context.class)
 						.newInstance(context);
+				outputPlugins.put(type, plugin);
 			} catch (final Exception e) {
 				Log.e(TAG, e);
 			}
-			outputPlugins.put(type, plugin);
 		}
 		return plugin;
 	}

@@ -352,8 +352,15 @@ public class PreferenceFactory {
 	}
 
 	public static SharedPreferences getSharedPreferences(final Context context) {
-		return PreferenceManager.getDefaultSharedPreferences(context
+		SharedPreferences prefs = null;
+		// try {
+		prefs = PreferenceManager.getDefaultSharedPreferences(context
 				.getApplicationContext());
+		// } catch (final NullPointerException e) {
+		// Log.e(TAG, e);
+		// prefs = null;
+		// }
+		return prefs;
 	}
 
 	/**

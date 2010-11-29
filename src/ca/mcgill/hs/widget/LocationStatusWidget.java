@@ -19,11 +19,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.IBinder;
-import ca.mcgill.hs.util.Log;
 import android.widget.RemoteViews;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.LocationClusterer;
 import ca.mcgill.hs.plugin.PluginFactory;
+import ca.mcgill.hs.util.Log;
 
 public class LocationStatusWidget extends AppWidgetProvider {
 	public static class UpdateService extends Service {
@@ -63,7 +63,9 @@ public class LocationStatusWidget extends AppWidgetProvider {
 		}
 
 		public RemoteViews buildUpdate(final Context context) {
-
+			if (PluginFactory.getContext() == null) {
+				PluginFactory.setContext(context);
+			}
 			final LocationClusterer locationPlugin = (LocationClusterer) PluginFactory
 					.getOutputPlugin(LocationClusterer.class);
 			boolean moving = false;

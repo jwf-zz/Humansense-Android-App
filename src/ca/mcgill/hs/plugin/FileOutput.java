@@ -322,12 +322,12 @@ public class FileOutput extends OutputPlugin {
 			try {
 				final int id = it.next();
 				fileHandles.get(id).close();
-				it.remove();
 			} catch (final IOException e) {
 				Log.e(PLUGIN_NAME, "Caught IOException");
 				Log.e(PLUGIN_NAME, e);
 			}
 		}
+		fileHandles.clear();
 
 		// In this block, we move all files that are in live (the most recent
 		// files) into the recent directory.
@@ -473,6 +473,7 @@ public class FileOutput extends OutputPlugin {
 
 	@Override
 	protected void onPluginStart() {
+		Log.d(PLUGIN_NAME, "onPluginStart");
 		pluginEnabled = prefs.getBoolean(FILE_OUTPUT_ENABLED_PREF, false);
 		bufferSize = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY,
 				BUFFER_SIZE_DEFAULT));
@@ -486,6 +487,7 @@ public class FileOutput extends OutputPlugin {
 	 */
 	@Override
 	protected void onPluginStop() {
+		Log.d(PLUGIN_NAME, "onPluginStop");
 		pluginStopping = true;
 
 		// Wait until all threads have finished writing.
@@ -493,6 +495,7 @@ public class FileOutput extends OutputPlugin {
 		}
 
 		closeAll();
+		pluginStopping = false;
 	}
 
 	/**

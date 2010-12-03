@@ -120,8 +120,8 @@ public class LogFileUploaderService extends Service {
 	public static final int IOEXCEPTION_ERROR_CODE = 0x3;
 	public static final int UPLOAD_FAILED_ERROR_CODE = 0x4;
 	public static final int NO_CONNECTION_ERROR = 0x5;
-	private int FINAL_ERROR_CODE;
-	private int TEMP_ERROR_CODE;
+	public static final int UPLOAD_FAILED_FILE_NOT_FOUND_ERROR_CODE = 0x6;
+	private int CURRENT_ERROR_CODE;
 
 	/* WIFI MANAGER */
 	private WifiManager wifiMgr;
@@ -237,7 +237,7 @@ public class LogFileUploaderService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		prefs = PreferenceFactory.getSharedPreferences(this);
-		FINAL_ERROR_CODE = NO_ERROR_CODE;
+		CURRENT_ERROR_CODE = NO_ERROR_CODE;
 		shutdownIntent = new Intent(this, LogFileUploaderService.class);
 		UNUPLOADED_PATH = (String) getBaseContext().getResources().getText(
 				R.string.recent_file_path);
@@ -323,7 +323,7 @@ public class LogFileUploaderService extends Service {
 		notificationMgr.cancel(NOTIFICATION_ID);
 		// If we are on automatic uploading, do not notify the user.
 		if (!automatic) {
-			switch (FINAL_ERROR_CODE) {
+			switch (CURRENT_ERROR_CODE) {
 			case NO_ERROR_CODE:
 				if (filesUploaded == 1) {
 					makeToast(getResources().getString(
@@ -452,7 +452,6 @@ public class LogFileUploaderService extends Service {
 	 * @return A code indicating the result of the upload.
 	 */
 	private int uploadFile(final String fileName) {
-		TEMP_ERROR_CODE = NO_ERROR_CODE;
 		Log.d(TAG, "Uploading " + fileName);
 		httpclient = new DefaultHttpClient();
 		httpclient.getParams().setParameter(
@@ -465,7 +464,7 @@ public class LogFileUploaderService extends Service {
 			// File may be deleted while in the queue for uploading
 			Log.d(TAG, "Unable to upload " + fileName
 					+ ". File does not exist.");
-			return TEMP_ERROR_CODE;
+			return UPLOAD_FAILED_FILE_NOT_FOUND_ERROR_CODE;
 		}
 		httppost.addHeader("MAC", wifiInfo.getMacAddress());
 		final MultipartEntity mpEntity = new MultipartEntity();
@@ -488,11 +487,12 @@ public class LogFileUploaderService extends Service {
 
 			if (!responseMsg.contains("SUCCESS 0x64asv65")) {
 				Log.i(TAG, "Server Response: " + responseMsg);
-				FINAL_ERROR_CODE = UPLOAD_FAILED_ERROR_CODE;
-				TEMP_ERROR_CODE = UPLOAD_FAILED_ERROR_CODE;
+				CURRENT_ERROR_CODE = UPLOAD_FAILED_ERROR_CODE;
+				return UPLOAD_FAILED_ERROR_CODE;
 			}
 			// Move files to uploaded folder if successful
-			if (TEMP_ERROR_CODE == NO_ERROR_CODE) {
+			else {
+				Log.i(TAG, "Moving file to uploaded directory.");
 				final File dest = new File(Environment
 						.getExternalStorageDirectory(), (String) getResources()
 						.getText(R.string.uploaded_file_path));
@@ -512,18 +512,18 @@ public class LogFileUploaderService extends Service {
 
 		} catch (final MalformedURLException ex) {
 			Log.e(TAG, android.util.Log.getStackTraceString(ex));
-			FINAL_ERROR_CODE = MALFORMEDURLEXCEPTION_ERROR_CODE;
+			CURRENT_ERROR_CODE = MALFORMEDURLEXCEPTION_ERROR_CODE;
 			return MALFORMEDURLEXCEPTION_ERROR_CODE;
 		} catch (final UnknownHostException uhe) {
 			Log.e(TAG, android.util.Log.getStackTraceString(uhe));
-			FINAL_ERROR_CODE = UNKNOWNHOSTEXCEPTION_ERROR_CODE;
+			CURRENT_ERROR_CODE = UNKNOWNHOSTEXCEPTION_ERROR_CODE;
 			return UNKNOWNHOSTEXCEPTION_ERROR_CODE;
 		} catch (final IOException ioe) {
 			Log.e(TAG, android.util.Log.getStackTraceString(ioe));
-			FINAL_ERROR_CODE = IOEXCEPTION_ERROR_CODE;
+			CURRENT_ERROR_CODE = IOEXCEPTION_ERROR_CODE;
 			return IOEXCEPTION_ERROR_CODE;
 		}
-		return TEMP_ERROR_CODE;
+		return NO_ERROR_CODE;
 	}
 
 	/**
@@ -540,9 +540,11 @@ public class LogFileUploaderService extends Service {
 						final String f = fileList.remove();
 						final int retCode = uploadFile(f);
 						if (retCode != NO_ERROR_CODE) {
-							// In case of an IOException, the file is skipped.
+							// If the file is missing, or there is some problem
+							// reading the file, then the file is skipped.
 							// Otherwise it is put back into the queue.
-							if (retCode != IOEXCEPTION_ERROR_CODE) {
+							if (retCode != UPLOAD_FAILED_FILE_NOT_FOUND_ERROR_CODE
+									&& retCode != IOEXCEPTION_ERROR_CODE) {
 								fileList.addLast(f);
 								if (ff == null) {
 									ff = f;
@@ -581,7 +583,7 @@ public class LogFileUploaderService extends Service {
 							connectionReceiverRegistered = true;
 							return;
 						} else {
-							FINAL_ERROR_CODE = NO_CONNECTION_ERROR;
+							CURRENT_ERROR_CODE = NO_CONNECTION_ERROR;
 							break;
 						}
 					}

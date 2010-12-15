@@ -14,12 +14,11 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.os.PowerManager;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.PreferenceFactory;
+import ca.mcgill.hs.util.Log;
 
 /**
  * An InputPlugin which gets data from the wifi base stations that are currently
@@ -38,8 +37,41 @@ public final class WifiLogger extends InputPlugin {
 
 		@Override
 		public void onReceive(final Context c, final Intent intent) {
-			final List<ScanResult> results = wifi.getScanResults();
-			processResults(results);
+			Log.d(PLUGIN_NAME, "onReceive");
+			synchronized (this) {
+				final List<ScanResult> results = wifi.getScanResults();
+				processResults(results);
+			}
+		}
+
+		/**
+		 * Processes the results sent by the Wifi scan and writes them out.
+		 */
+		private void processResults(final List<ScanResult> results) {
+			Log.d(PLUGIN_NAME, "processResults");
+			final int numResults = results.size();
+			final long timestamp = System.currentTimeMillis();
+			final int[] levels = new int[numResults];
+			final String[] SSIDs = new String[numResults];
+			final String[] BSSIDs = new String[numResults];
+
+			int i = 0;
+			for (final ScanResult sr : results) {
+				levels[i] = sr.level;
+				SSIDs[i] = sr.SSID;
+				BSSIDs[i] = sr.BSSID;
+				i++;
+			}
+
+			write(new WifiPacket(numResults, timestamp, levels, SSIDs, BSSIDs));
+			if (scanPending) {
+				Log.d(PLUGIN_NAME, "Scan pending, starting a new scan.");
+				scanPending = false;
+				wifiManager.startScan();
+			} else {
+				Log.d(PLUGIN_NAME, "No scan pending.");
+				scanning = false;
+			}
 		}
 	}
 
@@ -138,7 +170,7 @@ public final class WifiLogger extends InputPlugin {
 
 	private final WifiManager.WifiLock wifiLock;
 
-	private final PowerManager.WakeLock wakeLock;
+	// private final PowerManager.WakeLock wakeLock;
 
 	// A WifiManager used to request scans.
 	private final WifiManager wifiManager;
@@ -178,10 +210,13 @@ public final class WifiLogger extends InputPlugin {
 		wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_SCAN_ONLY,
 				PLUGIN_NAME);
 		wifiLock.setReferenceCounted(false);
-		final PowerManager pm = (PowerManager) context
-				.getSystemService(Context.POWER_SERVICE);
-		wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, PLUGIN_NAME);
-		wakeLock.setReferenceCounted(false);
+		/*
+		 * final PowerManager pm = (PowerManager) context
+		 * .getSystemService(Context.POWER_SERVICE); wakeLock =
+		 * pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, PLUGIN_NAME);
+		 * wakeLock.setReferenceCounted(false);
+		 */
+		Log.d(PLUGIN_NAME, "plugin initialized");
 	}
 
 	/**
@@ -211,11 +246,11 @@ public final class WifiLogger extends InputPlugin {
 			@Override
 			public void run() {
 				try {
+					threadRunning = true;
 					while (threadRunning) {
 						if (!wifiManager.pingSupplicant()) {
-							Log
-									.d(PLUGIN_NAME,
-											"Uh-Oh, Supplicant isn't responding to requests.");
+							Log.d(PLUGIN_NAME,
+									"Uh-Oh, Supplicant isn't responding to requests.");
 						}
 						if (!scanning) {
 							scanning = true;
@@ -225,15 +260,15 @@ public final class WifiLogger extends InputPlugin {
 						}
 						sleep(sleepIntervalMillisecs);
 					}
+					Log.d(PLUGIN_NAME,
+							"Scanning loop complete, thread terminating.");
 				} catch (final InterruptedException e) {
-					Log
-							.e(PLUGIN_NAME,
-									"Logging thread terminated due to InterruptedException.");
+					Log.e(PLUGIN_NAME,
+							"Logging thread terminated due to InterruptedException.");
 				}
 			}
 		};
 		wifiLoggerThread.start();
-		threadRunning = true;
 	}
 
 	/**
@@ -242,11 +277,11 @@ public final class WifiLogger extends InputPlugin {
 	 */
 	@Override
 	protected void onPluginStop() {
-		if (threadRunning) {
-			threadRunning = false;
-			context.unregisterReceiver(loggerReceiver);
-			Log.i(PLUGIN_NAME, "Unegistered receiver.");
-		}
+		scanPending = false;
+		scanning = false;
+		threadRunning = false;
+		context.unregisterReceiver(loggerReceiver);
+		Log.i(PLUGIN_NAME, "Unegistered receiver.");
 		if (wifiLock.isHeld()) {
 			wifiLock.release();
 		}
@@ -260,38 +295,7 @@ public final class WifiLogger extends InputPlugin {
 		final boolean pluginEnabledNew = prefs.getBoolean(
 				WIFI_LOGGER_ENABLE_PREF, false);
 		updatePreferences();
-		// final String enabled = pluginEnabledNew ? "enabled" : "disabled";
-		// Log.d(PLUGIN_NAME, "Preferences changed. Plugin is " + enabled
-		// + ", logging interval is " + sleepIntervalMillisecs);
 		super.changePluginEnabledStatus(pluginEnabledNew);
-	}
-
-	/**
-	 * Processes the results sent by the Wifi scan and writes them out.
-	 */
-	private void processResults(final List<ScanResult> results) {
-
-		final int numResults = results.size();
-		final long timestamp = System.currentTimeMillis();
-		final int[] levels = new int[numResults];
-		final String[] SSIDs = new String[numResults];
-		final String[] BSSIDs = new String[numResults];
-
-		int i = 0;
-		for (final ScanResult sr : results) {
-			levels[i] = sr.level;
-			SSIDs[i] = sr.SSID;
-			BSSIDs[i] = sr.BSSID;
-			i++;
-		}
-
-		write(new WifiPacket(numResults, timestamp, levels, SSIDs, BSSIDs));
-		if (scanPending) {
-			scanPending = false;
-			wifiManager.startScan();
-		} else {
-			scanning = false;
-		}
 	}
 
 	private void updatePreferences() {

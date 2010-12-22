@@ -1,13 +1,7 @@
 LOCAL_PATH:= $(call my-dir)
-
 include $(CLEAR_VARS)
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/../
-#	$(LOCAL_PATH)/../../ext/astl/include/ \
-#	$(LOCAL_PATH)/../../ext/bionic/libstdc++/include/
-
-LOCAL_MODULE    := libcxcore
-LOCAL_LDLIBS    := -llog
+LOCAL_ARM_MODE := arm
 
 LOCAL_SRC_FILES := \
 	cxjacobieigens.cpp \
@@ -40,5 +34,12 @@ LOCAL_SRC_FILES := \
 	cxcmp.cpp \
 	cxtables.cpp \
 	cxmatrix.cpp
+
+LOCAL_CFLAGS += -O3 -fstrict-aliasing -fprefetch-loop-arrays
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/../
+
+LOCAL_MODULE:= libcxcore
+LOCAL_MODULE_FILENAME:= libcxcore
+LOCAL_LDLIBS:= -llog
 
 include $(BUILD_STATIC_LIBRARY)

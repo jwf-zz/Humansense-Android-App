@@ -11,31 +11,11 @@ import android.os.Environment;
 
 public class Log {
 
-	private static final boolean logToFile = true;
-
+	private static boolean logToFile = false;
 	private static BufferedWriter logWriter;
 	static {
-		if (logToFile) {
-			final File logDir = new File(Environment
-					.getExternalStorageDirectory(), "hsandroidapp/log/");
-			if (!logDir.isDirectory()) {
-				logDir.mkdirs();
-			}
-
-			final SimpleDateFormat dfm = new SimpleDateFormat("yy-MM-dd-HHmmss");
-			final File logFile = new File(logDir, dfm.format(new Date(System
-					.currentTimeMillis()))
-					+ ".log");
-			try {
-				logWriter = new BufferedWriter(new FileWriter(logFile));
-			} catch (final IOException e) {
-				android.util.Log.e("ca.mcgill.hs.util.Log", android.util.Log
-						.getStackTraceString(e));
-				logWriter = null;
-			}
-		} else {
-			logWriter = null;
-		}
+		// CHANGE THIS TO CHANGE DEFAULT, DON'T CHANGE logToFile VALUE.
+		setLogToFile(false);
 	}
 
 	private final static SimpleDateFormat dfm = new SimpleDateFormat(
@@ -72,15 +52,49 @@ public class Log {
 			final String prefix) {
 		if (logToFile && logWriter != null) {
 			try {
-				logWriter.write(dfm
-						.format(new Date(System.currentTimeMillis()))
-						+ " " + prefix + "/" + tag + ": " + msg + "\n");
+				logWriter
+						.write(dfm.format(new Date(System.currentTimeMillis()))
+								+ " " + prefix + "/" + tag + ": " + msg + "\n");
 				logWriter.flush();
 			} catch (final IOException e) {
-				android.util.Log.e("ca.mcgill.hs.util.Log", android.util.Log
-						.getStackTraceString(e));
+				android.util.Log.e("ca.mcgill.hs.util.Log",
+						android.util.Log.getStackTraceString(e));
 			}
 		}
+	}
+
+	public static void setLogToFile(final boolean logToFile) {
+		if (Log.logToFile && !logToFile) {
+			// Stop Logging
+			try {
+				logWriter.close();
+			} catch (final IOException e) {
+				e.printStackTrace();
+			}
+			logWriter = null;
+		} else if (!Log.logToFile && logToFile) {
+			// Start Logging
+			final File logDir = new File(
+					Environment.getExternalStorageDirectory(),
+					"hsandroidapp/log/");
+			if (!logDir.isDirectory()) {
+				logDir.mkdirs();
+			}
+
+			final SimpleDateFormat dfm = new SimpleDateFormat("yy-MM-dd-HHmmss");
+			final File logFile = new File(logDir, dfm.format(new Date(System
+					.currentTimeMillis())) + ".log");
+			try {
+				logWriter = new BufferedWriter(new FileWriter(logFile));
+			} catch (final IOException e) {
+				android.util.Log.e("ca.mcgill.hs.util.Log",
+						android.util.Log.getStackTraceString(e));
+				logWriter = null;
+			}
+
+		}
+		Log.logToFile = logToFile;
+
 	}
 
 	public static void v(final String tag, final String msg) {

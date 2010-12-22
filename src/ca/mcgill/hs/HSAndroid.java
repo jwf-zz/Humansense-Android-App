@@ -19,6 +19,7 @@ import ca.mcgill.hs.plugin.PluginFactory;
 import ca.mcgill.hs.prefs.HSAndroidPreferences;
 import ca.mcgill.hs.prefs.PreferenceFactory;
 import ca.mcgill.hs.serv.HSService;
+import ca.mcgill.hs.util.Log;
 
 /**
  * This Activity is the entry point to the HSAndroid application. This Activity
@@ -60,8 +61,11 @@ public class HSAndroid extends Activity {
 	 */
 	public static void updateButton() {
 		if (serviceSwitch != null) {
-			serviceSwitch.setText((HSService.isRunning() ? R.string.stop_label
-					: R.string.start_label));
+			if (HSService.isRunning()) {
+				serviceSwitch.setText(R.string.stop_label);
+			} else {
+				serviceSwitch.setText(R.string.start_label);
+			}
 		}
 	}
 
@@ -73,6 +77,9 @@ public class HSAndroid extends Activity {
 				.getSharedPreferences(this);
 		autoStartAppStart = prefs.getBoolean(
 				HSAndroidPreferences.AUTO_START_AT_APP_START_PREF, false);
+		final boolean logToFile = prefs.getBoolean(
+				HSAndroidPreferences.LOG_TO_FILE_PREF, false);
+		Log.setLogToFile(logToFile);
 	}
 
 	/**
@@ -85,6 +92,10 @@ public class HSAndroid extends Activity {
 
 		context = getApplicationContext();
 		PreferenceFactory.setContext(context);
+
+		// Setup preferences
+		getPrefs();
+
 		PluginFactory.setContext(context);
 		HSService.initializeInputPlugins();
 		HSService.initializeOutputPlugins();
@@ -121,31 +132,26 @@ public class HSAndroid extends Activity {
 		// Intent
 		serviceIntent = new Intent(this, HSService.class);
 
-		// Setup preferences
-		getPrefs();
+		// Buttons
+		serviceSwitch = (Button) findViewById(R.id.button);
+		serviceSwitch.setText(R.string.start_label);
+		serviceSwitch.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(final View v) {
+				if (!HSService.isRunning()) { // NOT RUNNING
+					// Debug.startMethodTracing("hsandroid");
+					startService(serviceIntent);
+				} else { // RUNNING
+					stopService(serviceIntent);
+					// Debug.stopMethodTracing();
+				}
+			}
+		});
 
 		// Auto App Start
 		if (autoStartAppStart) {
 			startService(serviceIntent);
 		}
-
-		// Buttons
-		serviceSwitch = (Button) findViewById(R.id.button);
-		serviceSwitch.setText(HSService.isRunning() ? R.string.stop_label
-				: R.string.start_label);
-		serviceSwitch.setOnClickListener(new View.OnClickListener() {
-			public void onClick(final View v) {
-				if (!HSService.isRunning()) { // NOT RUNNING
-					// Debug.startMethodTracing("hsandroid");
-					startService(serviceIntent);
-					serviceSwitch.setText(R.string.stop_label);
-				} else { // RUNNING
-					stopService(serviceIntent);
-					serviceSwitch.setText(R.string.start_label);
-					// Debug.stopMethodTracing();
-				}
-			}
-		});
 	}
 
 	/**

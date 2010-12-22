@@ -55,6 +55,7 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 		}
 	}
 
+	@Override
 	public boolean isEnabled() {
 		return pluginEnabled;
 	}
@@ -105,6 +106,7 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	 * The DataPacket are passed to onDataReceived() one at a time for as long
 	 * as this plugin is running and dpList is not empty.
 	 */
+	@Override
 	public synchronized void run() {
 		while (!packetList.isEmpty()) {
 			final DataPacket packet = packetList.removeFirst();
@@ -115,6 +117,7 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	/**
 	 * Starts the plugin and calls onPluginStart().
 	 */
+	@Override
 	public final void startPlugin() {
 		onPluginStart();
 	}
@@ -122,6 +125,7 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	/**
 	 * Stops the plugin and calls onPluginStop().
 	 */
+	@Override
 	public final void stopPlugin() {
 		onPluginStop();
 	}

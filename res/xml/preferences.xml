@@ -16,6 +16,12 @@
 		android:key="autoStartAtPhoneBoot"
 		android:summary="@string/auto_start_at_phone_boot_pref"
 		/>
+		<CheckBoxPreference
+		android:title="@string/log_to_file_pref_title"
+		android:defaultValue="false"
+		android:key="logToFilePref"
+		android:summary="@string/log_to_file_pref"
+		/>
 		
 	</PreferenceCategory>
 	

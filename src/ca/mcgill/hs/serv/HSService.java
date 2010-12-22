@@ -8,6 +8,7 @@ package ca.mcgill.hs.serv;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -17,7 +18,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.DataPacket;
@@ -25,6 +25,7 @@ import ca.mcgill.hs.plugin.InputPlugin;
 import ca.mcgill.hs.plugin.OutputPlugin;
 import ca.mcgill.hs.plugin.PluginFactory;
 import ca.mcgill.hs.prefs.PreferenceFactory;
+import ca.mcgill.hs.util.Log;
 
 /**
  * The main service that runs in the background and manages the communication
@@ -48,7 +49,7 @@ public class HSService extends Service {
 			.getOutputPluginClassList();
 
 	// ExecutorService
-	private static final ExecutorService tpe = Executors.newCachedThreadPool();
+	private static ExecutorService tpe;
 
 	// This is a BroadcastReceiver in order to signal to the plugins that a
 	// preference has changed.
@@ -182,7 +183,9 @@ public class HSService extends Service {
 		for (final OutputPlugin plugin : outputPluginList) {
 			plugin.stopPlugin();
 		}
+		shutdownAndAwaitTermination(tpe);
 		isRunning = false;
+		HSAndroid.updateButton();
 	}
 
 	/**
@@ -200,6 +203,9 @@ public class HSService extends Service {
 		final int notification_id = getResources().getString(
 				R.string.started_notification_text).hashCode();
 		startForeground(notification_id, getServiceStartedNotification());
+
+		// Create a new thread pool for handling output plugins
+		tpe = Executors.newCachedThreadPool();
 
 		Log.d(TAG, "Sending start signal to " + outputPluginList.size()
 				+ " output plugins.");
@@ -219,7 +225,25 @@ public class HSService extends Service {
 				new IntentFilter(PreferenceFactory.PREFERENCES_CHANGED_INTENT));
 
 		isRunning = true;
-
 		HSAndroid.updateButton();
+	}
+
+	void shutdownAndAwaitTermination(final ExecutorService pool) {
+		pool.shutdown(); // Disable new tasks from being submitted
+		try {
+			// Wait a while for existing tasks to terminate
+			if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+				pool.shutdownNow(); // Cancel currently executing tasks
+				// Wait a while for tasks to respond to being canceled
+				if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+					Log.e(TAG, "Pool did not terminate");
+				}
+			}
+		} catch (final InterruptedException ie) {
+			// (Re-)Cancel if current thread also interrupted
+			pool.shutdownNow();
+			// Preserve interrupt status
+			Thread.currentThread().interrupt();
+		}
 	}
 }

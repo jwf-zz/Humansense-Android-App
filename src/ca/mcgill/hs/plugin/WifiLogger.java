@@ -40,7 +40,9 @@ public final class WifiLogger extends InputPlugin {
 			Log.d(PLUGIN_NAME, "onReceive");
 			synchronized (this) {
 				final List<ScanResult> results = wifi.getScanResults();
-				processResults(results);
+				if (results != null) {
+					processResults(results);
+				}
 			}
 		}
 
@@ -163,8 +165,6 @@ public final class WifiLogger extends InputPlugin {
 		return true;
 	}
 
-	// The Thread for requesting scans.
-	private Thread wifiLoggerThread;
 	// A boolean detailing whether or not the Thread is running.
 	private boolean threadRunning = false;
 
@@ -242,7 +242,7 @@ public final class WifiLogger extends InputPlugin {
 				WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 		Log.i(PLUGIN_NAME, "Registered receiver.");
 
-		wifiLoggerThread = new Thread() {
+		new Thread() {
 			@Override
 			public void run() {
 				try {
@@ -267,8 +267,7 @@ public final class WifiLogger extends InputPlugin {
 							"Logging thread terminated due to InterruptedException.");
 				}
 			}
-		};
-		wifiLoggerThread.start();
+		}.start();
 	}
 
 	/**
@@ -280,8 +279,13 @@ public final class WifiLogger extends InputPlugin {
 		scanPending = false;
 		scanning = false;
 		threadRunning = false;
-		context.unregisterReceiver(loggerReceiver);
-		Log.i(PLUGIN_NAME, "Unegistered receiver.");
+		try {
+			context.unregisterReceiver(loggerReceiver);
+			Log.i(PLUGIN_NAME, "Unegistered receiver.");
+		} catch (final IllegalArgumentException e) {
+			Log.e(PLUGIN_NAME, "Exception unregistering wifilogging receiver");
+			Log.e(PLUGIN_NAME, e);
+		}
 		if (wifiLock.isHeld()) {
 			wifiLock.release();
 		}

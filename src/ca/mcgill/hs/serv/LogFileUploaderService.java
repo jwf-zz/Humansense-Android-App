@@ -121,6 +121,7 @@ public class LogFileUploaderService extends Service {
 	public static final int UPLOAD_FAILED_ERROR_CODE = 0x4;
 	public static final int NO_CONNECTION_ERROR = 0x5;
 	public static final int UPLOAD_FAILED_FILE_NOT_FOUND_ERROR_CODE = 0x6;
+	public static final int ILLEGALSTATEEXCEPTION_ERROR_CODE = 0x7;
 	private int CURRENT_ERROR_CODE;
 
 	/* WIFI MANAGER */
@@ -356,6 +357,10 @@ public class LogFileUploaderService extends Service {
 				makeToast(getResources().getString(
 						R.string.uploader_no_connection), Toast.LENGTH_SHORT);
 				break;
+			case ILLEGALSTATEEXCEPTION_ERROR_CODE:
+				makeToast(getResources().getString(
+						R.string.uploader_upload_failed), Toast.LENGTH_SHORT);
+				break;
 			default:
 				break;
 			}
@@ -510,18 +515,22 @@ public class LogFileUploaderService extends Service {
 				}
 			}
 
-		} catch (final MalformedURLException ex) {
-			Log.e(TAG, android.util.Log.getStackTraceString(ex));
+		} catch (final MalformedURLException e) {
+			Log.e(TAG, android.util.Log.getStackTraceString(e));
 			CURRENT_ERROR_CODE = MALFORMEDURLEXCEPTION_ERROR_CODE;
 			return MALFORMEDURLEXCEPTION_ERROR_CODE;
-		} catch (final UnknownHostException uhe) {
-			Log.e(TAG, android.util.Log.getStackTraceString(uhe));
+		} catch (final UnknownHostException e) {
+			Log.e(TAG, android.util.Log.getStackTraceString(e));
 			CURRENT_ERROR_CODE = UNKNOWNHOSTEXCEPTION_ERROR_CODE;
 			return UNKNOWNHOSTEXCEPTION_ERROR_CODE;
-		} catch (final IOException ioe) {
-			Log.e(TAG, android.util.Log.getStackTraceString(ioe));
+		} catch (final IOException e) {
+			Log.e(TAG, android.util.Log.getStackTraceString(e));
 			CURRENT_ERROR_CODE = IOEXCEPTION_ERROR_CODE;
 			return IOEXCEPTION_ERROR_CODE;
+		} catch (final IllegalStateException e) {
+			Log.e(TAG, android.util.Log.getStackTraceString(e));
+			CURRENT_ERROR_CODE = ILLEGALSTATEEXCEPTION_ERROR_CODE;
+			return ILLEGALSTATEEXCEPTION_ERROR_CODE;
 		}
 		return NO_ERROR_CODE;
 	}

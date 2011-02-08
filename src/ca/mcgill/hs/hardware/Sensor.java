@@ -13,8 +13,10 @@ import android.os.Bundle;
  * An attempt at building our own sensor interface, in hopes of retreiving
  * sensor readings at a more regular frequency than is provided by the APIs.
  * 
- * NOTE: This class currently does not do anything useful. This is a work in
+ * TODO: This class currently does not do anything useful. This is a work in
  * progress.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public class Sensor {
 

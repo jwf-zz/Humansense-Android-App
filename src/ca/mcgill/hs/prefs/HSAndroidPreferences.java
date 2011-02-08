@@ -14,9 +14,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
+import android.preference.PreferenceActivity;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
-import android.preference.PreferenceActivity;
 import android.widget.Toast;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.serv.LogFileUploaderService;
@@ -27,6 +27,7 @@ import ca.mcgill.hs.util.Log;
  * the settings menu for the HSAndroid Activity. Whenever the user accesses the
  * settings from the options menu, this PreferenceActivity is launched.
  * 
+ * @author Jordan Frank, Cicerone Cojocaru, Jonathan Pitre
  */
 public class HSAndroidPreferences extends PreferenceActivity {
 
@@ -110,15 +111,11 @@ public class HSAndroidPreferences extends PreferenceActivity {
 	 */
 	private void makeToast(final String message, final int duration) {
 		final Toast slice = Toast.makeText(getBaseContext(), message, duration);
-		slice.setGravity(slice.getGravity(), slice.getXOffset(),
-				slice.getYOffset() + 100);
+		slice.setGravity(slice.getGravity(), slice.getXOffset(), slice
+				.getYOffset() + 100);
 		slice.show();
 	}
 
-	/**
-	 * This is called when the PreferenceActivity is requested and created. This
-	 * allows the user to visually see the preferences menu on the screen.
-	 */
 	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -198,11 +195,10 @@ public class HSAndroidPreferences extends PreferenceActivity {
 				}
 			}
 		};
-
 		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage(R.string.delete_files_warning)
-				.setPositiveButton(R.string.yes, dialogClickListener)
-				.setNegativeButton(R.string.no, dialogClickListener);
+		builder.setMessage(R.string.delete_files_warning).setPositiveButton(
+				R.string.yes, dialogClickListener).setNegativeButton(
+				R.string.no, dialogClickListener);
 
 		manualClearData
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -238,13 +234,12 @@ public class HSAndroidPreferences extends PreferenceActivity {
 					for (final File f : recent.listFiles()) {
 						f.delete();
 					}
-					makeToast(
-							unuploadedFilesToDelete
-									+ " "
-									+ (unuploadedFilesToDelete == 1 ? getResources()
-											.getString(R.string.file_deleted)
-											: getResources().getString(
-													R.string.files_deleted)),
+					makeToast(unuploadedFilesToDelete
+							+ " "
+							+ (unuploadedFilesToDelete == 1 ? getResources()
+									.getString(R.string.file_deleted)
+									: getResources().getString(
+											R.string.files_deleted)),
 							Toast.LENGTH_SHORT);
 					unuploadedFilesToDelete = getFilesUnuploaded();
 					break;
@@ -277,18 +272,16 @@ public class HSAndroidPreferences extends PreferenceActivity {
 
 		final AlertDialog.Builder unuploadedBuilder = new AlertDialog.Builder(
 				this);
-		unuploadedBuilder
-				.setMessage(
-						getResources().getString(R.string.Delete)
-								+ " "
-								+ getFilesUnuploaded()
-								+ " "
-								+ getResources().getString(R.string.unuploaded)
-								+ " "
-								+ (getFilesUnuploaded() == 1 ? getResources()
-										.getString(R.string.file)
-										: getResources().getString(
-												R.string.files)) + "?")
+		unuploadedBuilder.setMessage(
+				getResources().getString(R.string.Delete)
+						+ " "
+						+ getFilesUnuploaded()
+						+ " "
+						+ getResources().getString(R.string.unuploaded)
+						+ " "
+						+ (getFilesUnuploaded() == 1 ? getResources()
+								.getString(R.string.file) : getResources()
+								.getString(R.string.files)) + "?")
 				.setPositiveButton(R.string.yes, aggressiveClickListener)
 				.setNegativeButton(R.string.no, aggressiveClickListener);
 
@@ -301,9 +294,8 @@ public class HSAndroidPreferences extends PreferenceActivity {
 						if (unuploadedFilesToDelete > 0) {
 							unuploadedBuilder.show();
 						} else {
-							makeToast(
-									getResources().getString(
-											R.string.no_files_to_delete),
+							makeToast(getResources().getString(
+									R.string.no_files_to_delete),
 									Toast.LENGTH_SHORT);
 						}
 						return true;
@@ -330,14 +322,15 @@ public class HSAndroidPreferences extends PreferenceActivity {
 				});
 
 		final CheckBoxPreference wifiOnly = (CheckBoxPreference) findPreference(UPLOAD_OVER_WIFI_ONLY_PREF);
-		wifiOnly.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(final Preference preference,
-					final Object newValue) {
-				wifiOnly.setChecked((Boolean) newValue);
-				broadcastWifiUploaderIntent(c);
-				return false;
-			}
-		});
+		wifiOnly
+				.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+					@Override
+					public boolean onPreferenceChange(
+							final Preference preference, final Object newValue) {
+						wifiOnly.setChecked((Boolean) newValue);
+						broadcastWifiUploaderIntent(c);
+						return false;
+					}
+				});
 	}
 }

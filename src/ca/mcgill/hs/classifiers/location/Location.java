@@ -147,7 +147,7 @@ public abstract class Location {
 	public abstract double distanceFrom(Location other);
 
 	/**
-	 * Creates a new location record
+	 * Creates a new location record.
 	 * 
 	 * @return The id of the new empty location that has been created.
 	 */
@@ -158,6 +158,9 @@ public abstract class Location {
 		return new_id;
 	}
 
+	/**
+	 * @return The id of this location.
+	 */
 	public long getId() {
 		return location_id;
 	}
@@ -165,7 +168,7 @@ public abstract class Location {
 	/**
 	 * Returns this location's neighbours.
 	 * 
-	 * @return This location's neighbours.
+	 * @return A list of this location's neighbours' ids.
 	 */
 	public List<Long> getNeighbours() {
 		if (neighbours == null) {
@@ -208,6 +211,9 @@ public abstract class Location {
 		return num_merged;
 	}
 
+	/**
+	 * @return The number of neighbours for this location.
+	 */
 	public long getNumNeighbours() {
 		if (num_neighbours >= 0) {
 			return num_neighbours;
@@ -226,6 +232,9 @@ public abstract class Location {
 		return num_neighbours;
 	}
 
+	/**
+	 * @return The observations that comprise this location.
+	 */
 	public abstract Observation getObservations();
 
 	/**
@@ -282,7 +291,7 @@ public abstract class Location {
 	 * Removes a set of neighbours from the location.
 	 * 
 	 * @param neighboursToRemove
-	 *            A set of the location's neighbours.
+	 *            A set location ids to remove from the list of neighbours.
 	 */
 	public void removeNeighbours(final Collection<Long> neighboursToRemove) {
 		if (neighbours == null) {
@@ -318,13 +327,29 @@ public abstract class Location {
 
 	}
 
-	public void setNumMerged(final long l) {
-		this.num_merged = l;
+	/**
+	 * Used to keep track of the number of locations that have been merged to
+	 * form the current location. This is used when determining how many
+	 * neighbours a point has, since if two points have been merged to form a
+	 * location, then that location should count as two neighbours.
+	 * 
+	 * @param num
+	 *            The number of locations that have been merged to form this
+	 *            current location.
+	 */
+	public void setNumMerged(final long num) {
+		this.num_merged = num;
 		db.execSQL("UPDATE " + LocationSet.LOCATIONS_TABLE
 				+ " SET num_merged=? WHERE location_id=?", new String[] {
-				Long.toString(l), Long.toString(location_id) });
+				Long.toString(num), Long.toString(location_id) });
 	}
 
+	/**
+	 * Sets the timestamp for this location
+	 * 
+	 * @param timestamp
+	 *            The new timestamp, in milliseconds.
+	 */
 	public void setTimestamp(final double timestamp) {
 		this.timestamp = timestamp;
 		db.execSQL("UPDATE " + LocationSet.LOCATIONS_TABLE

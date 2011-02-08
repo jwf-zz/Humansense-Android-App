@@ -15,6 +15,15 @@ import java.util.List;
 
 import ca.mcgill.hs.util.Log;
 
+/**
+ * Used for demos, this allows the app to connect to a logging server running on
+ * another computer, and send data for visualisation. We create two data
+ * streams, one for sending the class labels from the classifier, and one for
+ * sending the raw sensor data.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+ * 
+ */
 public class LogServerClient {
 	private static final String TAG = "LogServerClient";
 
@@ -44,14 +53,34 @@ public class LogServerClient {
 
 	private DataInputStream cdataIn = null;
 
+	/**
+	 * Creates a client and sets up the socket connection to localhost, port
+	 * 12021. We connect to localhost because we tend to use ssh tunneling to
+	 * forward the local port to the server.
+	 */
 	public LogServerClient() {
 		sockAddr = new InetSocketAddress("localhost", 12021);
 	}
 
+	/**
+	 * Alternatively we can specify the host and port.
+	 * 
+	 * @param host
+	 *            Hostname to connect to.
+	 * @param port
+	 *            Port to connect to.
+	 */
 	public LogServerClient(final String host, final int port) {
 		sockAddr = new InetSocketAddress(host, port);
 	}
 
+	/**
+	 * Returns the stream for sending the raw sensor data.
+	 * 
+	 * @param classNames
+	 *            The list of class labels.
+	 * @return The stream to which raw sensor data should be written.
+	 */
 	public DataOutputStream cdata(final List<String> classNames) {
 		if (!isConnected()) {
 			return null;
@@ -69,6 +98,13 @@ public class LogServerClient {
 		return cdataOut;
 	}
 
+	/**
+	 * Returns the stream for sending the class scores.
+	 * 
+	 * @param classNames
+	 *            The list of class labels.
+	 * @return The stream to which class scores should be written.
+	 */
 	public DataOutputStream classify(final List<String> classNames) {
 		if (!isConnected()) {
 			return null;
@@ -86,6 +122,10 @@ public class LogServerClient {
 		return classOut;
 	}
 
+	/**
+	 * Initializes the connection to the server. Must be called before
+	 * retrieving the output streams.
+	 */
 	public void connect() {
 		try {
 			Log.d(TAG, "Connecting to LogServer");
@@ -125,6 +165,13 @@ public class LogServerClient {
 		}
 	}
 
+	/**
+	 * Closes the connections. Any attempts to write to the output streams after
+	 * calling this method will cause an exception to be thrown.
+	 * 
+	 * @throws IOException
+	 *             Thrown if any of the streams cannot be closed.
+	 */
 	public void disconnect() throws IOException {
 		if (cdataOut != null) {
 			cdataOut.close();
@@ -152,6 +199,10 @@ public class LogServerClient {
 		}
 	}
 
+	/**
+	 * @return True if the connection to the server is active, or false
+	 *         otherwise.
+	 */
 	public boolean isConnected() {
 		return (cdataSock != null && classSock != null);
 	}

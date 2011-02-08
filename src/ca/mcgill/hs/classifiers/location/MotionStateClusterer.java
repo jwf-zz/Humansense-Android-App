@@ -16,14 +16,25 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.content.Context;
 import android.os.Environment;
+import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.util.Log;
 
+/**
+ * Uses modified DBScan clustering to determine the motion state given a
+ * sequence of observations.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+ * 
+ */
 public class MotionStateClusterer {
-	// Contains the timestamp for the observation as well as the index in the
-	// distance matrix for that observation.
+	/**
+	 * Contains the timestamp for the observation as well as the index in the
+	 * distance matrix for that observation.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 */
 	private static final class Tuple {
 		public final double timestamp;
 		public final int index;
@@ -38,7 +49,7 @@ public class MotionStateClusterer {
 
 	private BufferedWriter outputLog = null;
 
-	private static final String RESET_MOVEMENT_STATE_TIMER_NAME = "reset movement state timer";
+	private static final String RESET_MOVEMENT_STATE_TIMER_NAME = "RMSTimer";
 
 	private static final String TAG = "MotionStateClusterer";
 
@@ -47,40 +58,57 @@ public class MotionStateClusterer {
 	private Timer resetMovementTimer;
 	private long currentCluster = -1;
 
-	// Maintain a queue of the Tuples for the observations that are
-	// currently being clustered.
+	/**
+	 * Maintain a queue of the Tuples for the observations that are currently
+	 * being clustered.
+	 */
 	private final LinkedList<Tuple> pool = new LinkedList<Tuple>();
 
-	// Window length, in seconds.
+	/**
+	 * Whether to use a window covering a fixed time period or a fixed number of
+	 * samples.
+	 */
 	private final boolean TIME_BASED_WINDOW;
 
+	/**
+	 * Window length, in either seconds or samples, depending on the value of
+	 * TIME_BASED_WINDOW.
+	 */
 	private final int WINDOW_LENGTH;
 
-	// Delta from the paper. This value represents the percentage of the points
-	// in the pool that must neighbours of a point for it to be considered to be
-	// part of a cluster
+	/**
+	 * Delta from the paper. This value represents the percentage of the points
+	 * in the pool that must neighbours of a point for it to be considered to be
+	 * part of a cluster.
+	 */
 	private final float DELTA;
 
-	// Maintain a lookup table between timestamps and observations, which
-	// are sets of measurements taken at an instance in time.
+	/**
+	 * Maintain a lookup table between timestamps and observations, which are
+	 * sets of measurements taken at an instance in time.
+	 */
 	private final HashMap<Double, Observation> observations;
 
 	private final double[][] distMatrix;
 
-	// True if the previous window was labelled as stationary.
+	/** True if the previous window was labelled as stationary. */
 	private boolean previouslyMoving = true;
-	private boolean currentlyMoving = false;
 
-	// True if the current window was labelled as stationary.
-	// private boolean curStationaryStatus = false;
+	/** True if the current window was labelled as stationary. */
+	private boolean currentlyMoving = false;
 
 	private final SimpleDateFormat dfm = new SimpleDateFormat(
 			"yy-MM-dd-HH:mm:ss");
 
 	private int timerDelay = 1000 * RESET_MOVEMENT_STATE_TIME_IN_SECONDS;
 
-	public MotionStateClusterer(final LocationSet locations,
-			final Context context) {
+	/**
+	 * Creates a new motion state clusterer for a given set of locations.
+	 * 
+	 * @param locations
+	 *            The {@link LocationSet} for storing the locations.
+	 */
+	public MotionStateClusterer(final LocationSet locations) {
 		TIME_BASED_WINDOW = locations.usesTimeBasedWindow();
 		WINDOW_LENGTH = locations.getWindowLength();
 		DELTA = locations.pctOfWindowRequiredToBeStationary();
@@ -102,8 +130,8 @@ public class MotionStateClusterer {
 		final SimpleDateFormat dfm = new SimpleDateFormat("yy-MM-dd-HHmmss");
 
 		final File recent_dir = new File(Environment
-				.getExternalStorageDirectory(), (String) context.getResources()
-				.getText(R.string.recent_file_path));
+				.getExternalStorageDirectory(), HSAndroid
+				.getAppString(R.string.recent_file_path));
 		final File f = new File(recent_dir, dfm.format(d) + "-clusters.log");
 		try {
 			outputLog = new BufferedWriter(new FileWriter(f));
@@ -114,8 +142,10 @@ public class MotionStateClusterer {
 
 	}
 
-	// Adds a new observation to the pool, does some clustering, and then
-	// returns the statuses of each point in the pool.
+	/**
+	 * Adds a new observation to the pool, does some clustering, and then
+	 * returns the statuses of each point in the pool.
+	 */
 	public void addObservation(final double timestamp,
 			final Observation observation) {
 
@@ -146,6 +176,10 @@ public class MotionStateClusterer {
 		cluster(observation.getEPS());
 	}
 
+	/**
+	 * Closes the clusterer and optionally writes statistics about the
+	 * clustering.
+	 */
 	public void close() {
 		try {
 			if (outputLog != null) {
@@ -169,8 +203,14 @@ public class MotionStateClusterer {
 		}
 	}
 
-	protected void cluster(final double eps) {
-		// Perform the clustering
+	/**
+	 * Perform the clustering on the locations currently in the pool.
+	 * 
+	 * @param eps
+	 *            Epsilon from the clustering paper; the maximum distance
+	 *            between two points for them to be considered neighbours.
+	 */
+	private void cluster(final double eps) {
 		final int pool_size = pool.size();
 		final boolean[] clusterStatus = new boolean[WINDOW_LENGTH];
 		for (int i = 0; i < WINDOW_LENGTH; i++) {
@@ -282,12 +322,13 @@ public class MotionStateClusterer {
 		}
 	}
 
-	// Deletes the oldest observation from the pool and returns the index
-	// for that point in the distance matrix, so that it can be reused.
+	/**
+	 * Deletes the oldest observation from the pool and returns the index for
+	 * that point in the distance matrix, so that it can be reused.
+	 */
 	private void deleteOldObservations(final double timestamp) {
-
-		// Delete anything older than WINDOW_LENGTH seconds
 		if (TIME_BASED_WINDOW) {
+			// Delete anything older than WINDOW_LENGTH seconds.
 			while (pool.size() > 0
 					&& (timestamp - pool.getFirst().timestamp > WINDOW_LENGTH || pool
 							.size() >= WINDOW_LENGTH)) {
@@ -302,9 +343,8 @@ public class MotionStateClusterer {
 			}
 		}
 
-		// Only delete the one oldest observation (ie., fixed length sliding
-		// window)
 		else {
+			// Only delete the one oldest observation.
 			if (!pool.isEmpty() && pool.size() >= WINDOW_LENGTH) {
 				final Tuple first = pool.getFirst();
 				observations.remove(first.timestamp);
@@ -318,7 +358,7 @@ public class MotionStateClusterer {
 		}
 	}
 
-	// Returns the first available index in the distance matrix.
+	/** Returns the first available index in the distance matrix. */
 	public int getAvailableIndex() {
 		int idx = 0;
 		while (distMatrix[0][idx] >= 0) {
@@ -327,22 +367,32 @@ public class MotionStateClusterer {
 		return idx;
 	}
 
+	/** Returns some clustering statistics */
 	public String getClusterStatus() {
 		return slClusterer.toString();
 	}
 
+	/**
+	 * Returns the window length in either seconds or samples, depending on the
+	 * value of TIME_BASED_WINDOW.
+	 */
 	public int getMaxTime() {
 		return WINDOW_LENGTH;
 	}
 
+	/**
+	 * Returns the most recently assigned cluster id.
+	 * 
+	 * @return The id of the most recently assigned cluster.
+	 */
 	public long getMostRecentClusterId() {
 		return currentCluster;
 	}
 
-	public int getPoolSize() {
-		return pool.size();
-	}
-
+	/**
+	 * @return True if the most recent observation was deemed moving, or false
+	 *         if it was deemed stationary.
+	 */
 	public boolean lastObservationWasMoving() {
 		return currentlyMoving;
 	}

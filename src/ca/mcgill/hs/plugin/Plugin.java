@@ -11,6 +11,7 @@ package ca.mcgill.hs.plugin;
  * OutputPlugin classes. Plugins should extend these classes instead of
  * implementing this interface.
  * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public interface Plugin {
 	/**
@@ -21,12 +22,12 @@ public interface Plugin {
 	public abstract boolean isEnabled();
 
 	/**
-	 * Sets up the plugin in order for it to run.
+	 * Starts the plugin.
 	 */
 	public abstract void startPlugin();
 
 	/**
-	 * Cleans up once the plugin execution is halted.
+	 * Stops the plugin.
 	 */
 	public abstract void stopPlugin();
 }

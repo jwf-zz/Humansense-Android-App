@@ -9,6 +9,14 @@ import ca.mcgill.hs.prefs.HSAndroidPreferences;
 import ca.mcgill.hs.prefs.PreferenceFactory;
 import ca.mcgill.hs.util.Log;
 
+/**
+ * Stops the background service when the battery power in the device is low. I
+ * don't think that this is working though, this broadcast receiver has never
+ * been called, and I've definitely run the phone out of battery power.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+ * 
+ */
 public class LowBatteryMonitor extends BroadcastReceiver {
 	private static final String TAG = "LowBatteryMonitor";
 

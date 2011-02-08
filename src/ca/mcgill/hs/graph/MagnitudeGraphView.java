@@ -43,12 +43,14 @@ import ca.mcgill.hs.util.Log;
  * This is the main view for the MagnitudeGraph activity. It draws the activity
  * graph between two timestamps, and the user can select bits of it in order to
  * label activities.
+ * 
+ * @author Jordan Frank, Cicerone Cojocaru, Jonathan Pitre
  */
 public class MagnitudeGraphView extends View {
 	/**
 	 * Node class used only for storing labels and timestamps from this graph.
 	 * 
-	 * @author Cicerone Cojocaru
+	 * @author Jordan Frank, Cicerone Cojocaru
 	 * 
 	 */
 	public class Node {

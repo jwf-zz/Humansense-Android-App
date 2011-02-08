@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Debug;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,6 +27,8 @@ import ca.mcgill.hs.util.Log;
  * is launched manually on the phone by the user, and is from where the
  * background services can be manually started and stopped, and where the
  * preferences and settings can be changed.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public class HSAndroid extends Activity {
 
@@ -33,7 +36,17 @@ public class HSAndroid extends Activity {
 
 	private Intent serviceIntent;
 
+	/**
+	 * Whether to start the service automatically when the application is
+	 * loaded.
+	 */
 	private boolean autoStartAppStart = false;
+
+	/**
+	 * Whether to use Debug.MethodTracing to collect profiling information. Make
+	 * sure that this is false for a release version!
+	 */
+	private static final boolean doProfiling = false;
 
 	public static final String HSANDROID_PREFS_NAME = "HSAndroidPrefs";
 	private static Context context = null;
@@ -45,19 +58,33 @@ public class HSAndroid extends Activity {
 	@SuppressWarnings("unused")
 	private static final String TAG = "HSAndroid";
 
-	public static String getAppString(final int resId) {
-		return context.getString(resId);
+	/**
+	 * Fetches a resource string for the specified id from the application
+	 * context.
+	 * 
+	 * @param resourceId
+	 *            for the string to be fetched.
+	 * @return String corresponding to the resourceId
+	 */
+	public static String getAppString(final int resourceId) {
+		return context.getString(resourceId);
 	}
 
+	/**
+	 * Returns a handle to the free space in the main screen where plugins can
+	 * add messages or widgets.
+	 * 
+	 * @return Handle to the free space on the main application layout.
+	 */
 	public static TableLayout getFreeSpace() {
 		return freeSpace;
 	}
 
 	/**
-	 * Updates the main starting button. This is required due to the nature of
-	 * Activities in the Android API. In order to correctly get the state of the
-	 * service to update the button text, this method cannot be called from
-	 * within the Activity.
+	 * Updates the main starting button according to whether the service is
+	 * running or not. Should be called whenever the state of the service is
+	 * changed. Probably a way to do this using Intents or events, but for now
+	 * we rely on it being called manually.
 	 */
 	public static void updateButton() {
 		if (serviceSwitch != null) {
@@ -70,7 +97,9 @@ public class HSAndroid extends Activity {
 	}
 
 	/**
-	 * Sets up the preferences, i.e. get Activity preferences.
+	 * Retrieves the current state of the main application preferences, which
+	 * control whether log data is stored in a file and whether the service
+	 * automatically starts when the application is loaded.
 	 */
 	private void getPrefs() {
 		final SharedPreferences prefs = PreferenceFactory
@@ -84,7 +113,10 @@ public class HSAndroid extends Activity {
 
 	/**
 	 * This method is called when the activity is first created. It is the entry
-	 * point for the application.
+	 * point for the application. Here we set up some important member variables
+	 * such as the application context, the plugin factory, the input and output
+	 * plugins, and the application preferences. We also initialize the GUI
+	 * here.
 	 */
 	@Override
 	public void onCreate(final Bundle savedInstanceState) {
@@ -100,7 +132,8 @@ public class HSAndroid extends Activity {
 		HSService.initializeInputPlugins();
 		HSService.initializeOutputPlugins();
 
-		// // final Sensor s = new Sensor();
+		// Testing code for new sensor interface, disabled for now:
+		// final Sensor s = new Sensor();
 		// Log.d(TAG, "Sensor.androidInit: " + Sensor.androidInit());
 		// Log.d(TAG, "Bundle: " + Sensor.androidOpen());
 		// Log.d(TAG, "Sensor.sensorsModuleInit: " +
@@ -121,11 +154,10 @@ public class HSAndroid extends Activity {
 		//
 		// Log.d(TAG, "Sensor.sensorsDataUnInit: " +
 		// Sensor.sensorsDataUninit());
-
 		// s.sensors_module_get_next_sensor(new Object(), 1);
-
 		// Sensor.sensors_module_init();
 
+		/* Set up the GUI */
 		setContentView(R.layout.main);
 		freeSpace = (TableLayout) findViewById(R.id.free_space);
 
@@ -139,24 +171,29 @@ public class HSAndroid extends Activity {
 			@Override
 			public void onClick(final View v) {
 				if (!HSService.isRunning()) { // NOT RUNNING
-					// Debug.startMethodTracing("hsandroid");
+					if (doProfiling) {
+						Debug.startMethodTracing(TAG);
+					}
 					startService(serviceIntent);
 				} else { // RUNNING
 					stopService(serviceIntent);
-					// Debug.stopMethodTracing();
+					if (doProfiling) {
+						Debug.stopMethodTracing();
+					}
 				}
+				updateButton();
 			}
 		});
 
-		// Auto App Start
 		if (autoStartAppStart) {
+			// Start the service on application start.
 			startService(serviceIntent);
 		}
 	}
 
 	/**
-	 * This method is called whenever the user wants to access the settings
-	 * menu.
+	 * Called when the user access the application's options menu, sets up the
+	 * two icons that appear.
 	 */
 	@Override
 	public boolean onCreateOptionsMenu(final Menu menu) {
@@ -168,8 +205,8 @@ public class HSAndroid extends Activity {
 	}
 
 	/**
-	 * This method is used to parse the selection of options items. These items
-	 * include: - Preferences (settings)
+	 * Loads the appropriate preferences screen depending on which option was
+	 * selected from the options menu.
 	 */
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {

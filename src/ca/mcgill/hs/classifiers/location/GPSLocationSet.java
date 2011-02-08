@@ -11,29 +11,49 @@ import java.util.LinkedList;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.util.LRUCache;
+import ca.mcgill.hs.util.Log;
 
 /**
  * A set containing GPS locations.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public class GPSLocationSet extends LocationSet {
 
+	/**
+	 * The number of locations to cache.
+	 */
+	private static final int CACHE_SIZE = 100;
+	/**
+	 * Used to cache the last 100 most recently used locations, saves on
+	 * database queries.
+	 */
 	private final LRUCache<Long, GPSLocation> locationCache = new LRUCache<Long, GPSLocation>(
-			100);
+			CACHE_SIZE);
 
 	private static final boolean TIME_BASED_WINDOW = false;
 
-	// Window length, in samples.
+	/**
+	 * Window length, in samples.
+	 */
 	private static final int WINDOW_LENGTH = 20;
 
-	// Delta from the paper. This value represents the percentage of the points
-	// in the pool that must neighbours of a point for it to be considered to be
-	// part of a cluster
+	/**
+	 * Delta from the paper. This value represents the percentage of the points
+	 * in the pool that must neighbours of a point for it to be considered to be
+	 * part of a cluster.
+	 */
 	private static final float DELTA = 0.8f;
 
 	private static final String TAG = "GPSLocationSet";
 
+	/**
+	 * Constructor, connects to the database for GPS locations.
+	 * 
+	 * @param dbFile
+	 *            The SQLite database file for the GPS locations.
+	 */
 	public GPSLocationSet(final File dbFile) {
 		final boolean dbExists = dbFile.exists();
 
@@ -52,6 +72,8 @@ public class GPSLocationSet extends LocationSet {
 	@Override
 	public long add(final Location loc) {
 		final GPSLocation location = (GPSLocation) loc;
+
+		cacheLocation(location);
 
 		// Now get potential neighbours
 		final Collection<Long> possibleNeighbours = new LinkedList<Long>();
@@ -94,9 +116,13 @@ public class GPSLocationSet extends LocationSet {
 		return location.getId();
 	}
 
-	@Override
-	public void cacheLocation(final Location location) {
-		locationCache.put(location.getId(), (GPSLocation) location);
+	/**
+	 * Adds a location to the cache.
+	 * 
+	 * @params location The location to be added to the cache.
+	 */
+	private void cacheLocation(final GPSLocation location) {
+		locationCache.put(location.getId(), location);
 	}
 
 	public void close() {
@@ -109,6 +135,14 @@ public class GPSLocationSet extends LocationSet {
 		}
 	}
 
+	/**
+	 * Creates the initial GPS Clustering database. Note that if the database
+	 * already contains information, it will be lost, as the tables are dropped
+	 * before being created.
+	 * 
+	 * @param db
+	 *            The database in which to create the tables.
+	 */
 	private void createDatabase(final SQLiteDatabase db) {
 		/* Locations Table */
 		db.execSQL("DROP TABLE IF EXISTS " + LOCATIONS_TABLE);
@@ -134,13 +168,13 @@ public class GPSLocationSet extends LocationSet {
 						+ "UPDATE "
 						+ LOCATIONS_TABLE
 						+ " SET "
-						+ "latitude_total=OLD.latitude_total+NEW.latitude_total*NEW.latitude_weights, "
-						+ "latitude_weights=OLD.latitude_weights+NEW.latitude_weights, "
-						+ "latitude_average=(OLD.latitude_total+NEW.latitude_total*NEW.latitude_weights)/(OLD.latitude_weights+NEW.latitude_weights), "
-						+ "longitude_total=OLD.longitude_total+NEW.longitude_total*NEW.longitude_weights, "
-						+ "longitude_weights=OLD.longitude_weights+NEW.longitude_weights, "
-						+ "longitude_average=(OLD.longitude_total+NEW.longitude_total*NEW.longitude_weights)/(OLD.longitude_weights+NEW.longitude_weights) "
-						+ "WHERE location_id=NEW.location_id; " + "END;");
+						+ "latitude_total = OLD.latitude_total + NEW.latitude_total*NEW.latitude_weights, "
+						+ "latitude_weights = OLD.latitude_weights + NEW.latitude_weights, "
+						+ "latitude_average = (OLD.latitude_total + NEW.latitude_total * NEW.latitude_weights) / (OLD.latitude_weights + NEW.latitude_weights), "
+						+ "longitude_total = OLD.longitude_total + NEW.longitude_total * NEW.longitude_weights, "
+						+ "longitude_weights = OLD.longitude_weights + NEW.longitude_weights, "
+						+ "longitude_average = (OLD.longitude_total + NEW.longitude_total * NEW.longitude_weights) / (OLD.longitude_weights + NEW.longitude_weights) "
+						+ "WHERE location_id = NEW.location_id; " + "END;");
 		db.execSQL("CREATE INDEX idx_" + LOCATIONS_TABLE + "_latitude ON "
 				+ LOCATIONS_TABLE + " (latitude_average);");
 		db.execSQL("CREATE INDEX idx_" + LOCATIONS_TABLE + "_longitude ON "

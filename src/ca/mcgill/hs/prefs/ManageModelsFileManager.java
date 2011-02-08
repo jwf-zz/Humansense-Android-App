@@ -23,14 +23,24 @@ import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.util.Log;
 
+/**
+ * Allows the user to select which models are used by the TDE classifier.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+ * 
+ */
 public class ManageModelsFileManager extends FileManager {
 
+	/** Directory where the models live. */
 	public static final File MODELS_DIR = new File(Environment
 			.getExternalStorageDirectory(), HSAndroid
 			.getAppString(R.string.models_path));
+
+	/** File containing the active models, one per line. */
 	public static final File MODELS_INI_FILE = new File(Environment
 			.getExternalStorageDirectory(), HSAndroid
 			.getAppString(R.string.model_ini_path));
+
 	private static final String TAG = "ManageModelsFileManager";
 
 	@Override
@@ -71,6 +81,7 @@ public class ManageModelsFileManager extends FileManager {
 				}
 			}
 		}
+		// Create the entries.
 		for (int i = 0; i < files.length; i++) {
 			entries[i] = new CheckListEntry(files[i], checkedEntries
 					.contains(files[i]));
@@ -90,7 +101,7 @@ public class ManageModelsFileManager extends FileManager {
 				.findViewById(R.id.model_files_footer_close_button);
 
 		/*
-		 * Set up the CLOSE button
+		 * Set up the SAVE button
 		 */
 		saveButton.setOnClickListener(new OnClickListener() {
 			@Override

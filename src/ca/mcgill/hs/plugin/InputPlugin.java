@@ -12,17 +12,23 @@ import ca.mcgill.hs.serv.HSService;
 /**
  * Abstract class to be extended by all InputPlugins. Provides an interface for
  * using InputPlugins.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public abstract class InputPlugin implements Plugin {
 
 	/**
-	 * This method returns an array of Preference objects for the given
-	 * InputPlugin. By default, this method returns null. If a specific
-	 * InputPlugin wants to define Preferences, they must override this method.
+	 * Returns an array of Preference objects for the given InputPlugin. By
+	 * default, this method returns null. If a specific InputPlugin wants to
+	 * define Preferences, they must override this method.
+	 * 
+	 * NOTE: This method should never be called, and is just a template for how
+	 * the getPreferences method should be defined. Static methods can't be
+	 * overridden, and so this is just included as a template.
 	 * 
 	 * @param activity
-	 *            The PreferenceActivity in which the preferences will appear
-	 * @return an array of the Preferences of this object.
+	 *            The PreferenceActivity in which the preferences will appear.
+	 * @return An array of the Preferences of this object.
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		return null;
@@ -34,7 +40,11 @@ public abstract class InputPlugin implements Plugin {
 	 * getPreferences(Context) method, they must also override this method to
 	 * let it return true.
 	 * 
-	 * @return whether or not this InputPlugin has preferences.
+	 * NOTE: Just like {@link InputPlugin#getPreferences(PreferenceActivity)},
+	 * this is just a template, and cannot be overridden since it is static.
+	 * 
+	 * @return True if this plugin specifies its own preferences, false
+	 *         otherwise.
 	 */
 	public static boolean hasPreferences() {
 		return false;
@@ -42,6 +52,13 @@ public abstract class InputPlugin implements Plugin {
 
 	protected boolean pluginEnabled;
 
+	/**
+	 * Sets the enabled-status of the plugin, starting or stopping it if
+	 * necessary.
+	 * 
+	 * @param newPluginEnabledStatus
+	 *            The new enabled status for the plugin.
+	 */
 	protected void changePluginEnabledStatus(
 			final boolean newPluginEnabledStatus) {
 		if (pluginEnabled && !newPluginEnabledStatus) {
@@ -53,19 +70,20 @@ public abstract class InputPlugin implements Plugin {
 		}
 	}
 
+	/**
+	 * @return True if the plugin is enabled, false otherwise.
+	 */
 	public boolean isEnabled() {
 		return pluginEnabled;
 	}
 
 	/**
-	 * Called when this InputPlugin is started. This method is meant to be
-	 * overridden.
+	 * Called when this InputPlugin is started.
 	 */
 	protected abstract void onPluginStart();
 
 	/**
-	 * Called when this InputPlugin is stopped. This method is meant to be
-	 * overridden.
+	 * Called when this InputPlugin is stopped.
 	 */
 	protected abstract void onPluginStop();
 
@@ -80,14 +98,14 @@ public abstract class InputPlugin implements Plugin {
 	}
 
 	/**
-	 * Starts the plugin and calls onPluginStart().
+	 * Starts the plugin.
 	 */
 	public final void startPlugin() {
 		onPluginStart();
 	}
 
 	/**
-	 * Stops the plugin and calls onPluginStop().
+	 * Stops the plugin.
 	 */
 	public final void stopPlugin() {
 		onPluginStop();
@@ -97,7 +115,7 @@ public abstract class InputPlugin implements Plugin {
 	 * Passes the given DataPacket to HSService.onDataReady().
 	 * 
 	 * @param packet
-	 *            the given DataPacket to pass.
+	 *            The given DataPacket to pass on to the output plugin streams.
 	 */
 	protected void write(final DataPacket packet) {
 		HSService.onDataReady(packet, this);

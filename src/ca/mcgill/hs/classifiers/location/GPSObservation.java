@@ -13,6 +13,9 @@ public class GPSObservation extends Observation {
 
 	// protected final float speed;
 
+	/**
+	 * Constructs a new GPSObservation with the given parameters.
+	 */
 	public GPSObservation(final double timestamp, final int accuracy,
 			final double latitude, final double longitude) { // , float speed) {
 		this.timestamp = timestamp;
@@ -24,8 +27,11 @@ public class GPSObservation extends Observation {
 
 	@Override
 	public double distanceFrom(final Observation other) {
-
-		// compute distance
+		/*
+		 * Distance is Euclidean. Maybe better to use geodesic distances, but
+		 * we're really only concerned with locations that are really close to
+		 * each other.
+		 */
 		final GPSObservation o = (GPSObservation) other;
 		return Math.sqrt((latitude - o.latitude) * (latitude - o.latitude)
 				+ (longitude - o.longitude) * (longitude - o.longitude));
@@ -33,7 +39,6 @@ public class GPSObservation extends Observation {
 
 	@Override
 	public double getEPS() {
-		// TODO Auto-generated method stub
 		return 1E-5;
 	}
 

@@ -9,26 +9,52 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+/**
+ * A Wifi observation consists of a set of signal strength measurements. Each
+ * measurement consists of a WAP id (BSSID) and rssi. Observations can then be
+ * compared by comparing the signal strengths of common WAPs.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+ * 
+ */
 public class WifiObservation extends Observation {
 	protected final HashMap<Integer, Integer> measurements;
-	protected int num_observations;
+	protected int num_measurements;
 	protected double timestamp;
 
-	// ETA is the percentage of aps that must be shared for two
-	// observations to have a finite distance between them.
+	/**
+	 * ETA is the percentage of aps that must be shared for two observations to
+	 * have a finite distance between them.
+	 */
 	protected static final float ETA = 0.3f;
 
-	// Everything is more efficient if size is the true number of measurements,
-	// but things will still work fine if it isn't.
+	/**
+	 * Constructs a new observation with the specified timestamp and size.
+	 * 
+	 * @param timestamp
+	 *            The timestamp, in milliseconds, for this observation.
+	 * @param size
+	 *            An initial guess as to the number of observed WAPs for this
+	 *            observation. Doesn't have to be correct, but things are a
+	 *            little more efficient if it is.
+	 */
 	public WifiObservation(final double timestamp, final int size) {
 		this.timestamp = timestamp;
 		measurements = new HashMap<Integer, Integer>((int) (size / 0.75f));
-		num_observations = 0;
+		num_measurements = 0;
 	}
 
-	public void addObservation(final int ap_id, final int signal_strength) {
+	/**
+	 * Adds a new measurement to this observation.
+	 * 
+	 * @param ap_id
+	 *            The id of the WAP
+	 * @param signal_strength
+	 *            Signal strength measurement (RSSI)
+	 */
+	public void addMeasurement(final int ap_id, final int signal_strength) {
 		measurements.put(ap_id, signal_strength);
-		num_observations += 1;
+		num_measurements += 1;
 	}
 
 	@Override
@@ -41,7 +67,7 @@ public class WifiObservation extends Observation {
 		WifiObservation p1, p2;
 		int num_common = 0; // |C| in the paper
 		double dist = 0.0f;
-		if (this.num_observations <= observation.num_observations) {
+		if (this.num_measurements <= observation.num_measurements) {
 			p1 = this;
 			p2 = observation;
 		} else {
@@ -61,7 +87,7 @@ public class WifiObservation extends Observation {
 				num_common += 1;
 			}
 		}
-		if ((float) num_common / (float) p2.num_observations > ETA) {
+		if ((float) num_common / (float) p2.num_measurements > ETA) {
 			dist = Math.sqrt((1.0f / num_common) * dist);
 		} else {
 			dist = Double.POSITIVE_INFINITY;
@@ -71,10 +97,12 @@ public class WifiObservation extends Observation {
 
 	@Override
 	public double getEPS() {
-		// TODO Auto-generated method stub
 		return 6.0;
 	}
 
+	/**
+	 * @return The timestamp, in milliseconds, associated with this observation.
+	 */
 	public double getTimeStamp() {
 		return timestamp;
 	}

@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import ca.mcgill.hs.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -22,10 +21,14 @@ import android.widget.RemoteViews;
 import android.widget.TextView;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.LocationClusterer;
+import ca.mcgill.hs.util.Log;
 
 /**
  * The dialog for labeling locations. This is called by the LocationStatusWidget
- * when someone
+ * when the user chooses to provide a label for an unknown location, or change
+ * the label for a known location.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public class LocationLabelerDialog extends Activity {
 	public static final String TAG = "LocationLabelerDialog";

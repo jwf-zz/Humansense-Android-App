@@ -9,6 +9,13 @@ import java.util.Date;
 
 import android.os.Environment;
 
+/**
+ * Wrap the android logging methods to allow for optional logging to a file, and
+ * easy logging of exceptions.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+ * 
+ */
 public class Log {
 
 	private static boolean logToFile = false;
@@ -52,17 +59,23 @@ public class Log {
 			final String prefix) {
 		if (logToFile && logWriter != null) {
 			try {
-				logWriter
-						.write(dfm.format(new Date(System.currentTimeMillis()))
-								+ " " + prefix + "/" + tag + ": " + msg + "\n");
+				logWriter.write(dfm
+						.format(new Date(System.currentTimeMillis()))
+						+ " " + prefix + "/" + tag + ": " + msg + "\n");
 				logWriter.flush();
 			} catch (final IOException e) {
-				android.util.Log.e("ca.mcgill.hs.util.Log",
-						android.util.Log.getStackTraceString(e));
+				android.util.Log.e("ca.mcgill.hs.util.Log", android.util.Log
+						.getStackTraceString(e));
 			}
 		}
 	}
 
+	/**
+	 * Set up the log file, if logging to file is enabled.
+	 * 
+	 * @param logToFile
+	 *            Specifies whether to log to a file or not.
+	 */
 	public static void setLogToFile(final boolean logToFile) {
 		if (Log.logToFile && !logToFile) {
 			// Stop Logging
@@ -74,21 +87,21 @@ public class Log {
 			logWriter = null;
 		} else if (!Log.logToFile && logToFile) {
 			// Start Logging
-			final File logDir = new File(
-					Environment.getExternalStorageDirectory(),
-					"hsandroidapp/log/");
+			final File logDir = new File(Environment
+					.getExternalStorageDirectory(), "hsandroidapp/log/");
 			if (!logDir.isDirectory()) {
 				logDir.mkdirs();
 			}
 
 			final SimpleDateFormat dfm = new SimpleDateFormat("yy-MM-dd-HHmmss");
 			final File logFile = new File(logDir, dfm.format(new Date(System
-					.currentTimeMillis())) + ".log");
+					.currentTimeMillis()))
+					+ ".log");
 			try {
 				logWriter = new BufferedWriter(new FileWriter(logFile));
 			} catch (final IOException e) {
-				android.util.Log.e("ca.mcgill.hs.util.Log",
-						android.util.Log.getStackTraceString(e));
+				android.util.Log.e("ca.mcgill.hs.util.Log", android.util.Log
+						.getStackTraceString(e));
 				logWriter = null;
 			}
 

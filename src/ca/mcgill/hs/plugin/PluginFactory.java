@@ -12,6 +12,12 @@ import android.content.Context;
 import android.content.res.XmlResourceParser;
 import ca.mcgill.hs.util.Log;
 
+/**
+ * We use a factory pattern since we need to ensure that plugins are singletons.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+ * 
+ */
 public final class PluginFactory {
 	private static Context context = null;
 	private static final String TAG = "PluginFactory";
@@ -88,10 +94,27 @@ public final class PluginFactory {
 		return (Class<? extends OutputPlugin>[]) outputPluginClasses;
 	}
 
+	/**
+	 * Helper function, allowing plugins to dynamically instantiate preferences
+	 * that are stored as XML chunks in the application resources. For example
+	 * of its use, see {@link TDEClassifierPlugin#getThresholdAttributes()}
+	 * 
+	 * @param id
+	 *            The resource id for the XML block.
+	 * @return The XML Resources associated with the id.
+	 */
 	public static XmlResourceParser getXmlResourceParser(final int id) {
 		return context.getResources().getXml(id);
 	}
 
+	/**
+	 * Sets the application context. Must be called before any of the other
+	 * methods will work properly.
+	 * 
+	 * @param context
+	 *            The application context in which the plugins will be
+	 *            instantiated.
+	 */
 	public static void setContext(final Context context) {
 		PluginFactory.context = context;
 	}

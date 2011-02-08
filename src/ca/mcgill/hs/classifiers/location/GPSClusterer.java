@@ -9,13 +9,27 @@ import java.io.File;
 
 import android.content.Context;
 
+//TODO: Make this work.
+/**
+ * Clusters GPS data based on locations in which the user spends a significant
+ * amount of time. Doesn't work yet!
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+ * 
+ */
 public class GPSClusterer {
 	private final GPSLocationSet locations;
 	private final MotionStateClusterer pool;
 
+	/**
+	 * Doesn't work yet.
+	 * 
+	 * @param dbFile
+	 * @param context
+	 */
 	public GPSClusterer(final File dbFile, final Context context) {
 		locations = new GPSLocationSet(dbFile);
-		pool = new MotionStateClusterer(locations, context);
+		pool = new MotionStateClusterer(locations);
 	}
 
 	/**
@@ -25,9 +39,14 @@ public class GPSClusterer {
 		locations.close();
 	}
 
-	// Returns a list the same length as timestamps that contains the votes
-	// for each event. A positive value indicates motion, while a negative value
-	// indicates stationarity.
+	/**
+	 * Adds a new observation to the cluster pool.
+	 * 
+	 * @param timestamp
+	 *            Timestamp in milliseconds associated with this observation.
+	 * @param observation
+	 *            The {@link GPSObservation} to be clustered.
+	 */
 	public void cluster(final double timestamp, final GPSObservation observation) {
 		pool.addObservation(timestamp, observation);
 	}

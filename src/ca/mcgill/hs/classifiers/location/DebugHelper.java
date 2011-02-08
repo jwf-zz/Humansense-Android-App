@@ -7,7 +7,16 @@ package ca.mcgill.hs.classifiers.location;
 
 import java.io.PrintStream;
 
+/**
+ * Some helpful routines for debugging the database-related code.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+ * 
+ */
 public class DebugHelper {
+	/**
+	 * Controls whether we want to log verbose debugging information.
+	 */
 	public static final boolean DEBUG = false;
 	public static PrintStream out;
 	static {

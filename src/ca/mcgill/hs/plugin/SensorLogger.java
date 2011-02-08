@@ -5,6 +5,8 @@
  */
 package ca.mcgill.hs.plugin;
 
+import java.util.List;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
@@ -13,14 +15,22 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.PreferenceFactory;
+import ca.mcgill.hs.util.Log;
 
 /**
  * An InputPlugin which gets data from the phone's hardware sensors.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public class SensorLogger extends InputPlugin implements SensorEventListener {
+	/**
+	 * Data packet containing sensor data.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
 	public static class SensorPacket implements DataPacket {
 
 		final long time;
@@ -75,9 +85,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	private static final String SENSOR_LOGGER_CALCULATE_ORIENTATION = "calculateOrientationPreference";
 
 	/**
-	 * Returns the list of Preference objects for this InputPlugin.
-	 * 
-	 * @return An array of the Preferences of this object.
+	 * @see InputPlugin#getPreferences(PreferenceActivity)
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		final Preference[] prefs = new Preference[3];
@@ -105,6 +113,9 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 		return prefs;
 	}
 
+	/**
+	 * @see InputPlugin#hasPreferences()
+	 */
 	public static boolean hasPreferences() {
 		return true;
 	}
@@ -114,10 +125,13 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 
 	// A boolean checking whether or not we are logging at a given moment.
 	private boolean logging = false;
+
 	// The speed at which the accelerometer will log.
 	private int loggingSpeed;
+
 	// Offset for timestamps
 	private long timestamp_offset = 0;
+
 	// Variables used to write out the sensor data received.
 	private float temperature = 0.0f;
 
@@ -132,10 +146,11 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	private boolean calculateOrientation;
 
 	/**
-	 * This is the basic constructor for the SensorLogger plugin.
+	 * Construct a sensor logger.
 	 * 
 	 * @param context
-	 *            The application context.
+	 *            The application context, required to access the sensor manager
+	 *            and preferences.
 	 */
 	public SensorLogger(final Context context) {
 		sensorManager = (SensorManager) context
@@ -158,24 +173,11 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 				orientation));
 	}
 
-	/**
-	 * This method gets called automatically whenever a sensor's accuracy has
-	 * changed. We currently ignore this event.
-	 * 
-	 * @param sensor
-	 *            The SensorEvent detailing the change in sensor data.
-	 * @param accuracy
-	 *            The new accuracy.
-	 * 
-	 * 
-	 */
 	@Override
 	public void onAccuracyChanged(final Sensor sensor, final int accuracy) {
+		// Ignore this event.
 	}
 
-	/**
-	 * Registers the appropriate listeners using the SensorManager.
-	 */
 	@Override
 	protected void onPluginStart() {
 		loggingSpeed = Integer.parseInt(prefs.getString(
@@ -186,6 +188,16 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 		if (!pluginEnabled) {
 			return;
 		}
+
+		// Print a list of available sensors
+		Log.i(PLUGIN_NAME, "Available Sensors:");
+		final List<Sensor> sensors = sensorManager
+				.getSensorList(Sensor.TYPE_ALL);
+		for (final Sensor s : sensors) {
+			printSensorSummary(s);
+		}
+
+		// TODO: Should check to see if the sensors actually exist.
 		Log.i(PLUGIN_NAME, "Registered Sensor Listener");
 		sensorManager.registerListener(this, sensorManager
 				.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), loggingSpeed);
@@ -198,9 +210,6 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 		logging = true;
 	}
 
-	/**
-	 * Unregisters the appropriate listeners using the SensorManager.
-	 */
 	@Override
 	protected void onPluginStop() {
 		if (!pluginEnabled) {
@@ -216,9 +225,6 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 		logging = false;
 	}
 
-	/**
-	 * This method gets called whenever the preferences have been changed.
-	 */
 	@Override
 	public void onPreferenceChanged() {
 		boolean changed = false;
@@ -293,6 +299,18 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 				logAccelerometerData(event.values, event.timestamp / 1000000
 						+ timestamp_offset);
 			}
+		}
+	}
+
+	private void printSensorSummary(final Sensor s) {
+		if (s != null) {
+			Log.i(PLUGIN_NAME, "    Sensor: " + s.getVendor() + " "
+					+ s.getName());
+			Log.i(PLUGIN_NAME, "        Max Range  : " + s.getMaximumRange());
+			// Requires API Level 9
+			// Log.i(PLUGIN_NAME, "        Min Delay  : " + s.getMinDelay());
+			Log.i(PLUGIN_NAME, "        Resolution : " + s.getResolution());
+			Log.i(PLUGIN_NAME, "        Power Usage: " + s.getPower() + " mA");
 		}
 	}
 }

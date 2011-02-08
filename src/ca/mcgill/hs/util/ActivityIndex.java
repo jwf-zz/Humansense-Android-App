@@ -7,6 +7,12 @@ package ca.mcgill.hs.util;
 
 import java.io.Serializable;
 
+/**
+ * Represents activity/label pairs for the activity recognition stuff.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+ * 
+ */
 public class ActivityIndex implements Serializable {
 	private static final long serialVersionUID = -676311444086980081L;
 	public final String[] activityNames;

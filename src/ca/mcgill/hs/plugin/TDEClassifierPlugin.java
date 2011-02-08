@@ -60,8 +60,19 @@ import ca.mcgill.hs.widget.LingeringNotificationWidget;
  * 
  * Also classifies according to time-delay embedding models (Frank et al, 2010)
  * if they exist in the models folder.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public final class TDEClassifierPlugin extends OutputPlugin {
+	/**
+	 * Thread for the classifier, the Handler gets notified with the starting
+	 * index in the data buffer, and passes that on to the classifier. If
+	 * connected to a remote logging server, the class probabilities are sent to
+	 * the server.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
 	private static final class ClassifierThread extends Thread {
 		public static Handler mHandler = null;
 
@@ -109,11 +120,11 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 	private long timeMoving = 0;
 	private long timeMovingWithoutStopping = 0;
 	private static float[] cumulativeClassProbs = null;
-	// Preference key for this plugin's state
+
+	// Preference keys
 	private final static String PLUGIN_ACTIVE_KEY = "tdeClassifierEnabled";
 	private final static String ACCEL_THRESHOLD_KEY = "accelerometerThreshold";
 	private final static int ACCEL_THRESHOLD_DEFAULT = 100;
-
 	private final static String ACCEL_WINDOW_KEY = "accelerometerWindowSize";
 	private final static String ACCEL_WINDOW_DEFAULT = "25";
 	public static final String MANAGE_MODELS_PREF = "manageModels";
@@ -124,9 +135,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 	private static final int QUIT_MESSAGE = 1;
 
 	/**
-	 * Returns the list of Preference objects for this OutputPlugin.
-	 * 
-	 * @return an array of the Preferences of this object.
+	 * @see OutputPlugin#getPreferences(PreferenceActivity)
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		final Preference[] prefs = new Preference[6];
@@ -179,6 +188,11 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 		return prefs;
 	}
 
+	/**
+	 * Get the attributes for the seek-bar (slider)
+	 * 
+	 * @return The set of attributes for the threshold slider.
+	 */
 	private static AttributeSet getThresholdAttributes() {
 		final XmlResourceParser xpp = PluginFactory
 				.getXmlResourceParser(R.xml.lingering_threshold_slider);
@@ -205,9 +219,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 	}
 
 	/**
-	 * Returns whether or not this OutputPlugin has Preferences.
-	 * 
-	 * @return whether or not this OutputPlugin has preferences.
+	 * @see OutputPlugin#hasPreferences()
 	 */
 	public static boolean hasPreferences() {
 		return true;
@@ -270,6 +282,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 			buildButton.setOnClickListener(startBuildingModel);
 		}
 	};
+
 	private final OnClickListener startClassifying = new OnClickListener() {
 
 		@Override
@@ -332,14 +345,6 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 		}
 	};
 
-	private static final LogServerClient remoteLoggingClient = new LogServerClient();
-
-	private static boolean remoteLoggingClientConnected = false;
-
-	private List<String> modelNames = null;
-
-	private static DataOutputStream remoteLoggingClassOutputStream = null;
-	private static DataOutputStream remoteLoggingCDataOutputStream = null;
 	private final OnClickListener stopClassifying = new OnClickListener() {
 
 		@Override
@@ -367,6 +372,16 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 			classifyButton.setOnClickListener(startClassifying);
 		}
 	};
+
+	private static final LogServerClient remoteLoggingClient = new LogServerClient();
+
+	private static boolean remoteLoggingClientConnected = false;
+
+	private List<String> modelNames = null;
+
+	private static DataOutputStream remoteLoggingClassOutputStream = null;
+	private static DataOutputStream remoteLoggingCDataOutputStream = null;
+
 	private long startTimeStamp;
 	private long endTimeStamp;
 
@@ -375,11 +390,24 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 	private boolean sshForwardingEnabled;
 	private static Process tunnel = null;
 
+	/**
+	 * Construct a classifier plugin.
+	 * 
+	 * @param context
+	 *            The application context, required in order to access
+	 *            preferences and the files used by the classifier.
+	 */
 	public TDEClassifierPlugin(final Context context) {
 		TDEClassifierPlugin.context = context;
 		prefs = PreferenceFactory.getSharedPreferences(context);
 	}
 
+	/**
+	 * Displays the raw sensor data captured during the model-building process,
+	 * allowing the user to select a subsegment to be used for the model.
+	 * 
+	 * @throws IOException
+	 */
 	private void displayModelData() throws IOException {
 		// First read in time series data from model file.
 		final BufferedReader reader = new BufferedReader(new FileReader(
@@ -398,6 +426,10 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 		MagnitudeGraph.enableCloseAfterOneActivity();
 		MagnitudeGraph
 				.setOnGraphClosed(new MagnitudeGraph.GraphClosedRunnable() {
+					/*
+					 * When the view is closed, get the selected segment and
+					 * build the model.
+					 */
 					private String label;
 					private float[] data = new float[0];
 
@@ -418,7 +450,6 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 									.getAbsolutePath(), 7, 7, 3);
 							makeToast("Saved model for activity: " + label);
 						} catch (final IOException e) {
-							// TODO Auto-generated catch block
 							Log.e(PLUGIN_NAME, e);
 						}
 					}
@@ -436,11 +467,13 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 		try {
 			graphIntent.send();
 		} catch (final CanceledException e) {
-			// TODO Auto-generated catch block
 			Log.e(PLUGIN_NAME, e);
 		}
 	}
 
+	/**
+	 * Stop collecting data and display the view with the collected sensor data.
+	 */
 	private void finishBuilding() {
 		synchronized (modelFileWriter) {
 			building = false;
@@ -472,6 +505,10 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 		return timeMoving;
 	}
 
+	/**
+	 * Parses the models.ini file and populates the modelNames list with the
+	 * model names.
+	 */
 	private void loadModelNames() {
 		final File modelsFile = ManageModelsFileManager.MODELS_INI_FILE;
 		try {
@@ -491,6 +528,12 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 
 	}
 
+	/**
+	 * Helper method for notifying the user.
+	 * 
+	 * @param message
+	 *            Message to be displayed briefly.
+	 */
 	protected void makeToast(final String message) {
 		final Toast slice = Toast
 				.makeText(context, message, Toast.LENGTH_SHORT);
@@ -501,62 +544,68 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 
 	@Override
 	void onDataReceived(final DataPacket packet) {
-		if (!pluginEnabled) {
+		/* Only interested in sensor packets. */
+		if (!pluginEnabled
+				|| packet.getDataPacketId() != SensorPacket.PACKET_ID) {
 			return;
 		}
 		if (building) {
-			if (packet.getDataPacketId() == SensorPacket.PACKET_ID) {
-				final SensorPacket sensorPacket = (SensorPacket) packet;
-				final Float m = (float) Math.sqrt(sensorPacket.x
-						* sensorPacket.x + sensorPacket.y * sensorPacket.y
-						+ sensorPacket.z * sensorPacket.z)
-						- SensorManager.STANDARD_GRAVITY;
-				try {
-					modelFileWriter.write(m.toString() + "\n");
-				} catch (final IOException e) {
-					Log.e(PLUGIN_NAME, e);
-				}
+			/*
+			 * If we are building a new model, then we want to compute the
+			 * accelerometer magnitude and save that in our model file.
+			 */
+			final SensorPacket sensorPacket = (SensorPacket) packet;
+			final Float m = (float) Math.sqrt(sensorPacket.x * sensorPacket.x
+					+ sensorPacket.y * sensorPacket.y + sensorPacket.z
+					* sensorPacket.z)
+					- SensorManager.STANDARD_GRAVITY;
+			try {
+				modelFileWriter.write(m.toString() + "\n");
+			} catch (final IOException e) {
+				Log.e(PLUGIN_NAME, e);
 			}
 		} else if (classifying) {
-			if (packet.getDataPacketId() == SensorPacket.PACKET_ID) {
-				final SensorPacket sensorPacket = (SensorPacket) packet;
-				final Float m = (float) Math.sqrt(sensorPacket.x
-						* sensorPacket.x + sensorPacket.y * sensorPacket.y
-						+ sensorPacket.z * sensorPacket.z)
-						- SensorManager.STANDARD_GRAVITY;
+			/*
+			 * If we are classifying, then we want to compute the accelerometer
+			 * magnitude, add it to the classifier's buffer and check to see if
+			 * we're moving or stationary.
+			 */
+			final SensorPacket sensorPacket = (SensorPacket) packet;
+			final Float m = (float) Math.sqrt(sensorPacket.x * sensorPacket.x
+					+ sensorPacket.y * sensorPacket.y + sensorPacket.z
+					* sensorPacket.z)
+					- SensorManager.STANDARD_GRAVITY;
 
-				final int index = tdeClassifier.addSample(m);
-				final boolean moving = lingeringFilter.update(m);
-				if (moving) {
-					timeMoving += 1;
-					timeMovingWithoutStopping += 1;
-				} else {
-					timeLingering += 1;
-					timeMovingWithoutStopping = 0;
-				}
-
-				/*
-				 * Classify every 5 samples when moving consistently.
-				 */
-				if (timeMovingWithoutStopping % 5 == 4) {
-					// Update widget text
-					final Message msg = ClassifierThread.mHandler
-							.obtainMessage(LOG_MESSAGE, index,
-									(int) sensorPacket.time);
-					ClassifierThread.mHandler.sendMessage(msg);
-				}
-
-				/*
-				 * Update the widget text every 50 samples.
-				 */
-				if (counter >= 49) {
-					LingeringNotificationWidget.updateText(timeLingering,
-							timeMoving, modelNames, cumulativeClassProbs);
-					// LingeringNotificationWidget.updateText(buf.toString());
-					counter = 0;
-				}
-				counter += 1;
+			final int index = tdeClassifier.addSample(m);
+			final boolean moving = lingeringFilter.update(m);
+			if (moving) {
+				timeMoving += 1;
+				timeMovingWithoutStopping += 1;
+			} else {
+				timeLingering += 1;
+				timeMovingWithoutStopping = 0;
 			}
+
+			/*
+			 * Classify every 5 samples when moving consistently.
+			 */
+			if (timeMovingWithoutStopping % 5 == 4) {
+				// Update widget text
+				final Message msg = ClassifierThread.mHandler.obtainMessage(
+						LOG_MESSAGE, index, (int) sensorPacket.time);
+				ClassifierThread.mHandler.sendMessage(msg);
+			}
+
+			/*
+			 * Update the widget text every 50 samples.
+			 */
+			if (counter >= 49) {
+				LingeringNotificationWidget.updateText(timeLingering,
+						timeMoving, modelNames, cumulativeClassProbs);
+				// LingeringNotificationWidget.updateText(buf.toString());
+				counter = 0;
+			}
+			counter += 1;
 		}
 	}
 
@@ -596,9 +645,6 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 		}
 	}
 
-	/**
-	 * This method gets called whenever the preferences have been changed.
-	 */
 	@Override
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(PLUGIN_ACTIVE_KEY,
@@ -632,8 +678,10 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 		}
 	}
 
+	/**
+	 * Adds buttons to the free space in the main view.
+	 */
 	private void setupButtons() {
-		// Set up the buttons on the main screen.
 		final TableLayout freeSpace = HSAndroid.getFreeSpace();
 
 		/* Create a new row to be added. */

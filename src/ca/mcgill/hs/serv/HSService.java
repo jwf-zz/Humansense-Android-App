@@ -30,6 +30,8 @@ import ca.mcgill.hs.util.Log;
 /**
  * The main service that runs in the background and manages the communication
  * between plugins.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public class HSService extends Service {
 
@@ -37,18 +39,17 @@ public class HSService extends Service {
 
 	private static boolean isRunning;
 
-	// Lists of the plugins currently enabled.
+	// Lists of all active input and output plugins.
 	private static final LinkedList<InputPlugin> inputPluginList = new LinkedList<InputPlugin>();
 	private static final LinkedList<OutputPlugin> outputPluginList = new LinkedList<OutputPlugin>();
 
-	// A simple static array of the input plugin class names.
+	// List of the plugin classes that are available.
 	private static final Class<? extends InputPlugin>[] inputPluginClasses = PluginFactory
 			.getInputPluginClassList();
-	// A simple static array of the output plugin class names.
 	private static final Class<? extends OutputPlugin>[] outputPluginClasses = PluginFactory
 			.getOutputPluginClassList();
 
-	// ExecutorService
+	// Threadpool used to handle output plugin processing.
 	private static ExecutorService tpe;
 
 	// This is a BroadcastReceiver in order to signal to the plugins that a
@@ -109,15 +110,16 @@ public class HSService extends Service {
 	/**
 	 * Called when there is a DataPacket available from an InputPlugin.
 	 * 
-	 * @param dp
+	 * @param packet
 	 *            The DataPacket that is ready to be received.
 	 * @param source
 	 *            The InputPlugin that created the DataPacket.
 	 */
-	public static void onDataReady(final DataPacket dp, final InputPlugin source) {
-		for (final OutputPlugin op : outputPluginList) {
-			op.onDataReady(dp.clone());
-			tpe.execute(op);
+	public static void onDataReady(final DataPacket packet,
+			final InputPlugin source) {
+		for (final OutputPlugin plugin : outputPluginList) {
+			plugin.onDataReady(packet.clone());
+			tpe.execute(plugin);
 		}
 	}
 
@@ -134,6 +136,12 @@ public class HSService extends Service {
 		}
 	}
 
+	/**
+	 * Generates a notification in the status bar alerting the user that the
+	 * service is running in the background.
+	 * 
+	 * @return
+	 */
 	private Notification getServiceStartedNotification() {
 		final int icon = R.drawable.notification_icon;
 		final CharSequence tickerText = getResources().getString(
@@ -161,37 +169,40 @@ public class HSService extends Service {
 		return null;
 	}
 
-	/**
-	 * Called when the service is started. Creates the service.
-	 */
 	@Override
 	public void onCreate() {
 		super.onCreate();
 	}
 
-	/**
-	 * Called when the service is stopped. Also stops all plugins.
-	 */
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+
+		// Stop listening for preference updates.
 		getApplicationContext().unregisterReceiver(prefReceiver);
+
+		// Stop running as a foreground service. This also removes the
+		// notification from the status bar.
 		stopForeground(true);
+
+		Log.d(TAG, "Sending stop signal to " + inputPluginList.size()
+				+ " input plugins.");
 		for (final InputPlugin plugin : inputPluginList) {
 			plugin.stopPlugin();
 		}
+		Log.d(TAG, "Sending stop signal to " + outputPluginList.size()
+				+ " output plugins.");
+
 		for (final OutputPlugin plugin : outputPluginList) {
 			plugin.stopPlugin();
 		}
-		shutdownAndAwaitTermination(tpe);
+
+		// Close the threadpool.
+		shutdownAndAwaitTermination();
 		isRunning = false;
 		HSAndroid.updateButton();
 	}
 
-	/**
-	 * Called automatically when onCreate() is called. Initialises the service
-	 * and associated plug-ins and starts the service.
-	 */
 	@Override
 	public void onStart(final Intent intent, final int startId) {
 		super.onStart(intent, startId);
@@ -209,13 +220,11 @@ public class HSService extends Service {
 
 		Log.d(TAG, "Sending start signal to " + outputPluginList.size()
 				+ " output plugins.");
-		// Start output plugins.
 		for (final OutputPlugin plugin : outputPluginList) {
 			plugin.startPlugin();
 		}
-		Log.d(TAG, "Sending stop signal to " + inputPluginList.size()
+		Log.d(TAG, "Sending start signal to " + inputPluginList.size()
 				+ " input plugins.");
-		// Start input plugins.
 		for (final InputPlugin plugin : inputPluginList) {
 			plugin.startPlugin();
 		}
@@ -228,20 +237,23 @@ public class HSService extends Service {
 		HSAndroid.updateButton();
 	}
 
-	void shutdownAndAwaitTermination(final ExecutorService pool) {
-		pool.shutdown(); // Disable new tasks from being submitted
+	/**
+	 * Cleanly close the threadpool.
+	 */
+	private void shutdownAndAwaitTermination() {
+		tpe.shutdown(); // Disable new tasks from being submitted
 		try {
 			// Wait a while for existing tasks to terminate
-			if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
-				pool.shutdownNow(); // Cancel currently executing tasks
+			if (!tpe.awaitTermination(60, TimeUnit.SECONDS)) {
+				tpe.shutdownNow(); // Cancel currently executing tasks
 				// Wait a while for tasks to respond to being canceled
-				if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+				if (!tpe.awaitTermination(60, TimeUnit.SECONDS)) {
 					Log.e(TAG, "Pool did not terminate");
 				}
 			}
 		} catch (final InterruptedException ie) {
 			// (Re-)Cancel if current thread also interrupted
-			pool.shutdownNow();
+			tpe.shutdownNow();
 			// Preserve interrupt status
 			Thread.currentThread().interrupt();
 		}

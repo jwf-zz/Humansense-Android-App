@@ -10,13 +10,15 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.prefs.HSAndroidPreferences;
 import ca.mcgill.hs.prefs.PreferenceFactory;
+import ca.mcgill.hs.util.Log;
 
 /**
  * Used to start the service when the phone boots up, by listening for the
  * BOOT_COMPLETED intent.
+ * 
+ * @author Jordan Frank, Cicerone Cojocaru, Jonathan Pitre
  */
 
 public class HSServAutoStart extends BroadcastReceiver {

@@ -14,19 +14,22 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteStatement;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import ca.mcgill.hs.util.LRUCache;
 import ca.mcgill.hs.util.Log;
 
 /**
- * Manages a set of Wifi-based Location fingerprints
+ * Manages a set of Wifi-based Locations
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public final class WifiLocationSet extends LocationSet {
 
 	/**
 	 * Handles the creation and updating of the schema for the wifi location
 	 * database.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
 	 */
 	private static class WifiDatabaseHelper extends SQLiteOpenHelper {
 
@@ -101,22 +104,26 @@ public final class WifiLocationSet extends LocationSet {
 
 	private static final String TAG = "WifiLocationSet";
 
-	/**
-	 * Database table names.
-	 */
+	// Database table names.
 	public static final String OBSERVATIONS_TABLE = "observations";
 	public static final String WAPS_TABLE = "waps";
 
 	/**
-	 * Used to cache the most recent locations, avoids some database calls. We
-	 * currently cache the last 100 most recently used locations.
+	 * The number of locations to cache.
+	 */
+	private static final int CACHE_SIZE = 100;
+	/**
+	 * Used to cache the last 100 most recently used locations, saves on
+	 * database queries.
 	 */
 	private final LRUCache<Long, WifiLocation> locationCache = new LRUCache<Long, WifiLocation>(
-			100);
+			CACHE_SIZE);
 
 	/**
 	 * Do not use a time-based window, as samples can often come in at irregular
-	 * intervals.
+	 * intervals. This could use some tuning; it might work better if we use a
+	 * time-based window but use the wifi-scanning interval value to pick a good
+	 * time window.
 	 */
 	private static final boolean TIME_BASED_WINDOW = false;
 
@@ -128,29 +135,23 @@ public final class WifiLocationSet extends LocationSet {
 	/**
 	 * Delta from the paper. This value represents the percentage of the points
 	 * in the pool that must neighbours of a point for it to be considered to be
-	 * part of a cluster
+	 * part of a cluster.
 	 */
 	private static final float DELTA = 0.8f;
 
 	private final WifiDatabaseHelper dbHelper;
 
 	/**
-	 * Prepared statement for retrieving the number of merged locations. This is
-	 * used quite frequently but we have not actually benchmarked prepared
-	 * statements, and it is possible that this doesn't speed anything up.
+	 * Controls whether we copy the database from the sdcard before opening it.
+	 * This allows us, for debugging purposes, to modify the database offline
+	 * and place it on the sdcard, to be used the next time the application is
+	 * started.
 	 */
-	SQLiteStatement retrieveNumMergedStmt = null;
 	private final boolean copyFromSDCard = false;
 
 	public WifiLocationSet(final Context context) {
 		if (copyFromSDCard) {
 			try {
-				/*
-				 * We currently copy the database from the sdcard. This is
-				 * mainly used for debugging so that we can make changes to the
-				 * database offline and then use those changes next time we
-				 * start the service. This should eventually be removed.
-				 */
 				DBHelpers.copy(new File(
 						"/sdcard/hsandroidapp/data/wificlusters.db"), new File(
 						"/data/data/ca.mcgill.hs/databases/wificlusters.db"));
@@ -164,7 +165,7 @@ public final class WifiLocationSet extends LocationSet {
 		// Uncomment for in-memory database
 		// db = SQLiteDatabase.create(null);
 
-		// uncomment to recreate databases
+		// uncomment to delete and recreate all of the tables.
 		// dbHelper.onCreate(db);
 
 		/*
@@ -178,8 +179,6 @@ public final class WifiLocationSet extends LocationSet {
 		 * Does a little optimization when the service is started. Can't hurt.
 		 */
 		db.execSQL("ANALYZE");
-		retrieveNumMergedStmt = db.compileStatement("SELECT num_merged FROM "
-				+ LocationSet.LOCATIONS_TABLE + " WHERE location_id=?");
 	}
 
 	@Override
@@ -187,11 +186,15 @@ public final class WifiLocationSet extends LocationSet {
 		final WifiLocation location = (WifiLocation) loc;
 		final long location_id = location.getId();
 
+		// Add the location to the cache.
+		cacheLocation(location);
+
 		/*
 		 * Compute a threshold for minumum number of waps that must be common to
 		 * be considered a neighbour. Note that if the neighbour has more waps,
 		 * then it might have to be pruned out later. This is just used to
-		 * retrieve from the database a set of potential neighbours.
+		 * retrieve from the database a set of potential neighbours, to quickly
+		 * check if the location is a potential neighbour.
 		 */
 		final Long temp_threshold = (long) (location.getNumObservations() * WifiLocation.ETA);
 
@@ -215,12 +218,9 @@ public final class WifiLocationSet extends LocationSet {
 		} finally {
 			cursor.close();
 		}
-		// Remove current location from the neighbours list.
-		try {
-			possibleNeighbours.remove(location_id);
-		} catch (final IndexOutOfBoundsException e) {
-			// Ignore.
-		}
+		// Make sure the current location isn't in the list of neighbours.
+		possibleNeighbours.remove(location_id);
+
 		Log.d(TAG, "Adding " + possibleNeighbours.size()
 				+ " possible neighbours.");
 
@@ -236,7 +236,7 @@ public final class WifiLocationSet extends LocationSet {
 			DebugHelper.out.println("\tDistance between " + location.getId()
 					+ " and " + neighbour_id + " is " + dist);
 
-			// Merge location if it is very close to a possible neighbour.
+			// Keep track of minimum distance to any neighbour
 			if (dist < min_dist) {
 				min_dist = dist;
 				nearest_neighbour_id = neighbour_id;
@@ -261,9 +261,13 @@ public final class WifiLocationSet extends LocationSet {
 		return location_id;
 	}
 
-	@Override
-	public void cacheLocation(final Location location) {
-		locationCache.put(location.getId(), (WifiLocation) location);
+	/**
+	 * Adds a location to the cache.
+	 * 
+	 * @params location The location to be added to the cache.
+	 */
+	private void cacheLocation(final WifiLocation location) {
+		locationCache.put(location.getId(), location);
 	}
 
 	public void close() {
@@ -289,6 +293,12 @@ public final class WifiLocationSet extends LocationSet {
 		}
 	}
 
+	/**
+	 * 
+	 * @param id
+	 *            Location id to display
+	 * @return Description of the location.
+	 */
 	public String displayLocation(final long id) {
 		WifiLocation loc = null;
 		loc = new WifiLocation(db, id);
@@ -350,10 +360,6 @@ public final class WifiLocationSet extends LocationSet {
 		return new WifiLocation(db, timestamp);
 	}
 
-	/**
-	 * Returns the DELTA parameter, or the fraction of the buffer that must be
-	 * part of a cluster in order for the user to be considered stationary.
-	 */
 	@Override
 	public float pctOfWindowRequiredToBeStationary() {
 		return DELTA;
@@ -361,7 +367,7 @@ public final class WifiLocationSet extends LocationSet {
 
 	/**
 	 * Returns the number of locations that have been merged into this location.
-	 * This should be used for computing the number of "neighborus" of a
+	 * This should be used for computing the number of "neighbours" of a
 	 * location, because if this is >1, then it means that this location
 	 * actually represents more than one location, and should count as more than
 	 * one neighbour.
@@ -372,14 +378,14 @@ public final class WifiLocationSet extends LocationSet {
 	 *         location.
 	 */
 	public long retrieveNumMerged(final long location_id) {
-		retrieveNumMergedStmt.bindLong(0, location_id);
-		return retrieveNumMergedStmt.simpleQueryForLong();
+		WifiLocation location = locationCache.get(location_id);
+		if (location == null) {
+			location = new WifiLocation(db, location_id);
+			cacheLocation(location);
+		}
+		return location.getNumMerged();
 	}
 
-	/**
-	 * Returns a value specifying whether the MotionStateClassifier should use a
-	 * time-based window.
-	 */
 	@Override
 	public boolean usesTimeBasedWindow() {
 		return TIME_BASED_WINDOW;

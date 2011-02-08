@@ -7,9 +7,14 @@ package ca.mcgill.hs.graph;
 
 import android.app.Activity;
 import android.os.Bundle;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
+import ca.mcgill.hs.util.Log;
 
+/**
+ * Activity that allows the user to plot the accelerometer data and add labels.
+ * 
+ * @author Jordan Frank, Cicerone Cojocaru, Jonathan Pitre
+ */
 public class MagnitudeGraph extends Activity {
 
 	public static interface GraphClosedRunnable extends Runnable {

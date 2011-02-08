@@ -28,9 +28,17 @@ import ca.mcgill.hs.widget.LocationStatusWidget;
 /**
  * Estimates a users' location based on wifi and gps signals. Does not try to
  * compute an absolute location in any coordinate space, but keeps track of
- * locations that users have visited on multiple occasions.
+ * locations where users spend time.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public class LocationClusterer extends OutputPlugin {
+	/**
+	 * Manages the location database.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
 	public static class LocationDictionaryOpenHelper extends SQLiteOpenHelper {
 
 		private static final int DATABASE_VERSION = 1;
@@ -56,7 +64,13 @@ public class LocationClusterer extends OutputPlugin {
 		}
 	}
 
-	class WifiObservationConsumer implements Runnable {
+	/**
+	 * Consumes and handles incoming wifi observations.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
+	private class WifiObservationConsumer implements Runnable {
 		private final BlockingQueue<WifiObservation> queue;
 		private boolean stopped;
 		private final GPSLogger gpsLogger = (GPSLogger) PluginFactory
@@ -67,6 +81,12 @@ public class LocationClusterer extends OutputPlugin {
 			stopped = false;
 		}
 
+		/**
+		 * Eats the next observation in the queue.
+		 * 
+		 * @param observation
+		 *            The next observation to be processed.
+		 */
 		void consume(final WifiObservation observation) {
 			if (observation == null) {
 				return;
@@ -114,6 +134,9 @@ public class LocationClusterer extends OutputPlugin {
 			}
 		}
 
+		/**
+		 * Stop consuming observations from the queue.
+		 */
 		public void stop() {
 			stopped = true;
 		}
@@ -125,9 +148,7 @@ public class LocationClusterer extends OutputPlugin {
 	private static final String LOCATION_CLUSTERER_USE_RESULTS_TO_MANAGE_GPS = "locationClustererManageGPS";
 
 	/**
-	 * Returns the list of Preference objects for this OutputPlugin.
-	 * 
-	 * @return an array of the Preferences of this object.
+	 * @see OutputPlugin#getPreferences(PreferenceActivity)
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		final Preference[] prefs = new Preference[2];
@@ -149,6 +170,9 @@ public class LocationClusterer extends OutputPlugin {
 		return prefs;
 	}
 
+	/**
+	 * @see OutputPlugin#hasPreferences()
+	 */
 	public static boolean hasPreferences() {
 		return true;
 	}
@@ -170,11 +194,21 @@ public class LocationClusterer extends OutputPlugin {
 
 	private GPSClusterer gpsClusterer = null;
 
+	/**
+	 * Constructs a new location clustering plugin.
+	 * 
+	 * @param context
+	 *            The application context, required to access the preferences.
+	 */
 	public LocationClusterer(final Context context) {
 		this.context = context;
 		prefs = PreferenceFactory.getSharedPreferences(context);
 	}
 
+	/**
+	 * @return The id of the cluster associated with the most recent
+	 *         observation, or -1 if the user is considered to be moving.
+	 */
 	public long getCurrentCluster() {
 		if (wifiClusterer != null) {
 			return wifiClusterer.getCurrentCluster();
@@ -184,6 +218,9 @@ public class LocationClusterer extends OutputPlugin {
 
 	}
 
+	/**
+	 * @return True if the user is considered to be moving, or false otherwise.
+	 */
 	public boolean isMoving() {
 		if (wifiClusterer != null) {
 			return wifiClusterer.isMoving();
@@ -210,7 +247,7 @@ public class LocationClusterer extends OutputPlugin {
 			final String[] bssids = wifiPacket.BSSIDs;
 			final int[] signalStrengths = wifiPacket.signalStrengths;
 			for (int i = 0; i < numAccessPoints; i++) {
-				observation.addObservation(bssids[i].hashCode(),
+				observation.addMeasurement(bssids[i].hashCode(),
 						signalStrengths[i]);
 			}
 			wifiObservationQueue.add(observation);
@@ -253,9 +290,6 @@ public class LocationClusterer extends OutputPlugin {
 		}
 	}
 
-	/**
-	 * This method gets called whenever the preferences have been changed.
-	 */
 	@Override
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(

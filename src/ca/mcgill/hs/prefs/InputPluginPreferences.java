@@ -7,25 +7,23 @@ package ca.mcgill.hs.prefs;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.plugin.InputPlugin;
 import ca.mcgill.hs.serv.HSService;
+import ca.mcgill.hs.util.Log;
 
 /**
  * InputPluginPreferenes is a class extending PreferenceActivity which defines
  * the settings menu for the HSAndroid InputPlugin objects. Whenever the user
  * accesses the "Input Plugins" option from the Settings menu, this
- * PreferenceActivity is launched.
+ * PreferenceActivity is launched. All the real work is done by the
+ * {@link PreferenceFactory#createPreferenceHierarchy(PreferenceActivity, Class[])}
+ * method.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public class InputPluginPreferences extends PreferenceActivity {
 	private static final String TAG = "InputPluginPreferences";
 
-	/**
-	 * This is called when the PreferenceActivity is requested and created. This
-	 * allows the user to visually see the preferences menu on the screen. This
-	 * method calls the private method createPreferenceHierarchy() in order to
-	 * generate the Preference menu from the available InputPlugin objects.
-	 */
 	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

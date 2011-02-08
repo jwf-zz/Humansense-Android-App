@@ -16,17 +16,26 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import ca.mcgill.hs.util.Log;
 import android.widget.RemoteViews;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.PluginFactory;
 import ca.mcgill.hs.plugin.TDEClassifierPlugin;
+import ca.mcgill.hs.util.Log;
 
 /**
  * A widget for displaying the output of the activity classifier and lingering
  * filter.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public class LingeringNotificationWidget extends AppWidgetProvider {
+	/**
+	 * The service that runs in the background, periodically updating the widget
+	 * text.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
 	public static class UpdateService extends Service {
 		private static final SimpleDateFormat dfm = new SimpleDateFormat(
 				"HH:mm:ss");
@@ -35,13 +44,22 @@ public class LingeringNotificationWidget extends AppWidgetProvider {
 
 		private static final String TAG = "LingeringNotificationWidget.UpdateService";
 
+		/**
+		 * Builds the View that should be presented in the widget frame.
+		 * 
+		 * @param context
+		 *            The application context, used for retrieving the data from
+		 *            the appropriate plugin.
+		 * @return A RemoteView, populated with the text, ready to be shown in
+		 *         the widget frame.
+		 */
 		public RemoteViews buildUpdate(final Context context) {
-
 			final TDEClassifierPlugin classifierPlugin = (TDEClassifierPlugin) PluginFactory
 					.getOutputPlugin(TDEClassifierPlugin.class);
 			RemoteViews views = null;
 
 			if (classifierPlugin != null && classifierPlugin.isEnabled()) {
+				// If we're classifying, gather the results.
 				final StringBuffer buf = new StringBuffer();
 				final long timeLingering = classifierPlugin.getTimeLingering();
 				final long timeMoving = classifierPlugin.getTimeMoving();
@@ -70,6 +88,7 @@ public class LingeringNotificationWidget extends AppWidgetProvider {
 						.toString());
 
 			} else {
+				// If we're not classifying, just show a default message.
 				views = new RemoteViews(context.getPackageName(),
 						R.layout.widget_message);
 				views.setTextViewText(R.id.message, context
@@ -99,6 +118,16 @@ public class LingeringNotificationWidget extends AppWidgetProvider {
 
 	private static final String TAG = "LingeringNotificationWidget";
 
+	/**
+	 * Just used for debugging, logs a message whenever it is called. All
+	 * parameters are ignored, and to be honest I'm not sure why this method
+	 * even exists.
+	 * 
+	 * @param timeLingering
+	 * @param timeMoving
+	 * @param modelNames
+	 * @param cumulativeClassProbs
+	 */
 	public static void updateText(final long timeLingering,
 			final long timeMoving, final List<String> modelNames,
 			final float[] cumulativeClassProbs) {

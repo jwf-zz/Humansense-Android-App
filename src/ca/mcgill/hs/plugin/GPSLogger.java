@@ -15,15 +15,23 @@ import android.os.Handler;
 import android.os.Looper;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.PreferenceFactory;
+import ca.mcgill.hs.util.Log;
 
 /**
  * An InputPlugin which gets data from the GPS receiver.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public final class GPSLogger extends InputPlugin {
 
+	/**
+	 * Listener for obtaining data from the GPS receiver.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
 	private final class GPSLocationListener implements
 			android.location.LocationListener {
 
@@ -35,6 +43,12 @@ public final class GPSLogger extends InputPlugin {
 		@SuppressWarnings("unused")
 		private boolean available = false;
 
+		/**
+		 * Constructs a new location listener from a {@link LocationManager}
+		 * 
+		 * @param locationManager
+		 *            The {@link LocationManager} that handles the GPS receiver.
+		 */
 		public GPSLocationListener(final LocationManager locationManager) {
 			this.locationmanager = locationManager;
 		}
@@ -68,6 +82,12 @@ public final class GPSLogger extends InputPlugin {
 		}
 	}
 
+	/**
+	 * Packet with data from the GPS receiver.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
 	public final static class GPSPacket implements DataPacket {
 
 		final long time;
@@ -139,12 +159,15 @@ public final class GPSLogger extends InputPlugin {
 
 	private static int gpsTimeoutInMillis = -1;
 
+	/**
+	 * Used to check if a request has timed out and act appropriately.
+	 */
 	protected Runnable checkIfTimedOut = new Runnable() {
 		@Override
 		public void run() {
-			final Location lastLocation = locationManager
-					.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 			if (listeningForLocationUpdates) {
+				final Location lastLocation = locationManager
+						.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 				if (lastLocation != null) {
 					// We have a previous location, just log that.
 					((GPSLogger) PluginFactory.getInputPlugin(GPSLogger.class))
@@ -168,6 +191,9 @@ public final class GPSLogger extends InputPlugin {
 		}
 	};
 
+	/**
+	 * Used to restart the GPS receiver after a specific amount of time.
+	 */
 	protected Runnable restartGPSUpdates = new Runnable() {
 		@Override
 		public void run() {
@@ -203,11 +229,7 @@ public final class GPSLogger extends InputPlugin {
 	public final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
 	/**
-	 * Returns the list of Preference objects for this InputPlugin.
-	 * 
-	 * @param activity
-	 *            The PreferenceActivity that will display the preferences.
-	 * @return an array of the Preferences of this object.
+	 * @see InputPlugin#getPreferences(PreferenceActivity)
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		final Preference[] prefs = new Preference[4];
@@ -243,9 +265,7 @@ public final class GPSLogger extends InputPlugin {
 	}
 
 	/**
-	 * Returns whether or not this InputPlugin has Preferences.
-	 * 
-	 * @return whether or not this InputPlugin has preferences.
+	 * @see InputPlugin#hasPreferences()
 	 */
 	public static boolean hasPreferences() {
 		return true;
@@ -259,7 +279,7 @@ public final class GPSLogger extends InputPlugin {
 	 * a LocationManager and a Context.
 	 * 
 	 * @param context
-	 *            needed for the Preference objects.
+	 *            The application context, required to access the preferences.
 	 */
 	public GPSLogger(final Context context) {
 
@@ -270,6 +290,10 @@ public final class GPSLogger extends InputPlugin {
 		prefs = PreferenceFactory.getSharedPreferences(context);
 	}
 
+	/**
+	 * Request that the plugin disable the GPS receiver once the next request
+	 * has completed.
+	 */
 	public void disableAfterNextScan() {
 		Log
 				.d(PLUGIN_NAME,
@@ -277,6 +301,12 @@ public final class GPSLogger extends InputPlugin {
 		pendingRemoteDisable = true;
 	}
 
+	/**
+	 * Enable the plugin. We have a special public method for this in order to
+	 * allow other plugins to manage the state of the GPS receiver. For example,
+	 * the {@link LocationClusterer} plugin can disable the GPS to save power
+	 * when it is determined that the user is stationary.
+	 */
 	public void enable() {
 		Log.d(PLUGIN_NAME, "We have been remotely enabled.");
 		startListeningForLocationUpdates();
@@ -287,10 +317,11 @@ public final class GPSLogger extends InputPlugin {
 	}
 
 	/**
-	 * Writes out the data to the plugin outputstream.
+	 * Parse the current location and write a GPSPacket to the plugin
+	 * outputstream.
 	 * 
 	 * @param location
-	 *            the current Location.
+	 *            The current location.
 	 */
 	protected void logLocation(final Location location) {
 		Log.i(PLUGIN_NAME, "GPS Data received.");
@@ -310,9 +341,6 @@ public final class GPSLogger extends InputPlugin {
 						.getLongitude()));
 	}
 
-	/**
-	 * This method requests location updates from the LocationManager.
-	 */
 	@Override
 	protected void onPluginStart() {
 		pluginEnabled = prefs.getBoolean(GPS_LOGGER_ENABLE_PREF, false);
@@ -328,9 +356,6 @@ public final class GPSLogger extends InputPlugin {
 		startListeningForLocationUpdates();
 	}
 
-	/**
-	 * This method removes the requested location updates.
-	 */
 	@Override
 	protected void onPluginStop() {
 		if (!pluginEnabled) {
@@ -339,9 +364,6 @@ public final class GPSLogger extends InputPlugin {
 		stopListeningForLocationUpdates();
 	}
 
-	/**
-	 * This method gets called whenever the preferences have been changed.
-	 */
 	@Override
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(
@@ -359,6 +381,9 @@ public final class GPSLogger extends InputPlugin {
 		super.changePluginEnabledStatus(pluginEnabledNew);
 	}
 
+	/**
+	 * Stops any existing timers.
+	 */
 	private void removeAllTimers() {
 		gpsTimeoutHandler.removeCallbacks(checkIfTimedOut);
 		gpsTimeoutHandler.removeCallbacks(restartGPSUpdates);
@@ -394,5 +419,4 @@ public final class GPSLogger extends InputPlugin {
 			Log.i(PLUGIN_NAME, "Unregistered Location Listener.");
 		}
 	}
-
 }

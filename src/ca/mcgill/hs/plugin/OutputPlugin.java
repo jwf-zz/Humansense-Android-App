@@ -8,21 +8,29 @@ package ca.mcgill.hs.plugin;
 import java.util.LinkedList;
 
 import android.preference.Preference;
+import android.preference.PreferenceActivity;
 
 /**
- * Abstract class to be extended by all OutputPlugins. Provides an interface for
- * using OutputPlugins.
+ * Abstract class to be extended by all OutputPlugins.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public abstract class OutputPlugin implements Plugin, Runnable {
 
 	/**
-	 * This method returns an array of Preference objects for the given
-	 * OutputPlugin. By default, this method returns null. If a specific
-	 * OutputPlugin wants to define Preferences, they must override this method.
+	 * Returns an array of Preference objects for the given OutputPlugin. By
+	 * default, this method returns null. If a specific OutputPlugin wants to
+	 * define Preferences, they must override this method.
 	 * 
+	 * NOTE: This method should never be called, and is just a template for how
+	 * the getPreferences method should be defined. Static methods can't be
+	 * overridden, and so this is just included as a template.
+	 * 
+	 * @param activity
+	 *            The PreferenceActivity in which the preferences will appear.
 	 * @return An array of the Preferences of this object.
 	 */
-	public static Preference[] getPreferences() {
+	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		return null;
 	}
 
@@ -32,18 +40,31 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	 * getPreferences(Context) method, they must also override this method to
 	 * let it return true.
 	 * 
-	 * @return Whether or not this OutputPlugin has preferences.
+	 * NOTE: Just like {@link OutputPlugin#getPreferences(PreferenceActivity)},
+	 * this is just a template, and cannot be overridden since it is static.
+	 * 
+	 * @return True if this plugin specifies its own preferences, false
+	 *         otherwise.
 	 */
 	public static boolean hasPreferences() {
 		return false;
 	}
 
-	// Waiting list for incoming DataPackets kept in case more than one arrives
-	// before the previous one can be handled.
-	private final LinkedList<DataPacket> packetList = new LinkedList<DataPacket>();
+	/**
+	 * Queue for incoming DataPackets kept in case more than one arrives before
+	 * the previous one can be handled.
+	 */
+	private final LinkedList<DataPacket> packetQueue = new LinkedList<DataPacket>();
 
 	protected boolean pluginEnabled;
 
+	/**
+	 * Sets the enabled-status of the plugin, starting or stopping it if
+	 * necessary.
+	 * 
+	 * @param newPluginEnabledStatus
+	 *            The new enabled status for the plugin.
+	 */
 	protected void changePluginEnabledStatus(
 			final boolean newPluginEnabledStatus) {
 		if (pluginEnabled && !newPluginEnabledStatus) {
@@ -61,14 +82,14 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	}
 
 	/**
-	 * Called when a DataPacket is sent from an InputPlugin. Adds the DataPacket
-	 * that is now ready to dpList.
+	 * Called when a DataPacket is sent from an InputPlugin. Adds the new packet
+	 * to the queue.
 	 * 
 	 * @param packet
 	 *            The DataPacket that is ready to be received.
 	 */
 	public final synchronized void onDataReady(final DataPacket packet) {
-		packetList.addLast(packet);
+		packetQueue.addLast(packet);
 	}
 
 	/**
@@ -80,14 +101,12 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	abstract void onDataReceived(DataPacket packet);
 
 	/**
-	 * Called when this OutputPlugin is started. This method is meant to be
-	 * overridden.
+	 * Called when this OutputPlugin is started.
 	 */
 	protected abstract void onPluginStart();
 
 	/**
-	 * Called when this OutputPlugin is stopped. This method is meant to be
-	 * overridden.
+	 * Called when this OutputPlugin is stopped.
 	 */
 	protected abstract void onPluginStop();
 
@@ -101,16 +120,13 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	public void onPreferenceChanged() {
 	}
 
-	/**
-	 * Used by the ThreadPool to continuously retrieved DataPackets from dpList.
-	 * The DataPacket are passed to onDataReceived() one at a time for as long
-	 * as this plugin is running and dpList is not empty.
-	 */
 	@Override
-	public synchronized void run() {
-		while (!packetList.isEmpty()) {
-			final DataPacket packet = packetList.removeFirst();
-			onDataReceived(packet);
+	public void run() {
+		synchronized (packetQueue) {
+			while (!packetQueue.isEmpty()) {
+				final DataPacket packet = packetQueue.removeFirst();
+				onDataReceived(packet);
+			}
 		}
 	}
 

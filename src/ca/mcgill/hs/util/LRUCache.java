@@ -1,9 +1,9 @@
 package ca.mcgill.hs.util;
 
-import java.util.LinkedHashMap;
-import java.util.Collection;
-import java.util.Map;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * An LRU cache, based on <code>LinkedHashMap</code>.<br>
@@ -15,13 +15,15 @@ import java.util.ArrayList;
  * Author: Christian d'Heureuse (<a
  * href="http://www.source-code.biz">www.source-code.biz</a>)<br>
  * License: <a href="http://www.gnu.org/licenses/lgpl.html">LGPL</a>.
+ * 
+ * @author Christian d'Heureuse
  */
 public class LRUCache<K, V> {
 
 	private static final float hashTableLoadFactor = 0.75f;
 
-	private LinkedHashMap<K, V> map;
-	private int cacheSize;
+	private final LinkedHashMap<K, V> map;
+	private final int cacheSize;
 
 	/**
 	 * Creates a new LRU cache.
@@ -29,20 +31,27 @@ public class LRUCache<K, V> {
 	 * @param cacheSize
 	 *            the maximum number of entries that will be kept in this cache.
 	 */
-	public LRUCache(int cacheSize) {
+	public LRUCache(final int cacheSize) {
 		this.cacheSize = cacheSize;
-		int hashTableCapacity = (int) Math
-				.ceil(cacheSize / hashTableLoadFactor) + 1;
+		final int hashTableCapacity = (int) Math.ceil(cacheSize
+				/ hashTableLoadFactor) + 1;
 		map = new LinkedHashMap<K, V>(hashTableCapacity, hashTableLoadFactor,
 				true) {
 			// (an anonymous inner class)
 			private static final long serialVersionUID = 1;
 
 			@Override
-			protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+			protected boolean removeEldestEntry(final Map.Entry<K, V> eldest) {
 				return size() > LRUCache.this.cacheSize;
 			}
 		};
+	}
+
+	/**
+	 * Clears the cache.
+	 */
+	public synchronized void clear() {
+		map.clear();
 	}
 
 	/**
@@ -54,8 +63,18 @@ public class LRUCache<K, V> {
 	 * @return the value associated to this key, or null if no value with this
 	 *         key exists in the cache.
 	 */
-	public synchronized V get(K key) {
+	public synchronized V get(final K key) {
 		return map.get(key);
+	}
+
+	/**
+	 * Returns a <code>Collection</code> that contains a copy of all cache
+	 * entries.
+	 * 
+	 * @return a <code>Collection</code> with a copy of the cache content.
+	 */
+	public synchronized Collection<Map.Entry<K, V>> getAll() {
+		return new ArrayList<Map.Entry<K, V>>(map.entrySet());
 	}
 
 	/**
@@ -69,15 +88,8 @@ public class LRUCache<K, V> {
 	 * @param value
 	 *            a value to be associated with the specified key.
 	 */
-	public synchronized void put(K key, V value) {
+	public synchronized void put(final K key, final V value) {
 		map.put(key, value);
-	}
-
-	/**
-	 * Clears the cache.
-	 */
-	public synchronized void clear() {
-		map.clear();
 	}
 
 	/**
@@ -87,16 +99,6 @@ public class LRUCache<K, V> {
 	 */
 	public synchronized int usedEntries() {
 		return map.size();
-	}
-
-	/**
-	 * Returns a <code>Collection</code> that contains a copy of all cache
-	 * entries.
-	 * 
-	 * @return a <code>Collection</code> with a copy of the cache content.
-	 */
-	public synchronized Collection<Map.Entry<K, V>> getAll() {
-		return new ArrayList<Map.Entry<K, V>>(map.entrySet());
 	}
 
 } // end class LRUCache

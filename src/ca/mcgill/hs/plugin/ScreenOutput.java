@@ -9,17 +9,19 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSPacket;
 import ca.mcgill.hs.plugin.GSMLogger.GSMPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiPacket;
 import ca.mcgill.hs.prefs.PreferenceFactory;
+import ca.mcgill.hs.util.Log;
 
 /**
  * This output plugin takes data from a ReadableByteChannel and outputs it to
  * the Android's logcat.
+ * 
+ * @author Jordan Frank, Cicerone Cojocaru, Jonathan Pitre
  */
 public final class ScreenOutput extends OutputPlugin {
 
@@ -89,12 +91,7 @@ public final class ScreenOutput extends OutputPlugin {
 	}
 
 	/**
-	 * Returns the list of Preference objects for this OutputPlugin.
-	 * 
-	 * @param activity
-	 *            The PreferenceActivity in which these preferences will be
-	 *            displayed.
-	 * @return an array of the Preferences of this object.
+	 * @see InputPlugin#getPreferences(PreferenceActivity)
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		final Preference[] prefs = new Preference[1];
@@ -110,9 +107,7 @@ public final class ScreenOutput extends OutputPlugin {
 	}
 
 	/**
-	 * Returns whether or not this OutputPlugin has Preferences.
-	 * 
-	 * @return whether or not this OutputPlugin has preferences.
+	 * @see OutputPlugin#hasPreferences()
 	 */
 	public static boolean hasPreferences() {
 		return true;
@@ -166,9 +161,6 @@ public final class ScreenOutput extends OutputPlugin {
 	protected void onPluginStop() {
 	}
 
-	/**
-	 * This method gets called whenever the preferences have been changed.
-	 */
 	@Override
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(

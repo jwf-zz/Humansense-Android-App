@@ -10,31 +10,32 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.graph.NewActivityNotificationLauncher;
 import ca.mcgill.hs.plugin.SensorLogger.SensorPacket;
 import ca.mcgill.hs.prefs.PreferenceFactory;
+import ca.mcgill.hs.util.Log;
 
 /**
  * An example output plugin for testing the sensor data graphing classes. Just
  * collects data from the accelerometer for a short period of time, then
  * displays a notification that allows the operator to view the data and play
  * with the labeling functionality.
+ * 
+ * @author Jordan Frank, Cicerone Cojocaru, Jonathan Pitre
  */
 public final class TestMagOutputPlugin extends OutputPlugin {
 
 	public static final String PLUGIN_NAME = "TestMagOutput";
 	public static final int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
+	/** How many samples to collect before displaying the data. */
 	private static final int MAX_INDEX = 100;
 
 	private static final String PLUGIN_ACTIVE_KEY = "testMagOutputEnable";
 
 	/**
-	 * Returns the list of Preference objects for this OutputPlugin.
-	 * 
-	 * @return an array of the Preferences of this object.
+	 * @see OutputPlugin#getPreferences(PreferenceActivity)
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		final Preference[] prefs = new Preference[1];
@@ -48,9 +49,7 @@ public final class TestMagOutputPlugin extends OutputPlugin {
 	}
 
 	/**
-	 * Returns whether or not this OutputPlugin has Preferences.
-	 * 
-	 * @return whether or not this OutputPlugin has preferences.
+	 * @see OutputPlugin#hasPreferences()
 	 */
 	public static boolean hasPreferences() {
 		return true;
@@ -68,6 +67,13 @@ public final class TestMagOutputPlugin extends OutputPlugin {
 
 	private long endTimestamp;
 
+	/**
+	 * Construct a new test-mag plugin.
+	 * 
+	 * @param context
+	 *            The application context, required to access the preferences
+	 *            and display notifications.
+	 */
 	public TestMagOutputPlugin(final Context context) {
 		this.context = context;
 
@@ -168,9 +174,6 @@ public final class TestMagOutputPlugin extends OutputPlugin {
 	protected void onPluginStop() {
 	}
 
-	/**
-	 * This method gets called whenever the preferences have been changed.
-	 */
 	@Override
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(PLUGIN_ACTIVE_KEY,

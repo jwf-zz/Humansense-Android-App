@@ -23,9 +23,16 @@ import ca.mcgill.hs.util.Log;
 /**
  * An InputPlugin which gets data from the wifi base stations that are currently
  * in listening range.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public final class WifiLogger extends InputPlugin {
-
+	/**
+	 * Receives the wifi scan results.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
 	private final class WifiLoggerReceiver extends BroadcastReceiver {
 
 		private final WifiManager wifi;
@@ -48,6 +55,9 @@ public final class WifiLogger extends InputPlugin {
 
 		/**
 		 * Processes the results sent by the Wifi scan and writes them out.
+		 * 
+		 * @param results
+		 *            The list of scan results.
 		 */
 		private void processResults(final List<ScanResult> results) {
 			Log.d(PLUGIN_NAME, "processResults");
@@ -77,6 +87,12 @@ public final class WifiLogger extends InputPlugin {
 		}
 	}
 
+	/**
+	 * The data packet containing wifi scan data.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
 	public final static class WifiPacket implements DataPacket {
 
 		final int numAccessPoints;
@@ -135,9 +151,7 @@ public final class WifiLogger extends InputPlugin {
 	public final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
 	/**
-	 * Returns the list of Preference objects for this InputPlugin.
-	 * 
-	 * @return an array of the Preferences of this object.
+	 * @see InputPlugin#getPreferences(PreferenceActivity)
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		Log.d(PLUGIN_NAME, "In getPreferences().");
@@ -157,9 +171,7 @@ public final class WifiLogger extends InputPlugin {
 	}
 
 	/**
-	 * Returns whether or not this InputPlugin has Preferences.
-	 * 
-	 * @return whether or not this InputPlugin has preferences.
+	 * @see InputPlugin#hasPreferences()
 	 */
 	public static boolean hasPreferences() {
 		return true;
@@ -194,12 +206,12 @@ public final class WifiLogger extends InputPlugin {
 	final SharedPreferences prefs;
 
 	/**
-	 * This is the basic constructor for the WifiLogger plugin. It has to be
-	 * instantiated before it is started, and needs to be passed a reference to
-	 * a WifiManager and a Context.
+	 * Constructs a new wifi logger input plugin
 	 * 
 	 * @param context
-	 *            - the context in which this plugin is created.
+	 *            The application context, required to access the wifi manager
+	 *            and preferences.
+	 * 
 	 */
 	public WifiLogger(final Context context) {
 		this.context = context;
@@ -207,25 +219,24 @@ public final class WifiLogger extends InputPlugin {
 
 		wifiManager = (WifiManager) context
 				.getSystemService(Context.WIFI_SERVICE);
+
+		/*
+		 * Obtain a scan-only wifi lock, and do our own reference counting.
+		 */
 		wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_SCAN_ONLY,
 				PLUGIN_NAME);
 		wifiLock.setReferenceCounted(false);
-		/*
-		 * final PowerManager pm = (PowerManager) context
-		 * .getSystemService(Context.POWER_SERVICE); wakeLock =
-		 * pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, PLUGIN_NAME);
-		 * wakeLock.setReferenceCounted(false);
-		 */
 		Log.d(PLUGIN_NAME, "plugin initialized");
 	}
 
-	/**
-	 * This method starts the WifiLogger plugin and launches all appropriate
-	 * threads. It also registers a new WifiLoggerReceiver to scan for possible
-	 * network connections. This method must be overridden in all input plugins.
-	 */
 	@Override
 	protected void onPluginStart() {
+		/*
+		 * This method starts the WifiLogger plugin and launches all appropriate
+		 * threads. It also registers a new WifiLoggerReceiver to scan for
+		 * possible network connections. This method must be overridden in all
+		 * input plugins.
+		 */
 		Log.d(PLUGIN_NAME, "Starting Wifi Logger.");
 		pluginEnabled = prefs.getBoolean(WIFI_LOGGER_ENABLE_PREF, false);
 		updatePreferences();
@@ -248,9 +259,14 @@ public final class WifiLogger extends InputPlugin {
 				try {
 					threadRunning = true;
 					while (threadRunning) {
+						/*
+						 * This was for debugging purposes and may no longer be
+						 * necessary.
+						 */
 						if (!wifiManager.pingSupplicant()) {
-							Log.d(PLUGIN_NAME,
-									"Uh-Oh, Supplicant isn't responding to requests.");
+							Log
+									.d(PLUGIN_NAME,
+											"Uh-Oh, Supplicant isn't responding to requests.");
 						}
 						if (!scanning) {
 							scanning = true;
@@ -263,17 +279,14 @@ public final class WifiLogger extends InputPlugin {
 					Log.d(PLUGIN_NAME,
 							"Scanning loop complete, thread terminating.");
 				} catch (final InterruptedException e) {
-					Log.e(PLUGIN_NAME,
-							"Logging thread terminated due to InterruptedException.");
+					Log
+							.e(PLUGIN_NAME,
+									"Logging thread terminated due to InterruptedException.");
 				}
 			}
 		}.start();
 	}
 
-	/**
-	 * This method stops the thread if it is running, and does nothing if it is
-	 * not.
-	 */
 	@Override
 	protected void onPluginStop() {
 		scanPending = false;
@@ -291,9 +304,6 @@ public final class WifiLogger extends InputPlugin {
 		}
 	}
 
-	/**
-	 * This method gets called whenever the preferences have been changed.
-	 */
 	@Override
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(

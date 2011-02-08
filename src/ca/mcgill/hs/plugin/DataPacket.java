@@ -9,13 +9,14 @@ package ca.mcgill.hs.plugin;
  * Interface implemented by all data packet classes contained within InputPlugin
  * implementations.
  * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public interface DataPacket {
 
 	/**
 	 * Clones the DataPacket by instantiating a new DataPacket.
 	 * 
-	 * @return the cloned DataPacket.
+	 * @return The cloned DataPacket.
 	 */
 	public DataPacket clone();
 
@@ -23,7 +24,7 @@ public interface DataPacket {
 	 * Returns this DataPacket's ID to allow for fast identification of the
 	 * packet type.
 	 * 
-	 * @return the DataPacket ID
+	 * @return The DataPacket ID
 	 */
 	public int getDataPacketId();
 
@@ -31,7 +32,7 @@ public interface DataPacket {
 	 * Returns a String representing the name of the InputPlugin that created
 	 * this DataPacket.
 	 * 
-	 * @return a String representing the name of the InputPlugin.
+	 * @return A String representing the name of the InputPlugin.
 	 */
 	public String getInputPluginName();
 }

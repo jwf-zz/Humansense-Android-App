@@ -10,7 +10,6 @@ import java.io.File;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Environment;
-import ca.mcgill.hs.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -18,11 +17,21 @@ import android.widget.ListView;
 import android.widget.Toast;
 import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
+import ca.mcgill.hs.util.Log;
 
+/**
+ * Lists the un-uploaded files, and allows the user to delete them.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+ * 
+ */
 public class DeleteUnUploadedFileManager extends FileManager {
+	/** Directory where unuploaded files live. */
 	public static final File RECENT_FILES_DIRECTORY = new File(Environment
 			.getExternalStorageDirectory(), HSAndroid
 			.getAppString(R.string.recent_file_path));
+
+	/** Directory where uploaded files should go. */
 	public static final File UPLOADED_FILES_DIRECTORY = new File(Environment
 			.getExternalStorageDirectory()
 			+ HSAndroid.getAppString(R.string.uploaded_file_path));

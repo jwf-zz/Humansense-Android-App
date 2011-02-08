@@ -13,9 +13,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
-import ca.mcgill.hs.util.Log;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.PreferenceFactory;
+import ca.mcgill.hs.util.Log;
 
 /**
  * This Service launches a notification for the HSAndroid application. When the
@@ -23,7 +23,7 @@ import ca.mcgill.hs.prefs.PreferenceFactory;
  * between two timestamps, it first starts by setting the timestamps START and
  * END, and then starts this service.
  * 
- * @author Jonathan Pitre
+ * @author Jordan Frank, Jonathan Pitre
  */
 public class NewActivityNotificationLauncher extends Service {
 
@@ -94,22 +94,21 @@ public class NewActivityNotificationLauncher extends Service {
 		end = -1;
 	}
 
-	/**
-	 * This method gets called when the service starts. If START and END haven't
-	 * been set previously using setEndTimeStamp and setStartTimestamp, this
-	 * method calls this Service's onDestroy() method.
-	 */
 	@Override
 	public void onStart(final Intent intent, final int startId) {
 		final SharedPreferences prefs = PreferenceFactory
 				.getSharedPreferences(this);
+		/*
+		 * If START and END haven't been set previously using setEndTimeStamp
+		 * and setStartTimestamp, this method calls this Service's onDestroy()
+		 * method.
+		 */
 		if (start == -1 || end == -1 || start == end || magValues == null
 				|| magActivities == null
 				|| !prefs.getBoolean("notificationEnablePref", true)) {
-			Log
-					.e(
-							"NotificationLauncher",
-							"Could not start Service: one or more required values have not been previously set.");
+			Log.e("NotificationLauncher",
+					"Could not start Service: one or more required "
+							+ "values have not been previously set.");
 			if (magValues == null) {
 				Log.e("NotificationLauncher", "magValues was null;");
 			}

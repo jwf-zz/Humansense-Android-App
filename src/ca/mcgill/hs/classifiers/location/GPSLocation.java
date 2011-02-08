@@ -13,6 +13,8 @@ import android.database.sqlite.SQLiteDatabase;
 /**
  * Refers to an GPS location. Collections GPS observations to determine its
  * average location.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public class GPSLocation extends Location {
 
@@ -25,15 +27,30 @@ public class GPSLocation extends Location {
 	 * @param timestamp
 	 *            The timestamp of the GPSLocation.
 	 * @throws SQLException
+	 *             Indicates there is some problem accessing the database.
+	 * @see Location#Location(SQLiteDatabase, double)
 	 */
 	public GPSLocation(final SQLiteDatabase db, final double timestamp) {
 		super(db, timestamp);
 	}
 
+	/**
+	 * Creates a GPSLocation with the specified id.
+	 * 
+	 * @param db
+	 * @param id
+	 * @see Location#Location(SQLiteDatabase, long)
+	 */
 	public GPSLocation(final SQLiteDatabase db, final long id) {
 		super(db, id);
 	}
 
+	/**
+	 * Adds a new observation to the location.
+	 * 
+	 * @param o
+	 *            The new {@link GPSObservation} to add to this location.
+	 */
 	@Override
 	public void addObservation(final Observation o) {
 		final GPSObservation observation = (GPSObservation) o;
@@ -41,13 +58,6 @@ public class GPSLocation extends Location {
 				+ getId());
 		DebugHelper.out.println("\t" + observation.toString());
 
-		// conn.createStatement().executeUpdate(
-		// "INSERT OR IGNORE INTO " + GPSLocationSet.LOCATIONS_TABLE +
-		// " VALUES (" +
-		// getId() + ", " +
-		// getTimestamp() + ", " +
-		// "NULL,0,0,0,0,0,0,1);"
-		// );
 		db.execSQL("UPDATE " + GPSLocationSet.LOCATIONS_TABLE + " SET "
 				+ "latitude_total=" + observation.latitude + ", "
 				+ "latitude_weights=" + (1.0 / observation.accuracy) + ", "
@@ -58,6 +68,11 @@ public class GPSLocation extends Location {
 
 	@Override
 	public double distanceFrom(final Location other) {
+		/**
+		 * The distance is Euclidean distance between the weighted means of the
+		 * observations associated with each location, where the weights
+		 * correspond to the accuracy of the GPS readings for the observations.
+		 */
 		final Cursor cursor = db.rawQuery(""
 				+ "SELECT latitude_average,longitude_average FROM "
 				+ GPSLocationSet.LOCATIONS_TABLE + " WHERE location_id="
@@ -78,7 +93,9 @@ public class GPSLocation extends Location {
 	}
 
 	/**
-	 * Returns the average latitude of the location.
+	 * Returns the weighted average of the latitudes in the observations
+	 * associated with this location. The weights correspond to the accuracies
+	 * of the GPS observations.
 	 * 
 	 * @return The average latitude of the location.
 	 */
@@ -97,7 +114,9 @@ public class GPSLocation extends Location {
 	}
 
 	/**
-	 * Returns the average longitude of the location.
+	 * Returns the weighted average of the longitudes in the observations
+	 * associated with this location. The weights correspond to the accuracies
+	 * of the GPS observations.
 	 * 
 	 * @return The average longitude of the location.
 	 */
@@ -118,11 +137,12 @@ public class GPSLocation extends Location {
 	@Override
 	public Observation getObservations() {
 		Observation observation = null;
-		final Cursor cursor = db
-				.rawQuery(
-						"SELECT strftime('%s',timestamp)-strftime('%S',timestamp)+strftime('%f',timestamp),latitude_weights,latitude_average,longitude_average FROM "
-								+ GPSLocationSet.LOCATIONS_TABLE
-								+ " WHERE location_id=" + getId() + ";", null);
+		final Cursor cursor = db.rawQuery("SELECT "
+				+ "strftime('%s',timestamp) - " + "strftime('%S',timestamp) + "
+				+ "strftime('%f',timestamp),"
+				+ "latitude_weights, latitude_average, longitude_average "
+				+ "FROM " + GPSLocationSet.LOCATIONS_TABLE
+				+ " WHERE location_id=" + getId() + ";", null);
 		try {
 			cursor.moveToNext();
 			observation = new GPSObservation(cursor.getDouble(0),

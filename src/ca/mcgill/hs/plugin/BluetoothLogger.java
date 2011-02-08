@@ -22,9 +22,17 @@ import ca.mcgill.hs.util.Log;
 
 /**
  * Logs observable bluetooth devices
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public class BluetoothLogger extends InputPlugin {
 
+	/**
+	 * Receives Bluetooth discovery completion events.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
 	private class BluetoothDiscoveryListener extends BroadcastReceiver {
 
 		public BluetoothDiscoveryListener() {
@@ -47,6 +55,12 @@ public class BluetoothLogger extends InputPlugin {
 		}
 	}
 
+	/**
+	 * Receives Bluetooth scan completion events.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
 	private class BluetoothLoggerReceiver extends BroadcastReceiver {
 
 		public BluetoothLoggerReceiver() {
@@ -61,6 +75,12 @@ public class BluetoothLogger extends InputPlugin {
 		}
 	}
 
+	/**
+	 * Contains a list of observed Bluetooth devices.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
 	public static class BluetoothPacket implements DataPacket {
 
 		final long time;
@@ -113,9 +133,7 @@ public class BluetoothLogger extends InputPlugin {
 	final static int PLUGIN_ID = PLUGIN_NAME.hashCode();
 
 	/**
-	 * Returns the list of Preference objects for this InputPlugin.
-	 * 
-	 * @return an array of the Preferences of this object.
+	 * @see InputPlugin#getPreferences(PreferenceActivity)
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		final Preference[] prefs = new Preference[3];
@@ -146,62 +164,72 @@ public class BluetoothLogger extends InputPlugin {
 	}
 
 	/**
-	 * Returns true if this plugin has preferences, and false otherwise.
-	 * 
-	 * @return a boolean representing whether or not this plugin has
-	 *         preferences.
+	 * @see InputPlugin#hasPreferences()
 	 */
 	public static boolean hasPreferences() {
 		return true;
 	}
 
-	// The BluetoothAdapter used to start and stop discovery of devices.
+	/** The BluetoothAdapter used to start and stop discovery of devices. */
 	private final BluetoothAdapter adapter;
 
-	// The interval of time between two subsequent scans.
+	/** The interval of time between two subsequent scans. */
 	private int timeBetweenDiscoveries;
 
-	// The Context in which the BluetoothLoggerReceiver will be registered.
+	/** The Context in which the BluetoothLoggerReceiver will be registered. */
 	private final Context context;
 
-	// The BluetoothLoggerReceiver from which we will get the bluetooth scan
-	// results.
+	/**
+	 * The BluetoothLoggerReceiver from which we will get the bluetooth scan
+	 * results.
+	 */
 	private BluetoothLoggerReceiver loggerReceiver;
 
-	// The BluetoothDiscoveryListener used to know when the discovery of
-	// bluetooth devices is completed.
+	/**
+	 * The BluetoothDiscoveryListener used to know when the discovery of
+	 * bluetooth devices is completed.
+	 */
 	private BluetoothDiscoveryListener discoveryListener;
 
-	// Lists holding results.
+	/** List holding the names of the devices. */
 	private final LinkedList<String> names = new LinkedList<String>();
 
+	/** List holding the addresses of the devices. */
 	private final LinkedList<String> addresses = new LinkedList<String>();
 
-	// Was the Bluetooth enable when the plugin was started
+	/** Was the Bluetooth enable when the plugin was started. */
 	private boolean wasEnabled = false;
 
-	// If this is true, the BluetoothThread is interrupted and an expected
-	// InterruptedException is caught.
+	/**
+	 * If this is true, the BluetoothThread is interrupted and an expected
+	 * InterruptedException is caught.
+	 */
 	private boolean expectedInterrupt = false;
 
-	// The main BluetoothThread for this plugin.
+	/** The main BluetoothThread for this plugin. */
 	private Thread exec;
 
-	// If true, the Bluetooth adapter will be automatically enabled when the
-	// service is started.
+	/**
+	 * If true, the Bluetooth adapter will be automatically enabled when the
+	 * service is started.
+	 */
 	private boolean forceBluetoothActivation;
 
-	// A boolean flag. If this is true, then the bluetooth adaptor is is the
-	// process of being enabled.
+	/**
+	 * A boolean flag. If this is true, then the bluetooth adaptor is is the
+	 * process of being enabled.
+	 */
 	private boolean isEnabling = false;
 
 	final SharedPreferences prefs;
 
 	/**
-	 * The default and only constructor for the BluetoothLogger InputPlugin.
+	 * Constructs a new bluetooth logging plugin. Enables the adapter if
+	 * necessary.
 	 * 
 	 * @param context
-	 *            the required context to register the BluetoothLoggerReceiver.
+	 *            The application context, necessary to get the preferences and
+	 *            manage the bluetooth hardware.
 	 */
 	public BluetoothLogger(final Context context) {
 		this.adapter = BluetoothAdapter.getDefaultAdapter();
@@ -266,7 +294,7 @@ public class BluetoothLogger extends InputPlugin {
 	 * device to the lists of names/addresses found during this scan.
 	 * 
 	 * @param device
-	 *            the BluetoothDevice that was found.
+	 *            The BluetoothDevice that was found.
 	 */
 	private void onDeviceFound(final BluetoothDevice device) {
 		if (device.getName() == null) {
@@ -300,13 +328,13 @@ public class BluetoothLogger extends InputPlugin {
 		exec.start();
 	}
 
-	/**
-	 * Stops the plugin, interrupts the execution thread, unregisters all
-	 * broadcast receivers and cancels any ongoing discoveries. Disables
-	 * Bluetooth adapter if it was disabled when the service was started.
-	 */
 	@Override
 	protected void onPluginStop() {
+		/*
+		 * Interrupts the execution thread, unregisters all broadcast receivers
+		 * and cancels any ongoing discoveries. Disables Bluetooth adapter if it
+		 * was disabled when the service was started.
+		 */
 		if (!pluginEnabled) {
 			return;
 		}
@@ -344,9 +372,6 @@ public class BluetoothLogger extends InputPlugin {
 		}
 	}
 
-	/**
-	 * This method gets called whenever the preferences have been changed.
-	 */
 	@Override
 	public void onPreferenceChanged() {
 		timeBetweenDiscoveries = Integer.parseInt(prefs.getString(

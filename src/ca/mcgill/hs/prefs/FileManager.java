@@ -17,7 +17,6 @@ import java.util.Map.Entry;
 import android.app.ListActivity;
 import android.content.Context;
 import android.os.Bundle;
-import ca.mcgill.hs.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,13 +26,23 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 import ca.mcgill.hs.R;
+import ca.mcgill.hs.util.Log;
 
 /**
  * Provides a simple file manager for a preference panel. Shows file names with
  * checkboxes next to them.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public abstract class FileManager extends ListActivity {
 
+	/**
+	 * An adaptor that associates a list of files (or any string, really) with a
+	 * list of checkboxes.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
 	public class CheckboxFileListAdapter extends SimpleAdapter {
 
 		private final Context context;
@@ -87,12 +96,12 @@ public abstract class FileManager extends ListActivity {
 			return checkList.toArray(new String[0]);
 		}
 
-		/**
-		 * This actually does the work of showing the checkboxes.
-		 */
 		@Override
 		public View getView(final int pos, final View inView,
 				final ViewGroup parent) {
+			/*
+			 * This actually does the work of showing the checkboxes.
+			 */
 			View v = inView;
 			if (v == null) {
 				/*
@@ -145,6 +154,12 @@ public abstract class FileManager extends ListActivity {
 		}
 	}
 
+	/**
+	 * Class representing each element in the list (checkbox/text pair).
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
 	protected class CheckListEntry {
 		public String filename;
 		public boolean checked;

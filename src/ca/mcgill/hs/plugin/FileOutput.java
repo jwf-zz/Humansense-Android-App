@@ -33,13 +33,16 @@ import ca.mcgill.hs.serv.LogFileUploaderService;
 import ca.mcgill.hs.util.Log;
 
 /**
- * An OutputPlugin which writes data to files.
+ * An OutputPlugin which writes data to files. Format for each InputPlugin must
+ * be specified in this file, and so it needs to be updated in order to be able
+ * to handle new sources of data.
  * 
  */
 public class FileOutput extends OutputPlugin {
 
 	// in seconds = 12 hours
-	private static final String FILE_ROLLOVER_INTERVAL_DEFAULT = "43200000";
+	private static final String FILE_ROLLOVER_INTERVAL_DEFAULT = Integer
+			.toString(12 * 60 * 60 * 1000);
 
 	// in bytes = 4K
 	private static final String BUFFER_SIZE_DEFAULT = "4096";
@@ -58,9 +61,9 @@ public class FileOutput extends OutputPlugin {
 	 * Parses and writes given BluetoothPacket to given DataOutputStream.
 	 * 
 	 * @param packet
-	 *            the BluetoothPacket to parse and write out.
+	 *            The BluetoothPacket to parse and write out.
 	 * @param outputStream
-	 *            the DataOutputStream to write to.
+	 *            The DataOutputStream to write to.
 	 */
 	private static void dataParse(final BluetoothPacket packet,
 			final DataOutputStream outputStream) {
@@ -82,9 +85,9 @@ public class FileOutput extends OutputPlugin {
 	 * Parses and writes given GPSLoggerPacket to given DataOutputStream.
 	 * 
 	 * @param packet
-	 *            the GPSLoggerPacket to parse and write out.
+	 *            The GPSLoggerPacket to parse and write out.
 	 * @param outputStream
-	 *            the DataOutputStream to write to.
+	 *            The DataOutputStream to write to.
 	 */
 	private static void dataParse(final GPSPacket packet,
 			final DataOutputStream outputStream) {
@@ -105,9 +108,9 @@ public class FileOutput extends OutputPlugin {
 	 * Parses and writes given GSMLoggerPacket to given DataOutputStream.
 	 * 
 	 * @param packet
-	 *            the GSMLoggerPacket to parse and write out.
+	 *            The GSMLoggerPacket to parse and write out.
 	 * @param outputStream
-	 *            the DataOutputStream to write to.
+	 *            The DataOutputStream to write to.
 	 */
 	private static void dataParse(final GSMPacket packet,
 			final DataOutputStream outputStream) {
@@ -133,9 +136,9 @@ public class FileOutput extends OutputPlugin {
 	 * Parses and writes given SensorLoggerPacket to given DataOutputStream.
 	 * 
 	 * @param packet
-	 *            the WifiLoggerPacket to parse and write out.
+	 *            The WifiLoggerPacket to parse and write out.
 	 * @param outputStream
-	 *            the DataOutputStream to write to.
+	 *            The DataOutputStream to write to.
 	 */
 	private static void dataParse(final SensorPacket packet,
 			final DataOutputStream outputStream) {
@@ -161,9 +164,9 @@ public class FileOutput extends OutputPlugin {
 	 * Parses and writes given WifiLoggerPacket to given DataOutputStream.
 	 * 
 	 * @param packet
-	 *            the WifiLoggerPacket to parse and write out.
+	 *            The WifiLoggerPacket to parse and write out.
 	 * @param outputStream
-	 *            the DataOutputStream to write to.
+	 *            The DataOutputStream to write to.
 	 */
 	private static void dataParse(final WifiPacket packet,
 			final DataOutputStream outputStream) {
@@ -186,9 +189,9 @@ public class FileOutput extends OutputPlugin {
 	 * created.
 	 * 
 	 * @param packet
-	 *            the given DataPacket
+	 *            The given DataPacket
 	 * 
-	 * @return the String representing the extension to add to the filename.
+	 * @return The String representing the extension to add to the filename.
 	 */
 	private static String getFileExtension(final DataPacket packet) {
 		if (packet.getDataPacketId() == WifiPacket.PACKET_ID) {
@@ -222,9 +225,7 @@ public class FileOutput extends OutputPlugin {
 	private static final String FILE_OUTPUT_LOG_SENSOR_DATA = "fileOutputLogSensorDataFlag";
 
 	/**
-	 * Returns the list of Preference objects for this OutputPlugin.
-	 * 
-	 * @return an array of the Preferences of this object.
+	 * @see OutputPlugin#getPreferences(PreferenceActivity)
 	 */
 	public static Preference[] getPreferences(final PreferenceActivity activity) {
 		final Preference[] prefs = new Preference[4];
@@ -258,9 +259,7 @@ public class FileOutput extends OutputPlugin {
 	}
 
 	/**
-	 * Returns whether or not this OutputPlugin has Preferences.
-	 * 
-	 * @return whether or not this OutputPlugin has preferences.
+	 * @see OutputPlugin#hasPreferences()
 	 */
 	public static boolean hasPreferences() {
 		return true;
@@ -297,12 +296,11 @@ public class FileOutput extends OutputPlugin {
 	private final Context context;
 
 	/**
-	 * This is the basic constructor for the FileOutput plugidatan. It has to be
-	 * instantiated before it is started, and needs to be passed a reference to
-	 * a Context.
+	 * Constructs a new FileOutput output plugin.
 	 * 
 	 * @param context
-	 *            - the context in which this plugin is created.
+	 *            The application context, required for accessing the
+	 *            preferences.
 	 */
 	public FileOutput(final Context context) {
 		this.context = context;
@@ -380,7 +378,18 @@ public class FileOutput extends OutputPlugin {
 		}
 	}
 
-	private synchronized DataOutputStream createFileForId(final int id,
+	/**
+	 * Gets the output stream for the specified packet id, creating a new one if
+	 * the file hasn't already been opened.
+	 * 
+	 * @param id
+	 *            The Packet id to create the file for.
+	 * @param extension
+	 *            The filename suffix for the file that data for this packet
+	 *            type will be stored in.
+	 * @return The output stream for writing data for the specified packet type.
+	 */
+	private synchronized DataOutputStream getFileForPacketType(final int id,
 			final String extension) {
 		if (!fileHandles.containsKey(id)) {
 			try {
@@ -423,7 +432,7 @@ public class FileOutput extends OutputPlugin {
 	 * DataPacket type.
 	 * 
 	 * @param packet
-	 *            the DataPacket received.
+	 *            The DataPacket that was received.
 	 */
 	@Override
 	final void onDataReceived(final DataPacket packet) {
@@ -453,10 +462,11 @@ public class FileOutput extends OutputPlugin {
 		}
 		DataOutputStream outputStream = fileHandles.get(id);
 		if (outputStream == null) {
-			outputStream = createFileForId(id, getFileExtension(packet));
+			outputStream = getFileForPacketType(id, getFileExtension(packet));
 		}
-		// Choose correct dataParse method based on the format of the data
-		// received.
+		/*
+		 * Choose correct dataParse method based on the packet identifier.
+		 */
 		if (logSensorData && id == SensorPacket.PACKET_ID) {
 			dataParse((SensorPacket) packet, outputStream);
 		} else if (id == WifiPacket.PACKET_ID) {
@@ -482,25 +492,22 @@ public class FileOutput extends OutputPlugin {
 		logSensorData = prefs.getBoolean(FILE_OUTPUT_LOG_SENSOR_DATA, true);
 	}
 
-	/**
-	 * Closes all files currently open.
-	 */
 	@Override
 	protected void onPluginStop() {
 		Log.d(PLUGIN_NAME, "onPluginStop");
 		pluginStopping = true;
 
 		// Wait until all threads have finished writing.
+		// TODO: Busy-wait sucks, although this is called very rarely.
 		while (numThreadsWriting != 0) {
 		}
 
+		// Close all open files.
 		closeAll();
+
 		pluginStopping = false;
 	}
 
-	/**
-	 * This method gets called whenever the preferences have been changed.
-	 */
 	@Override
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(

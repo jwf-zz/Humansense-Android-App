@@ -10,43 +10,41 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * This class clusters a set of locations, which are really points at which the
- * user was stationary for a brief period of time, into places where the user
- * visits regularly.
+ * This class clusters a set of locations at which the user was stationary for a
+ * brief period of time into places where the user visits regularly.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  * 
  */
 public class SignificantLocationClusterer {
 
-	// Delta from the paper. This value represents the percentage of the points
-	// in the pool that must neighbours of a point for it to be considered to be
-	// part of a cluster
-	// private static final float DELTA = 0.90f;
-
-	/** The minimum number of points required to be clustered. */
+	/** The minimum number of neighbours required to form a cluster */
 	private static final int MIN_PTS = 10;
 
-	/** A set of neighbour points. */
+	/** The set of neighbour points. */
 	private final LocationSet pool;
 
 	/**
-	 * Constructs a significant location clusterer using the specified
-	 * NeighbourPointSet.
+	 * Constructs a significant location clusterer using the specified set of
+	 * neighbour points.
 	 * 
 	 * @param set
-	 *            The set to use and modify.
+	 *            The set that contains the locations. This set will be updated
+	 *            with new locations and clusters.
 	 */
 	public SignificantLocationClusterer(final LocationSet set) {
 		this.pool = set;
 	}
 
 	/**
-	 * Adds all the cluster IDs of <tt>point</tt>'s neighbours to the set passed
-	 * as parameter.
+	 * Updates the set of clusters that need to be merged by adding all clusters
+	 * that the neighbours of <tt>location</tt> belong to to the set of clusters
+	 * that need to be merged.
 	 * 
 	 * @param location
 	 *            The point whose neighbours' clusters must be added.
 	 * @param clustersToMerge
-	 *            The set of clusters.
+	 *            The set of clusters to be merged. This set gets updated.
 	 */
 	private void addNeighbouringClusters(final Location location,
 			final Collection<Long> clustersToMerge) {
@@ -65,16 +63,16 @@ public class SignificantLocationClusterer {
 	}
 
 	/**
-	 * Adds the point's neighbours to the specified cluster.
+	 * Adds a locations' neighbours to the specified cluster.
 	 * 
-	 * @param point
-	 *            The point whose neighbours must be moved.
+	 * @param location
+	 *            The point whose neighbours must be added.
 	 * @param clusterId
-	 *            The cluster to move them to.
+	 *            The cluster id that the neighbours will belong to.
 	 */
-	private void addNeighboursToCluster(final Location point,
+	private void addNeighboursToCluster(final Location location,
 			final long clusterId) {
-		final List<Long> neighbours = point.getNeighbours();
+		final List<Long> neighbours = location.getNeighbours();
 		for (final long neighbour_id : neighbours) {
 			DebugHelper.out.println("\tAdding neighbour " + neighbour_id
 					+ " to cluster " + clusterId + ": ");
@@ -84,14 +82,12 @@ public class SignificantLocationClusterer {
 	}
 
 	/**
-	 * Adds a neighbour point to the pool of observed points.
+	 * Adds a new location to the pool of observed locations.
 	 * 
 	 * @param location
 	 *            The new location to be added.
 	 */
 	public long addNewLocation(Location location) {
-		pool.cacheLocation(location);
-
 		// Add the point to the pool, compute neighbours.
 		final long new_id = pool.add(location);
 		if (new_id != location.getId()) {
@@ -100,10 +96,20 @@ public class SignificantLocationClusterer {
 		return assignToCluster(location);
 	}
 
+	/**
+	 * Does the work of adding a location to a cluster. This checks to see if
+	 * the location should be added to a cluster, and also checks its neighbours
+	 * to see if they should be added to a cluster. The location may already be
+	 * assigned to a cluster, in which case its neighbours are also merged into
+	 * that cluster if necessary.
+	 * 
+	 * @param location
+	 *            The location to cluster. May or may not already have a cluster
+	 *            id assigned to it.
+	 * @return The id of the cluster, or -1 if the location is not a part of a
+	 *         cluster.
+	 */
 	public long assignToCluster(final Location location) {
-		// if (location.getId() > 4) {
-		// System.exit(0);
-		// }
 		final long location_id = location.getId();
 		long cluster_id = pool.getClusterId(location_id);
 		DebugHelper.out.println("Clustering location " + location_id
@@ -182,18 +188,18 @@ public class SignificantLocationClusterer {
 	}
 
 	/**
-	 * Creates a new cluster centered around the specified point. Returns the ID
-	 * of the newly formed cluster.
+	 * Creates a new cluster centered around the specified location. Returns the
+	 * ID of the newly formed cluster.
 	 * 
-	 * @param point
-	 *            The point centering the new cluster.
-	 * @return The ID of the newly formed cluster.
+	 * @param location
+	 *            The location representing the new cluster.
+	 * @return The id of the newly formed cluster.
 	 */
-	private long createNewCluster(final Location point) {
+	private long createNewCluster(final Location location) {
 		final long clusterID = pool.getNewClusterId();
-		pool.addToCluster(point.getId(), clusterID);
-		DebugHelper.out.println("\tAdded " + point.getId() + " to new cluster "
-				+ clusterID);
+		pool.addToCluster(location.getId(), clusterID);
+		DebugHelper.out.println("\tAdded " + location.getId()
+				+ " to new cluster " + clusterID);
 		return clusterID;
 	}
 
@@ -223,7 +229,7 @@ public class SignificantLocationClusterer {
 		if (noise == (locations.size() - sum)) {
 			result += " (Validated)";
 		} else {
-			result += " (Invalid, Actually " + noise + " Noise Points)";
+			result += " (Invalid, Should be " + noise + " Noise Points)";
 		}
 		return result;
 	}

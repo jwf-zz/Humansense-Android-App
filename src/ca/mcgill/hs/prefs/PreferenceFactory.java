@@ -5,8 +5,6 @@
  */
 package ca.mcgill.hs.prefs;
 
-import java.lang.reflect.InvocationTargetException;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,6 +23,8 @@ import ca.mcgill.hs.util.Log;
 
 /**
  * An API allowing plugin programmers to easily generate preference objects.
+ * 
+ * @author Jordan Frank, Cicerone Cojocaru, Jonathan Pitre
  */
 public class PreferenceFactory {
 
@@ -83,20 +83,26 @@ public class PreferenceFactory {
 					}
 				}
 			}
-		} catch (final IllegalArgumentException e) {
-			Log.e(TAG, e);
-		} catch (final SecurityException e) {
-			Log.e(TAG, e);
-		} catch (final IllegalAccessException e) {
-			Log.e(TAG, e);
-		} catch (final InvocationTargetException e) {
-			Log.e(TAG, e);
-		} catch (final NoSuchMethodException e) {
+		} catch (final Exception e) {
 			Log.e(TAG, e);
 		}
 		return root;
 	}
 
+	/**
+	 * Creates a button item that can appear in a preferences screen. Parameters
+	 * are referenecd by resource identifiers.
+	 * 
+	 * @param activity
+	 *            The PreferenceActivity in which this preference will appear
+	 * @param key
+	 *            The key of this preference.
+	 * @param titleResId
+	 *            The resource ID for the title of this preference.
+	 * @param summaryDefResId
+	 *            The resource ID for the default summary of this preference.
+	 * @return A button preference.
+	 */
 	public static Preference getButtonPreference(
 			final PreferenceActivity activity, final String key,
 			final int titleResId, final int summaryDefResId) {
@@ -108,8 +114,8 @@ public class PreferenceFactory {
 	}
 
 	/**
-	 * Returns a CheckBoxPreference preference specified by the parameters. This
-	 * method does not use resource IDs for its parameters.
+	 * Creates a CheckBoxPreference preference specified by the parameters,
+	 * referenced by resource identifiers.
 	 * 
 	 * @param activity
 	 *            The PreferenceActivity in which this preference will appear
@@ -154,8 +160,8 @@ public class PreferenceFactory {
 	}
 
 	/**
-	 * Returns a CheckBoxPreference preference specified by the parameters. This
-	 * method does not use resource IDs for its parameters.
+	 * Returns a CheckBoxPreference preference specified by the parameters,
+	 * passed as Strings.
 	 * 
 	 * @param activity
 	 *            The PreferenceActivity in which this preference will appear
@@ -199,6 +205,27 @@ public class PreferenceFactory {
 		return cbp;
 	}
 
+	/**
+	 * Creates a text box that pops up when the preference item is selected.
+	 * Parameters are referenced by resource identifiers.
+	 * 
+	 * @param activity
+	 *            The PreferenceActivity in which this preference will appear
+	 * @param key
+	 *            The key of this preference.
+	 * @param titleResId
+	 *            The resource ID for the title of this preference.
+	 * @param summaryDefResId
+	 *            The resource ID for the default summary of this preference.
+	 * @param dialogMessageResId
+	 *            The resource ID for the message displayed in the dialog that
+	 *            appears.
+	 * @param dialogTitleResId
+	 *            The resource ID for the title of the dialog that appears.
+	 * @param defaultValue
+	 *            The default value for the text box, if no value has been set.
+	 * @return A preference object that can be added to a preference list.
+	 */
 	public static Preference getEditTextPreference(
 			final PreferenceActivity activity, final String key,
 			final int titleResId, final int summaryDefResId,
@@ -351,23 +378,26 @@ public class PreferenceFactory {
 		return result;
 	}
 
+	/**
+	 * Retrieves the shared preferences for the application.
+	 * 
+	 * @param context
+	 *            The application context.
+	 * @return The shared preferences for this application.
+	 */
 	public static SharedPreferences getSharedPreferences(final Context context) {
-		SharedPreferences prefs = null;
-		// try {
-		prefs = PreferenceManager.getDefaultSharedPreferences(context
-				.getApplicationContext());
-		// } catch (final NullPointerException e) {
-		// Log.e(TAG, e);
-		// prefs = null;
-		// }
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(context.getApplicationContext());
 		return prefs;
 	}
 
 	/**
-	 * IMPORTANT: This method must be called before using this factory!
+	 * Sets the application context for this preference factory. This must be
+	 * called before using any of the other methods in this class, with the
+	 * exception of {@link #getSharedPreferences(Context)}.
 	 * 
 	 * @param context
-	 *            The context in which these preferences live.
+	 *            The application context.
 	 */
 	public static void setContext(final Context context) {
 		PreferenceFactory.context = context;

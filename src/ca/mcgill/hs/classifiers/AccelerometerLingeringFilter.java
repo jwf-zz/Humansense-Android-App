@@ -9,6 +9,8 @@ package ca.mcgill.hs.classifiers;
  * Very simple filter for accelerometer values. Maintains a moving window of
  * accelerometer magnitude values and computes whether the average value is
  * greater than some threshold. Can act as a very simple test for motion.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
 public class AccelerometerLingeringFilter {
 

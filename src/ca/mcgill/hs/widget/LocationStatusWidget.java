@@ -25,13 +25,35 @@ import ca.mcgill.hs.plugin.LocationClusterer;
 import ca.mcgill.hs.plugin.PluginFactory;
 import ca.mcgill.hs.util.Log;
 
+/**
+ * Displays the current location, and the motion status.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+ * 
+ */
 public class LocationStatusWidget extends AppWidgetProvider {
+	/**
+	 * Service that runs in the background and polls the location estimation
+	 * plugin for results.
+	 * 
+	 * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+	 * 
+	 */
 	public static class UpdateService extends Service {
 		private static final SimpleDateFormat dfm = new SimpleDateFormat(
 				"HH:mm:ss");
 
 		private static final String TAG = "LocationStatusWidget.UpdateService";
 
+		/**
+		 * Retrieves a cluster name from the database.
+		 * 
+		 * @param currentCluster
+		 *            The cluster id.
+		 * @param context
+		 *            The application context.
+		 * @return The cluster name.
+		 */
 		private static String getClusterName(final long currentCluster,
 				final Context context) {
 			if (currentCluster < 0) {
@@ -62,6 +84,16 @@ public class LocationStatusWidget extends AppWidgetProvider {
 			return clusterName;
 		}
 
+		/**
+		 * Builds the View that should be presented in the widget frame.
+		 * 
+		 * @param context
+		 *            The application context, required for accessing the
+		 *            locations database.
+		 * @return A RemoteView object populated with the text, and with the
+		 *         background colour indicating the motion status, ready to be
+		 *         displayed in the widget frame.
+		 */
 		public RemoteViews buildUpdate(final Context context) {
 			if (PluginFactory.getContext() == null) {
 				PluginFactory.setContext(context);
@@ -72,6 +104,8 @@ public class LocationStatusWidget extends AppWidgetProvider {
 			RemoteViews views = null;
 
 			if (locationPlugin != null && locationPlugin.isEnabled()) {
+				// If the location estimation plugin is active, retrieve the
+				// results.
 				moving = locationPlugin.isMoving();
 				mostRecentClusterId = locationPlugin.getCurrentCluster();
 				final String clusterName = getClusterName(mostRecentClusterId,
@@ -117,6 +151,8 @@ public class LocationStatusWidget extends AppWidgetProvider {
 				views.setTextColor(R.id.location_status_text, Color.WHITE);
 
 			} else {
+				// If the location plugin is not enabled, just display some
+				// default text.
 				views = new RemoteViews(context.getPackageName(),
 						R.layout.widget_message);
 				views.setTextViewText(R.id.message, context

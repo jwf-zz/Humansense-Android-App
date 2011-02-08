@@ -13,12 +13,14 @@ import android.database.sqlite.SQLiteDatabase;
 
 public abstract class LocationSet {
 
+	// Table Names
 	public static final String LOCATIONS_TABLE = "locations";
 	public static final String NEIGHBOURS_TABLE = "neighbours";
 	public static final String LABELS_TABLE = "labels";
 	public static final String CLUSTERS_TABLE = "clusters";
 
 	public static final String SQLITE_DATE_FORMAT = "'%Y-%m-%d %H:%M:%f'";
+
 	/**
 	 * Delta from the paper. This value represents the percentage of the points
 	 * in the pool that must neighbours of a point for it to be considered to be
@@ -38,13 +40,27 @@ public abstract class LocationSet {
 	 */
 	public abstract long add(Location point);
 
+	/**
+	 * Adds a location to a cluster.
+	 * 
+	 * @param locationId
+	 *            The id of the location to be added to the cluster.
+	 * @param clusterId
+	 *            The id of the cluster to add the location to.
+	 */
 	public void addToCluster(final long locationId, final long clusterId) {
 		db.execSQL("REPLACE INTO " + CLUSTERS_TABLE + " VALUES (" + locationId
 				+ "," + clusterId + ", NULL);");
 	}
 
-	public abstract void cacheLocation(Location location);
-
+	/**
+	 * Relabels a cluster with a new id. This is used when merging clusters.
+	 * 
+	 * @param oldId
+	 *            Old cluster id.
+	 * @param newId
+	 *            New cluster id.
+	 */
 	public void changeClusterId(final long oldId, final long newId) {
 		if (oldId == newId) {
 			return;
@@ -55,6 +71,11 @@ public abstract class LocationSet {
 				+ " WHERE cluster_id=" + oldId + ";");
 	}
 
+	/**
+	 * Returns the ids of all clusters in the database.
+	 * 
+	 * @return A collection of cluster ids.
+	 */
 	public Collection<Long> getAllClusters() {
 		final Collection<Long> clusters = new LinkedList<Long>();
 		final Cursor cursor = db.rawQuery("SELECT DISTINCT cluster_id FROM "
@@ -69,6 +90,11 @@ public abstract class LocationSet {
 		return clusters;
 	}
 
+	/**
+	 * Returns the ids of all locations in the database.
+	 * 
+	 * @return A collection of location ids.
+	 */
 	public Collection<Long> getAllLocations() {
 		final Collection<Long> locations = new LinkedList<Long>();
 		final Cursor cursor = db.rawQuery("SELECT location_id FROM "
@@ -84,16 +110,17 @@ public abstract class LocationSet {
 	}
 
 	/**
-	 * Gets the cluster id for a particular location_id.
+	 * Gets the cluster id for a particular location id.
 	 * 
-	 * @param location_id
+	 * @param locationId
+	 *            The location id.
 	 * @return Cluster id, or -1 if point is not in a cluster.
 	 */
-	public long getClusterId(final long location_id) {
+	public long getClusterId(final long locationId) {
 		long cluster_id = -1;
 		final Cursor cursor = db.rawQuery("SELECT cluster_id FROM "
 				+ CLUSTERS_TABLE + " WHERE location_id=?;", new String[] { Long
-				.toString(location_id) });
+				.toString(locationId) });
 		try {
 			if (cursor.moveToNext()) {
 				cluster_id = cursor.getLong(0);
@@ -109,25 +136,25 @@ public abstract class LocationSet {
 	 * of locations
 	 * 
 	 * @param locations
-	 *            the set of locations to check
-	 * @return the cluster ids that occur in the collection of locations.
+	 *            The set of locations to check
+	 * @return The cluster ids that occur in the collection of locations.
 	 */
 	public Collection<Long> getClusterIds(final Collection<Long> locations) {
-		final StringBuilder location_ids = new StringBuilder();
+		final StringBuilder locationIds = new StringBuilder();
 		boolean first = true;
-		for (final long location_id : locations) {
+		for (final long locationId : locations) {
 			if (first) {
-				location_ids.append(location_id);
+				locationIds.append(locationId);
 				first = false;
 			} else {
-				location_ids.append("," + location_id);
+				locationIds.append("," + locationId);
 			}
 		}
 
 		final Collection<Long> clusters = new LinkedList<Long>();
 		final Cursor cursor = db.rawQuery("SELECT DISTINCT cluster_id FROM "
 				+ CLUSTERS_TABLE + " WHERE location_id IN ("
-				+ location_ids.toString() + ")", null);
+				+ locationIds.toString() + ")", null);
 		try {
 			while (cursor.moveToNext()) {
 				clusters.add(cursor.getLong(0));
@@ -138,13 +165,26 @@ public abstract class LocationSet {
 		return clusters;
 	}
 
-	public abstract Location getLocation(long location_id);
+	/**
+	 * Retrieves a location from the database.
+	 * 
+	 * @param locationId
+	 *            The location id to retrieve.
+	 */
+	public abstract Location getLocation(long locationId);
 
-	public Collection<Long> getLocationsForCluster(final long cluster_id) {
+	/**
+	 * Gets all of the locations contained in the specified cluster
+	 * 
+	 * @param clusterId
+	 *            The id of the cluster.
+	 * @return A collection of location ids.
+	 */
+	public Collection<Long> getLocationsForCluster(final long clusterId) {
 		final Collection<Long> ids = new LinkedList<Long>();
 		final Cursor cursor = db.rawQuery("SELECT location_id FROM "
 				+ CLUSTERS_TABLE + " WHERE cluster_id=?", new String[] { Long
-				.toString(cluster_id) });
+				.toString(clusterId) });
 		try {
 			while (cursor.moveToNext()) {
 				ids.add(cursor.getLong(0));
@@ -155,6 +195,11 @@ public abstract class LocationSet {
 		return ids;
 	}
 
+	/**
+	 * Returns the next available cluster id.
+	 * 
+	 * @return An available cluster id.
+	 */
 	public long getNewClusterId() {
 		long cluster_id = -1;
 		final Cursor cursor = db.rawQuery("SELECT MAX(cluster_id) FROM "
@@ -169,11 +214,29 @@ public abstract class LocationSet {
 		return cluster_id;
 	}
 
+	/**
+	 * @return The window length, in samples or seconds, depending on the value
+	 *         of {@link #usesTimeBasedWindow()}.
+	 */
 	public abstract int getWindowLength();
 
+	/**
+	 * Creates a new empty location with the specified timestamp.
+	 * 
+	 * @param timestamp
+	 *            Timestamp, in milliseconds, associated with the new location.
+	 */
 	public abstract Location newLocation(double timestamp);
 
+	/**
+	 * Returns the percentage of the window that must be considered stationary
+	 * for a new location to be created.
+	 */
 	public abstract float pctOfWindowRequiredToBeStationary();
 
+	/**
+	 * Returns true if the algorithm is using a fixed time length for the
+	 * window, or false if the window contains a fixed number of samples.
+	 */
 	public abstract boolean usesTimeBasedWindow();
 }

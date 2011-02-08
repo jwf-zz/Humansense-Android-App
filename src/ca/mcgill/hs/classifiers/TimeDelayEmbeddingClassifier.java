@@ -7,6 +7,13 @@ package ca.mcgill.hs.classifiers;
 
 import java.io.File;
 
+/**
+ * Wraps the functionality of the NativeClassifier, and makes it much easier to
+ * use by a plugin.
+ * 
+ * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
+ * 
+ */
 public class TimeDelayEmbeddingClassifier {
 	@SuppressWarnings("unused")
 	private static final String TAG = "TimeDelayEmbeddingClassifier";
@@ -23,6 +30,14 @@ public class TimeDelayEmbeddingClassifier {
 
 	private int numLoadedModels;
 
+	/**
+	 * Adds a sample to the data buffer. Returns the index in the buffer at
+	 * which the data was added.
+	 * 
+	 * @param sample
+	 *            Data element to be added to the buffer.
+	 * @return Index in the buffer where the data can be found.
+	 */
 	public int addSample(final float sample) {
 		int index;
 		synchronized (buffer) {
@@ -41,11 +56,38 @@ public class TimeDelayEmbeddingClassifier {
 		return index;
 	}
 
+	/**
+	 * Just wraps the buildTree method of the native classifier.
+	 * 
+	 * @param modelFile
+	 *            The file containing the data. This file must contain a single
+	 *            column of floating point values. The model will be stored in a
+	 *            file with the same name but with the suffix .dmp appended to
+	 *            it.
+	 * @param m
+	 *            Initial embedding dimension.
+	 * @param p
+	 *            Number of principal components to use for final model.
+	 * @param d
+	 *            Time delay in samples.
+	 * 
+	 * @see NativeClassifier#buildTree
+	 */
 	public void buildModel(final String modelFile, final int m, final int p,
 			final int d) {
 		nativeClassifier.buildTree(modelFile, m, p, d);
 	}
 
+	/**
+	 * Classifies the data in the buffer starting at the specified index.
+	 * 
+	 * @param index
+	 *            The starting index in the buffer.
+	 * @return The scores from each of the models. This will be an array
+	 *         containing the same number of values as there are models, and the
+	 *         order of the values correspond to the order of the models
+	 *         returned by {@link #getLoadedModelNames()}
+	 */
 	public float[] classify(final int index) {
 		if (index < bufferMidPoint) {
 			return null;
@@ -86,6 +128,13 @@ public class TimeDelayEmbeddingClassifier {
 		return nativeClassifier.getNumModels();
 	}
 
+	/**
+	 * Loads a set of models
+	 * 
+	 * @param models
+	 *            A file containing the filenames of the models to load, one per
+	 *            line.
+	 */
 	public void loadModels(final File models) {
 		nativeClassifier.loadModels(models.getAbsolutePath(), 2, 16);
 		nativeClassifier.setAlgorithmNumber(1);

@@ -56,6 +56,10 @@ import ca.mcgill.hs.util.Log;
  * 
  * If the service was already started, then it will simply update the list of
  * files and resume its operations.
+ * 
+ * TODO: This needs to be rewritten.
+ * 
+ * @author Jordan Frank, Cicerone Cojocaru, Jonathan Pitre
  */
 public class LogFileUploaderService extends Service {
 	private static final String TAG = "HSUploaderService";

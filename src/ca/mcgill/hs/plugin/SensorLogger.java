@@ -71,7 +71,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 
 		@Override
 		public String getInputPluginName() {
-			return SensorPacket.PACKET_NAME;
+			return SensorLogger.PLUGIN_NAME;
 		}
 
 	}

@@ -125,7 +125,7 @@ public final class GPSLogger extends InputPlugin {
 
 		@Override
 		public String getInputPluginName() {
-			return GPSPacket.PACKET_NAME;
+			return GPSLogger.PLUGIN_NAME;
 		}
 
 	}

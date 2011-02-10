@@ -139,7 +139,7 @@ public final class WifiLogger extends InputPlugin {
 
 		@Override
 		public String getInputPluginName() {
-			return WifiPacket.PACKET_NAME;
+			return WifiLogger.PLUGIN_NAME;
 		}
 	}
 

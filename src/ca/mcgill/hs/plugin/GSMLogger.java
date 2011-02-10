@@ -79,7 +79,7 @@ public final class GSMLogger extends InputPlugin {
 
 		@Override
 		public String getInputPluginName() {
-			return GSMPacket.PACKET_NAME;
+			return GSMLogger.PLUGIN_NAME;
 		}
 
 	}

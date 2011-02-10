@@ -194,17 +194,20 @@ public class FileOutput extends OutputPlugin {
 	 * @return The String representing the extension to add to the filename.
 	 */
 	private static String getFileExtension(final DataPacket packet) {
-		if (packet.getDataPacketId() == WifiPacket.PACKET_ID) {
+		final int packetId = packet.getDataPacketId();
+		if (packetId == WifiPacket.PACKET_ID) {
 			return WIFI_EXT;
-		} else if (packet.getDataPacketId() == GPSPacket.PACKET_ID) {
+		} else if (packetId == GPSPacket.PACKET_ID) {
 			return GPS_EXT;
-		} else if (packet.getDataPacketId() == SensorPacket.PACKET_ID) {
+		} else if (packetId == SensorPacket.PACKET_ID) {
 			return SENS_EXT;
-		} else if (packet.getDataPacketId() == GSMPacket.PACKET_ID) {
+		} else if (packetId == GSMPacket.PACKET_ID) {
 			return GSM_EXT;
-		} else if (packet.getDataPacketId() == BluetoothPacket.PACKET_ID) {
+		} else if (packetId == BluetoothPacket.PACKET_ID) {
 			return BT_EXT;
 		} else {
+			Log.d(PLUGIN_NAME,
+					"Unknown packet id, returning default file extension.");
 			return DEF_EXT;
 		}
 	}
@@ -477,6 +480,8 @@ public class FileOutput extends OutputPlugin {
 			dataParse((GPSPacket) packet, outputStream);
 		} else if (id == BluetoothPacket.PACKET_ID) {
 			dataParse((BluetoothPacket) packet, outputStream);
+		} else {
+			Log.e(PLUGIN_NAME, "Unknown packet id: " + id);
 		}
 		numThreadsWriting--;
 	}

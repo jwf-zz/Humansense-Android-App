@@ -177,6 +177,7 @@ public class LocationStatusWidget extends AppWidgetProvider {
 					LocationStatusWidget.class);
 			final AppWidgetManager manager = AppWidgetManager.getInstance(this);
 			manager.updateAppWidget(thisWidget, updateViews);
+			Log.d(TAG, "Done onStart");
 		}
 	}
 

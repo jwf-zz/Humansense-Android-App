@@ -51,6 +51,7 @@ public final class WifiLogger extends InputPlugin {
 					processResults(results);
 				}
 			}
+			Log.d(PLUGIN_NAME, "Done onReceive");
 		}
 
 		/**
@@ -76,14 +77,14 @@ public final class WifiLogger extends InputPlugin {
 			}
 
 			write(new WifiPacket(numResults, timestamp, levels, SSIDs, BSSIDs));
-			if (scanPending) {
-				Log.d(PLUGIN_NAME, "Scan pending, starting a new scan.");
-				scanPending = false;
-				wifiManager.startScan();
-			} else {
-				Log.d(PLUGIN_NAME, "No scan pending.");
-				scanning = false;
-			}
+			// if (scanPending) {
+			// Log.d(PLUGIN_NAME, "Scan pending, starting a new scan.");
+			// scanPending = false;
+			// wifiManager.startScan();
+			// } else {
+			// Log.d(PLUGIN_NAME, "No scan pending.");
+			// scanning = false;
+			// }
 		}
 	}
 
@@ -259,6 +260,7 @@ public final class WifiLogger extends InputPlugin {
 				try {
 					threadRunning = true;
 					while (threadRunning) {
+						Log.d(PLUGIN_NAME, "Scanning Loop Start.");
 						/*
 						 * This was for debugging purposes and may no longer be
 						 * necessary.
@@ -268,12 +270,20 @@ public final class WifiLogger extends InputPlugin {
 									.d(PLUGIN_NAME,
 											"Uh-Oh, Supplicant isn't responding to requests.");
 						}
-						if (!scanning) {
-							scanning = true;
-							wifiManager.startScan();
-						} else {
-							scanPending = true;
-						}
+						wifiManager.startScan();
+						// if (!scanning) {
+						// Log.d(PLUGIN_NAME,
+						// "No scan in progress, starting new scan.");
+						// scanning = true;
+						// wifiManager.startScan();
+						// } else {
+						// Log.d(PLUGIN_NAME,
+						// "Scan in progress, set pending scan.");
+						// //scanPending = true;
+						// scanning = false;
+						// }
+						Log.d(PLUGIN_NAME, "Scanning loop sleeping for "
+								+ sleepIntervalMillisecs + " ms.");
 						sleep(sleepIntervalMillisecs);
 					}
 					Log.d(PLUGIN_NAME,

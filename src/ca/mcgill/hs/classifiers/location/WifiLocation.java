@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import ca.mcgill.hs.util.Log;
 
 /**
  * A location characterized by observable wifi base stations and the measured
@@ -39,7 +40,6 @@ public class WifiLocation extends Location {
 	 */
 	public static final double ETA = 0.8;
 
-	@SuppressWarnings("unused")
 	private static final String TAG = "WifiLocation";
 
 	/**
@@ -135,23 +135,25 @@ public class WifiLocation extends Location {
 		double dist = 0.0;
 		int num_common = 0;
 
-		final Cursor cursor = db.rawQuery(
-				"SELECT o1.average_strength,o2.average_strength FROM "
-						+ WifiLocationSet.OBSERVATIONS_TABLE + " AS o1 "
-						+ "JOIN " + WifiLocationSet.OBSERVATIONS_TABLE
-						+ " AS o2 USING (wap_id) "
-						+ "WHERE o1.location_id=? AND o2.location_id=?",
-				new String[] { Long.toString(this.getId()),
-						Long.toString(location.getId()) });
-		try {
-			while (cursor.moveToNext()) {
-				final double part = cursor.getDouble(0) - cursor.getDouble(1);
-				dist += part * part;
-				num_common += 1;
-			}
-		} finally {
-			cursor.close();
+		final Cursor cursor = db
+				.rawQuery(
+						"SELECT COUNT(*),"
+								+ "SUM((o1.average_strength-o2.average_strength)*(o1.average_strength-o2.average_strength)) "
+								+ "FROM " + WifiLocationSet.OBSERVATIONS_TABLE
+								+ " AS o1 " + "JOIN "
+								+ WifiLocationSet.OBSERVATIONS_TABLE
+								+ " AS o2 USING (wap_id) "
+								+ "WHERE o1.location_id=? AND o2.location_id=?",
+						new String[] { Long.toString(getId()),
+								Long.toString(location.getId()) });
+		if (cursor.moveToNext()) {
+			num_common = cursor.getInt(0);
+			dist = cursor.getDouble(1);
+		} else {
+			Log.e(TAG, "Could not get distance between locations with ids "
+					+ getId() + " and " + location.getId());
 		}
+		cursor.close();
 
 		if ((double) num_common
 				/ (double) Math.min(this.getNumObservations(), location
@@ -260,11 +262,12 @@ public class WifiLocation extends Location {
 		final Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM "
 				+ WifiLocationSet.OBSERVATIONS_TABLE + " WHERE location_id=?",
 				new String[] { Long.toString(getId()) });
-		try {
-			cursor.moveToNext();
+		if (cursor.moveToNext()) {
 			num_observations = cursor.getInt(0);
-		} finally {
-			cursor.close();
+		} else {
+			Log.e(TAG, "Could not get number of observations for location id "
+					+ getId());
 		}
+		cursor.close();
 	}
 }

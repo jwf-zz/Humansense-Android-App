@@ -241,7 +241,7 @@ public final class WifiLocationSet extends LocationSet {
 				min_dist = dist;
 				nearest_neighbour_id = neighbour_id;
 			}
-			if (dist > 0 && dist < WifiLocation.EPS) {
+			if (dist > 0.0f && dist < WifiLocation.EPS) {
 				// Add as neighbour's neighbour.
 				// neighbour.addNeighbour(location_id);
 			} else {

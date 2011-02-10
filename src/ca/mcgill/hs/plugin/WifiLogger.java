@@ -51,7 +51,6 @@ public final class WifiLogger extends InputPlugin {
 					processResults(results);
 				}
 			}
-			Log.d(PLUGIN_NAME, "Done onReceive");
 		}
 
 		/**
@@ -260,7 +259,6 @@ public final class WifiLogger extends InputPlugin {
 				try {
 					threadRunning = true;
 					while (threadRunning) {
-						Log.d(PLUGIN_NAME, "Scanning Loop Start.");
 						/*
 						 * This was for debugging purposes and may no longer be
 						 * necessary.
@@ -282,8 +280,6 @@ public final class WifiLogger extends InputPlugin {
 						// //scanPending = true;
 						// scanning = false;
 						// }
-						Log.d(PLUGIN_NAME, "Scanning loop sleeping for "
-								+ sleepIntervalMillisecs + " ms.");
 						sleep(sleepIntervalMillisecs);
 					}
 					Log.d(PLUGIN_NAME,

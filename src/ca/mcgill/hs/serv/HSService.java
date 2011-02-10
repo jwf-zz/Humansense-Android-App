@@ -117,9 +117,11 @@ public class HSService extends Service {
 	 */
 	public static void onDataReady(final DataPacket packet,
 			final InputPlugin source) {
-		for (final OutputPlugin plugin : outputPluginList) {
-			plugin.onDataReady(packet.clone());
-			tpe.execute(plugin);
+		if (isRunning) {
+			for (final OutputPlugin plugin : outputPluginList) {
+				plugin.onDataReady(packet.clone());
+				tpe.execute(plugin);
+			}
 		}
 	}
 
@@ -177,7 +179,7 @@ public class HSService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-
+		isRunning = false;
 		// Stop listening for preference updates.
 		getApplicationContext().unregisterReceiver(prefReceiver);
 
@@ -199,7 +201,6 @@ public class HSService extends Service {
 
 		// Close the threadpool.
 		shutdownAndAwaitTermination();
-		isRunning = false;
 		HSAndroid.updateButton();
 	}
 

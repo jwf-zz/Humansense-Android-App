@@ -61,18 +61,31 @@
     <p>JavaDocs are available <a href="doc/index.html">here</a>. Other documentation to come.</p>
 
     <h2>Quick Start</h2>
-    <p>To see the app do something cool, try out the location
-    recognition plugin. This plugin will learn to recognize places
+
+    <p>To see the app do something interesting, I suggest trying out either the activity recognition plugin or the location recognition plugin.</p>
+
+    <h3>Activity Recognition</h3>
+    <p>This plugin allows you to build models for physical activities (e.g., running, walking, hopping on one foot, etc.), and then later recognize which activity you are peforming. It can also be used to build models for various people's gaits (i.e., style of walking), and then it can detect who is carrying the phone.</p>
+    <p>To try out this plugin, you need to enable the sensor input plugin and the classifier output plugin. To enable the sensor input plugin, go to the <i>Settings</i>, then to <i>Input Plugins</i>, then click the check box next to <i>Sensor Logging Plugin</i>. In the <i>Sensor Speed</i> setting, choose <i>Fastest</i>. Then go back into the <i>Settings</i>, choose <i>Output Plugins</i>, and enable the <i>Simple Classifier Plugin</i>. The classifier is only active when the phone is in motion, and the Lingering parameters adjust how sensitive the classifier is. I've found that setting the <i>Lingering Power Threshold</i> to 100, and the <i>Lingering Power Window</i> to 25 work well. The <i>Manage Model Files</i> setting allows you to choose which models the classifier uses, and we'll get to that in a moment.</p>
+    <p>Now, return to the main <i>Humansense</i> application screen, and click <i>Start Service</i>. Two new buttons should appear at the bottom of the screen. <i>Build</i> is used to build new models (i.e., create new activities or people to be recognized). Clicking <i>Build</i> will cause the device to begin collecting samples from the accelerometers. To create a new activity model, click <i>Build</i>, put the phone in your pocket (locking the screen first so that no buttons are pressed accidentally while in your pocket), perform the activity for a short period of time (10 seconds or so), remove the phone from your pocket (unlock it), and click <i>Stop Building</i>. A new dialog will appear, showing you the collected accelerometer data. The purpose of this dialog is to trim off the initial and final few seconds, which contain noisy data from when you put the phone in your pocket and removed it. Select a nice section of the data by clicking and dragging on the data. A new dialog will appear allowing you to assign a name to this data. If you accidentally clicked on a bad portion of the data, click <i>Cancel</i> to return to the previous screen to re-select a segment. Once you have selected a good segment and assigned it a name that you will remember, click <i>OK</i>. This will return you to the main application screen. Repeat the process to create a few activities, or pass the phone to your friends and collect data from them walking around with the phone in their pocket.</p>
+    <div align="center"><img src="images/humansense-accel-trace.png" width="500" /></div>
+    <p>Once you have collected a few activities, the next step is to perform one of the activities again, and have the phone guess which one you are performing. The first step is to select a set of candidate activities from which the classifier will choose. To do this, go into the <i>Settings</i>, into <i>Output Plugins</i>, and then select <i>Manage Model Files</i>. Here you will see a list of all of the models that you have created. Check off the models that you want to use for this session. At the moment, the application starts to stop performing well when more than 10 or so models are active. Once you have selected the models you would like to consider, click <i>Save</i> to save your model selection. Now go back to your phone's home screen (not the application home screen), and add the widget in which the results will be displayed. To do this, long-click on an empty portion of the home screen, select <i>Widget</i> and add the <i>Lingering Notification Widget</i>. The widget should appear on the home screen.</p>
+    <div align="center"><img src="images/humansense-model-selection.png" height="500" /></div>
+    <p>Now, to start classifying, go back into the Humansense application, ensure that the service has been started, and then click the button on the bottom of the screen that says <i>Classify</i>. Now, if you go back to your home scren and look at the widget, you should notice that some text has appeared. The first two lines simply count the number of samples that are considered to be lingering (the phone is not moving), or otherwise. Below these two lines another set of lines should appear. There will be one line per activity, labeled according to the name that you chose when the model was built. Next to these activities will be the probability that the classifier has assigned to each activity. If you lock the phone and put it in your pocket, then perform one of the activities for a few seconds, when you unlock the phone the value next to the activity that you performed should be larger than the value for the other activities. As this is a work in progress, and part of an active research program, please let <a href="mailto:jordan.frank@cs.mcgill.ca">me</a> know how it works.</p>
+    <div align="center"><img src="images/humansense-classifier-screenshot.png" height="500" /></div>
+    <h3>Location Recognition</h3>
+    <p>This plugin will learn to recognize places
     that you spend time, based on building fingerprints from
     observable wifi base stations. To try it out, first install the
-    application, then start the app and go into the Settings
-    menu. Choose input plugins, and enable the Wifi Logger, and choose
-    1 minute for the update interval. Next, go back into the Setting
-    menu and choose the Output Plugins settings. Enable the Location
-    clustering plugin. Now, go back to your home screen and press and
-    hold anywhere on the screen. This should bring up a menu that
-    allows you to add a Widget to your home screen. Add the Location
-    Status widget. Now, go back into the HumanSense application and
+    application, then start the app and go into the <i>Settings</i>
+    menu. Choose <i>Input Plugins</i>, and enable the <i>Wifi Logging Plugin</i>, 
+    and in the <i>Wifi Logging Interval</i> setting, select 1 minute.
+      Next, go back into the <i>Settings</i>
+    menu and choose the <i>Output Plugins</i> settings. Enable the <i>Location
+    Clustering Plugin</i>. Now, go back to your home screen and press and
+    hold on an empty part the screen. This should bring up a menu that
+    allows you to add a Widget to your home screen. Add the <i>Location
+    Status</i> widget. Now, go back into the Humansense application and
     start the service.
     </p>
 
@@ -80,7 +93,7 @@
     to your home screen (press the Home button) and use other
     apps. The widget on your home screen should be updated with your
     status (green means you're moving, read means you're stationary)
-    and a location ID, which is UNKNOWN if you have not been
+    and a location ID, which is <i>UNKNOWN</i> if you have not been
     stationary in a location for long enough for it to be considered a
     significant location, or a positive integer denoting the ID
     associated with the current location. If a positive integer
@@ -91,7 +104,7 @@
     ID number.
     </p>
 
-    <div align="center"><img width="250" src="images/humansense-location-widget.png" /></div>
+    <div align="center"><img height="500" src="images/humansense-location-widget.png" /></div>
 
     <p>This is a work in progress, so please let 
       <a href="mailto:jordan.frank@cs.mcgill.ca">me</a> know how it works.</p>

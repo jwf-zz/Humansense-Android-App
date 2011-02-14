@@ -4,9 +4,9 @@
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
   android:orientation="vertical"
-  android:id="@+id/lingering_notification_background" >
+  android:id="@+id/simple_classifier_notification_background" >
 	<TextView android:text="Results Currently Unavailable" 
-			  android:id="@+id/lingering_notification_text" 
+			  android:id="@+id/simple_classifier_notification_text" 
 			  android:layout_width="fill_parent" 
 			  android:layout_height="fill_parent"
 	          android:layout_marginTop="12dip"

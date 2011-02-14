@@ -161,6 +161,7 @@ public final class WifiLocationSet extends LocationSet {
 		}
 		dbHelper = new WifiDatabaseHelper(context, "wificlusters.db", null, 1);
 		db = dbHelper.getWritableDatabase();
+		Log.d(TAG, "Opened Wifi Database: " + db.getPath());
 
 		// Uncomment for in-memory database
 		// db = SQLiteDatabase.create(null);

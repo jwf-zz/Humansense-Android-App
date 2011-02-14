@@ -52,7 +52,7 @@ import ca.mcgill.hs.plugin.SensorLogger.SensorPacket;
 import ca.mcgill.hs.prefs.ManageModelsFileManager;
 import ca.mcgill.hs.prefs.PreferenceFactory;
 import ca.mcgill.hs.util.Log;
-import ca.mcgill.hs.widget.LingeringNotificationWidget;
+import ca.mcgill.hs.widget.SimpleClassifierNotificationWidget;
 
 /**
  * Currently classifies motion status into moving or lingering based on a simple
@@ -600,9 +600,12 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 			 * Update the widget text every 50 samples.
 			 */
 			if (counter >= 49) {
-				LingeringNotificationWidget.updateText(timeLingering,
-						timeMoving, modelNames, cumulativeClassProbs);
-				// LingeringNotificationWidget.updateText(buf.toString());
+				// LingeringNotificationWidget.updateText(timeLingering,
+				// timeMoving, modelNames, cumulativeClassProbs);
+				// // LingeringNotificationWidget.updateText(buf.toString());
+				context.startService(new Intent(context,
+						SimpleClassifierNotificationWidget.UpdateService.class));
+
 				counter = 0;
 			}
 			counter += 1;

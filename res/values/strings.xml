@@ -5,7 +5,7 @@
     <string name="app_name">Humansense</string>
     
     <!--  Widget Strings -->
-    <string name="lingering_notification_widget_name">Lingering Notification</string>
+    <string name="simple_classifier_notification_widget_name">Activity Classifier</string>
     <string name="location_status_widget_name">Location Status</string>
     <string name="location_labeler_dialog_label">Location Labeler</string>
     <string name="location_widget_moving_label">Currently Moving</string>
@@ -214,10 +214,10 @@
     <string name="testmagoutput_enable_pref_off">TestMag output is off.</string>
     
     <!--  ClassifierOutput plugin preferences -->
-    <string name="simpleclassifier_enable_pref_label">Simple Classifier Plugin</string>
+    <string name="simpleclassifier_enable_pref_label">Activity Classifier Plugin</string>
     <string name="simpleclassifier_enable_pref_summary">Estimates motion state via the accelerometer.</string>
-    <string name="simpleclassifier_enable_pref_on">Simple Classifier is enabled.</string>
-    <string name="simpleclassifier_enable_pref_off">Simple Classifier is disabled.</string>
+    <string name="simpleclassifier_enable_pref_on">Activity Classifier is enabled.</string>
+    <string name="simpleclassifier_enable_pref_off">Activity Classifier is disabled.</string>
     <string name="accelerometerLingeringThresholds">Lingering Power Threshold</string>
     <string name="accelerometerLingeringThresholdDefault">10</string>
     <string name="accelerometerLingeringThresholdSummary">The threshold for classifying activity as lingering.</string>

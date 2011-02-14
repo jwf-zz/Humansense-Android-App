@@ -87,15 +87,15 @@
 		</receiver>
 
 		<!-- Broadcast Receiver that will process AppWidget updates -->
-		<receiver android:name=".widget.LingeringNotificationWidget" 
-			      android:label="@string/lingering_notification_widget_name">
+		<receiver android:name=".widget.SimpleClassifierNotificationWidget" 
+			      android:label="@string/simple_classifier_notification_widget_name">
 	    	<intent-filter>
 	        	<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
 		    </intent-filter>
 	    	<meta-data android:name="android.appwidget.provider"  
-	    			   android:resource="@xml/lingering_notification_widget" />
+	    			   android:resource="@xml/simple_classifier_notification_widget" />
 		</receiver>
-		<service android:name=".widget.LingeringNotificationWidget$UpdateService" />
+		<service android:name=".widget.SimpleClassifierNotificationWidget$UpdateService" />
 
 		<!-- Broadcast Receiver that will process AppWidget updates -->
 		<receiver android:name=".widget.LocationStatusWidget" 

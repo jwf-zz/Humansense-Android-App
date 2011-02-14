@@ -28,7 +28,7 @@ import ca.mcgill.hs.util.Log;
  * 
  * @author Jordan Frank <jordan.frank@cs.mcgill.ca>
  */
-public class LingeringNotificationWidget extends AppWidgetProvider {
+public class SimpleClassifierNotificationWidget extends AppWidgetProvider {
 	/**
 	 * The service that runs in the background, periodically updating the widget
 	 * text.
@@ -42,7 +42,7 @@ public class LingeringNotificationWidget extends AppWidgetProvider {
 		private static final DecimalFormat formatter = new DecimalFormat(
 				"0.###");
 
-		private static final String TAG = "LingeringNotificationWidget.UpdateService";
+		private static final String TAG = "SimpleClassifierNotificationWidget.UpdateService";
 
 		/**
 		 * Builds the View that should be presented in the widget frame.
@@ -54,11 +54,15 @@ public class LingeringNotificationWidget extends AppWidgetProvider {
 		 *         the widget frame.
 		 */
 		public RemoteViews buildUpdate(final Context context) {
+			if (PluginFactory.getContext() == null) {
+				PluginFactory.setContext(context);
+			}
 			final TDEClassifierPlugin classifierPlugin = (TDEClassifierPlugin) PluginFactory
 					.getOutputPlugin(TDEClassifierPlugin.class);
 			RemoteViews views = null;
 
 			if (classifierPlugin != null && classifierPlugin.isEnabled()) {
+				Log.d(TAG, "Checking for classification results.");
 				// If we're classifying, gather the results.
 				final StringBuffer buf = new StringBuffer();
 				final long timeLingering = classifierPlugin.getTimeLingering();
@@ -68,24 +72,26 @@ public class LingeringNotificationWidget extends AppWidgetProvider {
 				final List<String> modelNames = classifierPlugin
 						.getModelNames();
 				views = new RemoteViews(context.getPackageName(),
-						R.layout.location_status_appwidget);
+						R.layout.simple_classifier_notification_appwidget);
 
 				buf.append("Lingering: " + timeLingering + "\nMoving: "
 						+ timeMoving);
 				float sum = 0.0f;
-				for (int i = 0; i < cumulativeClassProbs.length; i++) {
-					sum = sum + cumulativeClassProbs[i];
+				if (cumulativeClassProbs != null) {
+					for (int i = 0; i < cumulativeClassProbs.length; i++) {
+						sum = sum + cumulativeClassProbs[i];
+					}
+					for (int i = 0; i < cumulativeClassProbs.length; i++) {
+						buf
+								.append("\nProb for "
+										+ modelNames.get(i)
+										+ ": "
+										+ formatter
+												.format((cumulativeClassProbs[i] / sum)));
+					}
 				}
-				for (int i = 0; i < cumulativeClassProbs.length; i++) {
-					buf
-							.append("\nProb for "
-									+ modelNames.get(i)
-									+ ": "
-									+ formatter
-											.format((cumulativeClassProbs[i] / sum)));
-				}
-				views.setTextViewText(R.id.lingering_notification_text, buf
-						.toString());
+				views.setTextViewText(R.id.simple_classifier_notification_text,
+						buf.toString());
 
 			} else {
 				// If we're not classifying, just show a default message.
@@ -110,13 +116,13 @@ public class LingeringNotificationWidget extends AppWidgetProvider {
 
 			// Push update for this widget to the home screen
 			final ComponentName thisWidget = new ComponentName(this,
-					LingeringNotificationWidget.class);
+					SimpleClassifierNotificationWidget.class);
 			final AppWidgetManager manager = AppWidgetManager.getInstance(this);
 			manager.updateAppWidget(thisWidget, updateViews);
 		}
 	}
 
-	private static final String TAG = "LingeringNotificationWidget";
+	private static final String TAG = "SimpleClassifierNotificationWidget";
 
 	/**
 	 * Just used for debugging, logs a message whenever it is called. All
@@ -132,5 +138,13 @@ public class LingeringNotificationWidget extends AppWidgetProvider {
 			final long timeMoving, final List<String> modelNames,
 			final float[] cumulativeClassProbs) {
 		Log.d(TAG, "updateText");
+	}
+
+	@Override
+	public void onUpdate(final Context context,
+			final AppWidgetManager appWidgetManager, final int[] appWidgetIds) {
+		Log.d(TAG, "onUpdate");
+		// To prevent any ANR timeouts, we perform the update in a service
+		context.startService(new Intent(context, UpdateService.class));
 	}
 }

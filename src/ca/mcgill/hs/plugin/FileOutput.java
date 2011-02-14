@@ -470,8 +470,10 @@ public class FileOutput extends OutputPlugin {
 		/*
 		 * Choose correct dataParse method based on the packet identifier.
 		 */
-		if (logSensorData && id == SensorPacket.PACKET_ID) {
-			dataParse((SensorPacket) packet, outputStream);
+		if (id == SensorPacket.PACKET_ID) {
+			if (logSensorData) {
+				dataParse((SensorPacket) packet, outputStream);
+			}
 		} else if (id == WifiPacket.PACKET_ID) {
 			dataParse((WifiPacket) packet, outputStream);
 		} else if (id == GSMPacket.PACKET_ID) {

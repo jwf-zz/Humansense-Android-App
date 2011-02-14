@@ -938,12 +938,12 @@ public class MagnitudeGraphView extends View {
 								tempRect = null;
 								if (returnAfterFirstLabel) {
 									if (onGraphClosed != null) {
-										// Log.d("MagnitudeGraphView", "Start: "
-										// + start + ", End: " + end
-										// + ", indexStart: " + indexStart
-										// + ", indexEnd: " + indexEnd
-										// + ", rectStart: " + rectStart
-										// + ", rectEnd: " + rectEnd);
+										Log.d("MagnitudeGraphView", "Start: "
+												+ start + ", End: " + end
+												+ ", indexStart: " + indexStart
+												+ ", indexEnd: " + indexEnd
+												+ ", rectStart: " + rectStart
+												+ ", rectEnd: " + rectEnd);
 										final float[] data = new float[indexEnd
 												- indexStart + 1];
 										for (int i = 0; i < indexEnd

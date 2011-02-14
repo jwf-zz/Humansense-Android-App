@@ -40,12 +40,12 @@
 		</activity>
 		<activity
 			android:name=".prefs.DeleteUnUploadedFileManager"
-			android:label="@string/manage_files"
+			android:label="@string/manage_unuploaded_files_title"
 			android:launchMode="singleTop">
 		</activity>
 		<activity
 			android:name=".prefs.ManageModelsFileManager"
-			android:label="@string/manage_files"
+			android:label="@string/manage_model_files_title"
 			android:launchMode="singleTop">
 		</activity>
 		<activity

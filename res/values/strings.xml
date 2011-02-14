@@ -97,7 +97,7 @@
     <string name="no_start_app_start_label">Do not start at application start.</string>
     <string name="unuploaded_management">Manage Unuploaded Files</string>
 	<string name="unuploaded_management_desc">Individually delete files that have not yet been uploaded to the server.</string>
-	<string name="manage_files">Unuploaded Files</string>
+	<string name="manage_unuploaded_files_title">Unuploaded Files</string>
 	<string name="unuploaded_cat">Unuploaded Files</string>
 	<string name="unuploaded_title">Delete Unuploaded Files</string>
 	<string name="unuploaded_desc">Deletes all unuploaded files on your device.</string>
@@ -224,6 +224,8 @@
     <string name="accelerometerLingeringWindow">Lingering Power Window</string>
     <string name="accelerometerLingeringWindowDefault">25</string>
     <string name="accelerometerLingeringWindowSummary">The number of samples to consider for lingering classification.</string>
+    <string name="manage_model_files_title">Available Model Files</string>
+    
     <string name="simpleclassifier_enable_remote_logging_pref_label">Log to Remote Server</string>
     <string name="simpleclassifier_enable_remote_logging_pref_summary">Send classification results to a remote log server.</string>
     <string name="simpleclassifier_enable_remote_logging_pref_on">Remote Logging is enabled.</string>

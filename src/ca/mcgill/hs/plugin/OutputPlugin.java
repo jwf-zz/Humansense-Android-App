@@ -9,6 +9,7 @@ import java.util.LinkedList;
 
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import ca.mcgill.hs.util.Log;
 
 /**
  * Abstract class to be extended by all OutputPlugins.
@@ -124,8 +125,12 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	public void run() {
 		synchronized (packetQueue) {
 			while (!packetQueue.isEmpty()) {
-				final DataPacket packet = packetQueue.removeFirst();
-				onDataReceived(packet);
+				try {
+					final DataPacket packet = packetQueue.removeFirst();
+					onDataReceived(packet);
+				} catch (final java.util.NoSuchElementException e) {
+					Log.e("OUTPUTPLUGIN Worker Thread", e);
+				}
 			}
 		}
 	}

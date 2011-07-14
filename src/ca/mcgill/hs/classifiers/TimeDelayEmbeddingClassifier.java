@@ -136,8 +136,9 @@ public class TimeDelayEmbeddingClassifier {
 	 *            line.
 	 */
 	public void loadModels(final File models) {
-		nativeClassifier.loadModels(models.getAbsolutePath(), 2, 16);
-		nativeClassifier.setAlgorithmNumber(1);
+		nativeClassifier.loadModels(models.getAbsolutePath(), 3, 8);
+		nativeClassifier
+				.setAlgorithmNumber(NativeClassifier.GTMALGORITHM_INDEP_STEPS);
 
 		// Prepare the buffer
 		windowLength = nativeClassifier.getWindowSize();

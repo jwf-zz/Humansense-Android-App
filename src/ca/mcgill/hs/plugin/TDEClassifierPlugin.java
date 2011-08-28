@@ -31,8 +31,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.preference.Preference;
-import android.preference.PreferenceActivity;
 import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.PreferenceActivity;
 import android.util.AttributeSet;
 import android.util.Xml;
 import android.view.View;
@@ -40,8 +40,8 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
-import android.widget.Toast;
 import android.widget.TableRow.LayoutParams;
+import android.widget.Toast;
 import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.classifiers.AccelerometerLingeringFilter;
@@ -89,6 +89,21 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 					}
 					final int index = msg.arg1;
 					final float[] classProbs = tdeClassifier.classify(index);
+
+					try {
+						if (classProbs != null && classProbs.length > 0) {
+							classOutputFile
+									.write(Float.toString(classProbs[0]));
+							for (int i = 1; i < classProbs.length; i++) {
+								classOutputFile.write(","
+										+ Float.toString(classProbs[i]));
+							}
+							classOutputFile.write("\n");
+						}
+					} catch (final IOException e) {
+						Log.e(PLUGIN_NAME, e);
+					}
+
 					for (int i = 0; classProbs != null && i < classProbs.length; i++) {
 						cumulativeClassProbs[i] += classProbs[i];
 						if (remoteLoggingClientConnected) {
@@ -160,6 +175,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 				MANAGE_MODELS_PREF, R.string.manage_model_files_pref_title,
 				R.string.manage_model_files_pref_summary);
 		prefs[3].setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			@Override
 			public boolean onPreferenceClick(final Preference preference) {
 				final Intent i = new Intent(activity,
 						ca.mcgill.hs.prefs.ManageModelsFileManager.class);
@@ -250,9 +266,8 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 			final Button buildButton = (Button) v;
 
 			if (building) {
-				Log
-						.e(PLUGIN_NAME,
-								"ERROR: Building requested while building already in progress.");
+				Log.e(PLUGIN_NAME,
+						"ERROR: Building requested while building already in progress.");
 			} else {
 				try {
 					modelFile = File.createTempFile("model", ".dat");
@@ -261,7 +276,6 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 					startTimeStamp = System.currentTimeMillis();
 					building = true;
 				} catch (final IOException e) {
-					// TODO Auto-generated catch block
 					Log.e(PLUGIN_NAME, e);
 				}
 
@@ -283,6 +297,8 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 		}
 	};
 
+	private static BufferedWriter classOutputFile = null;
+
 	private final OnClickListener startClassifying = new OnClickListener() {
 
 		@Override
@@ -294,6 +310,7 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 			final Button classifyButton = (Button) v;
 
 			final Thread t = new Thread() {
+
 				@Override
 				public void run() {
 					final float threshold = prefs.getInt(ACCEL_THRESHOLD_KEY,
@@ -313,6 +330,16 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 								threshold, windowSize);
 						cumulativeClassProbs = new float[tdeClassifier
 								.getNumModels()];
+
+						try {
+							classOutputFile = new BufferedWriter(
+									new FileWriter(new File(
+											"/sdcard/hsandroidapp/classes.dat")));
+						} catch (final IOException e) {
+							Log.e(PLUGIN_NAME,
+									"Could not open file for writing classification results.");
+						}
+
 						classifying = true;
 					} else {
 						// No Models.ini file found!
@@ -364,6 +391,14 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 				} catch (final IOException e) {
 				} finally {
 					remoteLoggingClientConnected = false;
+				}
+			}
+			if (classOutputFile != null) {
+				try {
+					classOutputFile.close();
+				} catch (final IOException e) {
+					Log.e(PLUGIN_NAME,
+							"Exception closing classification results file.");
 				}
 			}
 			classifying = false;
@@ -446,8 +481,8 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 							}
 							writer.flush();
 							writer.close();
-							tdeClassifier.buildModel(modelFile
-									.getAbsolutePath(), 7, 7, 3);
+							tdeClassifier.buildModel(
+									modelFile.getAbsolutePath(), 9, 9, 3);
 							makeToast("Saved model for activity: " + label);
 						} catch (final IOException e) {
 							Log.e(PLUGIN_NAME, e);
@@ -537,8 +572,8 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 	protected void makeToast(final String message) {
 		final Toast slice = Toast
 				.makeText(context, message, Toast.LENGTH_SHORT);
-		slice.setGravity(slice.getGravity(), slice.getXOffset(), slice
-				.getYOffset() + 100);
+		slice.setGravity(slice.getGravity(), slice.getXOffset(),
+				slice.getYOffset() + 100);
 		slice.show();
 	}
 
@@ -728,9 +763,8 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 									+ serverHost);
 							final String[] envp = { "HOME=/sdcard/hsandroidapp" };
 							tunnel = rt
-									.exec(
-											"/data/local/bin/ssh -f -y -N -T -L 12021:localhost:12021 -i /sdcard/hsandroidapp/id_rsa "
-													+ serverHost, envp);
+									.exec("/data/local/bin/ssh -f -y -N -T -L 12021:localhost:12021 -i /sdcard/hsandroidapp/id_rsa "
+											+ serverHost, envp);
 							tunnel.waitFor();
 							sshForwardingEnabled = true;
 							Log.d(PLUGIN_NAME, "Connected to server "
@@ -740,9 +774,8 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 									"Not connecting, host name is blank.");
 						}
 					} catch (final IOException e) {
-						Log
-								.d(PLUGIN_NAME,
-										"Error setting up SSH tunnel. Cannot find ssh command in /data/local/bin.");
+						Log.d(PLUGIN_NAME,
+								"Error setting up SSH tunnel. Cannot find ssh command in /data/local/bin.");
 						Log.e(PLUGIN_NAME, e);
 					} catch (final InterruptedException e) {
 						Log.e(PLUGIN_NAME, e);
@@ -760,9 +793,8 @@ public final class TDEClassifierPlugin extends OutputPlugin {
 			try {
 				rt.exec("/data/local/busybox killall -9 ssh");
 			} catch (final IOException e) {
-				Log
-						.d(PLUGIN_NAME,
-								"Error tearing down SSH tunnel. Cannot find busybox command in /data/local.");
+				Log.d(PLUGIN_NAME,
+						"Error tearing down SSH tunnel. Cannot find busybox command in /data/local.");
 				Log.e(PLUGIN_NAME, e);
 			} finally {
 				tunnel.destroy();

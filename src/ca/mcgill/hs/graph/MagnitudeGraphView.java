@@ -24,10 +24,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.Paint.Align;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
-import android.graphics.Paint.Align;
 import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -100,7 +100,7 @@ public class MagnitudeGraphView extends View {
 	private float min;
 	// These variables are used in order to correctly draw and label the
 	// activity selections.
-	private Rect tempRect;
+	private Rect selectedRegion;
 
 	private Rect legendRect;
 
@@ -173,6 +173,7 @@ public class MagnitudeGraphView extends View {
 	private ActivityIndex indexOfActivities;
 
 	private MagnitudeGraph.GraphClosedRunnable onGraphClosed = null;
+	private Rect graphBoundary;
 	private static final String TAG = "MagnitudeGraphView";
 
 	/**
@@ -234,9 +235,10 @@ public class MagnitudeGraphView extends View {
 			this.indexOfActivities = new ActivityIndex(acts, codes);
 
 			try {
-				final File j = new File(Environment
-						.getExternalStorageDirectory(), (String) context
-						.getResources().getText(R.string.activity_file_path));
+				final File j = new File(
+						Environment.getExternalStorageDirectory(),
+						(String) context.getResources().getText(
+								R.string.activity_file_path));
 				if (!j.isDirectory()) {
 					if (!j.mkdirs()) {
 						Log.e("Output Dir",
@@ -262,9 +264,10 @@ public class MagnitudeGraphView extends View {
 			// Code to read the activity index file, this will stay here.
 			try {
 
-				final File j = new File(Environment
-						.getExternalStorageDirectory(), (String) context
-						.getResources().getText(R.string.activity_file_path));
+				final File j = new File(
+						Environment.getExternalStorageDirectory(),
+						(String) context.getResources().getText(
+								R.string.activity_file_path));
 				final File file = new File(j, "ActivityIndex.aif");
 				final FileInputStream fis = new FileInputStream(file);
 				final ObjectInputStream ois = new ObjectInputStream(fis);
@@ -288,21 +291,26 @@ public class MagnitudeGraphView extends View {
 	 * Adjusts the drawn rectangle to prevent overlapping with other rectangles.
 	 */
 	private void adjustRect() {
-		tempRect.left = originalLeft;
+		selectedRegion.left = originalLeft;
 		for (final Rect r : rectList) {
-			if (tempRect.left >= r.left && tempRect.left <= r.right
-					&& tempRect.right > r.right) {
-				tempRect.left = r.right + 1;
-			} else if (tempRect.left >= r.left && tempRect.left <= r.right
-					&& tempRect.right < r.left) {
-				tempRect.left = r.left - 1;
-			} else if (tempRect.left < r.left && tempRect.right >= r.left) {
-				tempRect.right = r.left - 1;
-			} else if (tempRect.left > r.right && tempRect.right <= r.right) {
-				tempRect.right = r.right + 1;
-			} else if (tempRect.left >= r.left && tempRect.left <= r.right
-					&& tempRect.right >= r.left && tempRect.right <= r.right) {
-				tempRect.left = tempRect.right;
+			if (selectedRegion.left >= r.left && selectedRegion.left <= r.right
+					&& selectedRegion.right > r.right) {
+				selectedRegion.left = r.right + 1;
+			} else if (selectedRegion.left >= r.left
+					&& selectedRegion.left <= r.right
+					&& selectedRegion.right < r.left) {
+				selectedRegion.left = r.left - 1;
+			} else if (selectedRegion.left < r.left
+					&& selectedRegion.right >= r.left) {
+				selectedRegion.right = r.left - 1;
+			} else if (selectedRegion.left > r.right
+					&& selectedRegion.right <= r.right) {
+				selectedRegion.right = r.right + 1;
+			} else if (selectedRegion.left >= r.left
+					&& selectedRegion.left <= r.right
+					&& selectedRegion.right >= r.left
+					&& selectedRegion.right <= r.right) {
+				selectedRegion.left = selectedRegion.right;
 			}
 		}
 	}
@@ -360,9 +368,8 @@ public class MagnitudeGraphView extends View {
 		paint.setTextSize(axisTitleSize);
 		final float textX = width - horizontalEdge / 2.f;
 		final float textY = height / 2.f + height / 80.f - height / 13.f;
-		canvas
-				.drawText(getResources().getString(
-						R.string.mag_graph_close_label), textX, textY, paint);
+		canvas.drawText(getResources()
+				.getString(R.string.mag_graph_close_label), textX, textY, paint);
 	}
 
 	/**
@@ -380,15 +387,14 @@ public class MagnitudeGraphView extends View {
 				Color.rgb(255, 255, 0), Color.rgb(0, 255, 0),
 				Color.rgb(255, 255, 0), Color.rgb(255, 128, 0),
 				Color.rgb(255, 0, 0) };
-		paint
-				.setShader(new LinearGradient(
-						0,
-						(int) ((height / 2) - ((maxSpike > 20 ? maxSpike : 20)
-								/ (maxSpike == 0 ? 1 : maxSpike) * (netGraphHeight / 2))),
-						0,
-						(int) ((height / 2) + ((maxSpike > 20 ? maxSpike : 20)
-								/ (maxSpike == 0 ? 1 : maxSpike) * (netGraphHeight / 2))),
-						colors, null, Shader.TileMode.CLAMP));
+		paint.setShader(new LinearGradient(
+				0,
+				(int) ((height / 2) - ((maxSpike > 20 ? maxSpike : 20)
+						/ (maxSpike == 0 ? 1 : maxSpike) * (netGraphHeight / 2))),
+				0,
+				(int) ((height / 2) + ((maxSpike > 20 ? maxSpike : 20)
+						/ (maxSpike == 0 ? 1 : maxSpike) * (netGraphHeight / 2))),
+				colors, null, Shader.TileMode.CLAMP));
 
 		// Draw a different graph depending on the size of values compared to
 		// netGraphWidth
@@ -432,9 +438,8 @@ public class MagnitudeGraphView extends View {
 									legendActs[c] = indexOfActivities.activityCodes[b];
 									paint.setColor(legendColors[c]);
 								} catch (final ArrayIndexOutOfBoundsException e) {
-									Log
-											.e("Graph Error",
-													"Cannot draw any more activities, make sure you didn't send more than 16.");
+									Log.e("Graph Error",
+											"Cannot draw any more activities, make sure you didn't send more than 16.");
 								}
 							}
 						}
@@ -486,9 +491,8 @@ public class MagnitudeGraphView extends View {
 										legendActs[c] = indexOfActivities.activityCodes[b];
 										paint.setColor(legendColors[c]);
 									} catch (final ArrayIndexOutOfBoundsException e) {
-										Log
-												.e("Graph Error",
-														"Cannot draw any more activities, make sure you didn't send more than 16.");
+										Log.e("Graph Error",
+												"Cannot draw any more activities, make sure you didn't send more than 16.");
 									}
 								}
 							}
@@ -526,9 +530,9 @@ public class MagnitudeGraphView extends View {
 
 		// Draw Y-axis title
 		paint.setTextAlign(Align.LEFT);
-		canvas.drawText(getResources().getString(
-				R.string.mag_graph_magnitude_label), width / 160, height / 2,
-				paint);
+		canvas.drawText(
+				getResources().getString(R.string.mag_graph_magnitude_label),
+				width / 160, height / 2, paint);
 
 		// Draw X-axis tick values
 		paint.setTextAlign(Align.CENTER);
@@ -550,14 +554,20 @@ public class MagnitudeGraphView extends View {
 		// Draw the outline of the graph
 		paint.setAntiAlias(false);
 		paint.setStrokeWidth(2);
-		canvas.drawLine(horizontalEdge - 1, verticalEdge, width
-				- horizontalEdge + 1, verticalEdge, paint);
-		canvas.drawLine(horizontalEdge - 1, height - verticalEdge, width
-				- horizontalEdge + 1, height - verticalEdge, paint);
-		canvas.drawLine(horizontalEdge - 1, verticalEdge, horizontalEdge - 1,
-				height - verticalEdge, paint);
-		canvas.drawLine(width - horizontalEdge + 1, verticalEdge, width
-				- horizontalEdge + 1, height - verticalEdge, paint);
+		graphBoundary = new Rect();
+		graphBoundary.left = horizontalEdge;
+		graphBoundary.top = verticalEdge;
+		graphBoundary.right = width - horizontalEdge;
+		graphBoundary.bottom = height - verticalEdge;
+
+		canvas.drawLine(graphBoundary.left - 1, graphBoundary.top,
+				graphBoundary.right + 1, graphBoundary.top, paint);
+		canvas.drawLine(graphBoundary.left - 1, graphBoundary.bottom,
+				graphBoundary.right + 1, graphBoundary.bottom, paint);
+		canvas.drawLine(graphBoundary.left - 1, graphBoundary.top,
+				graphBoundary.left - 1, graphBoundary.bottom, paint);
+		canvas.drawLine(graphBoundary.right + 1, graphBoundary.top,
+				graphBoundary.right + 1, graphBoundary.bottom, paint);
 
 		// Draw the gridlines
 		paint.setColor(Color.DKGRAY);
@@ -643,8 +653,9 @@ public class MagnitudeGraphView extends View {
 		paint.setTextSize(axisTitleSize);
 		final float textX = width - horizontalEdge / 2.f;
 		final float textY = height / 2.f + height / 80.f + 2.f * height / 13.f;
-		canvas.drawText(getResources().getString(
-				R.string.mag_graph_legend_label), textX, textY, paint);
+		canvas.drawText(
+				getResources().getString(R.string.mag_graph_legend_label),
+				textX, textY, paint);
 	}
 
 	/**
@@ -654,12 +665,10 @@ public class MagnitudeGraphView extends View {
 	 *            the canvas to draw on
 	 */
 	private void drawRectangles(final Canvas canvas) {
-		if (tempRect != null) {
-			paint
-					.setColor(Math.abs(tempRect.right - tempRect.left) > minRectSize ? Color
-							.rgb(0, 0, 125)
-							: Color.rgb(125, 0, 0));
-			canvas.drawRect(tempRect, paint);
+		if (selectedRegion != null) {
+			paint.setColor(Math.abs(selectedRegion.right - selectedRegion.left) > minRectSize ? Color
+					.rgb(0, 0, 125) : Color.rgb(125, 0, 0));
+			canvas.drawRect(selectedRegion, paint);
 		}
 		paint.setAntiAlias(false);
 		for (final Rect r : rectList) {
@@ -819,24 +828,24 @@ public class MagnitudeGraphView extends View {
 			if (showLegendButton && inLegendButton(x, y)) {
 				possibleLegendPress = true;
 			}
-			tempRect = new Rect((int) x, height - verticalEdge, (int) x,
+			selectedRegion = new Rect((int) x, height - verticalEdge, (int) x,
 					verticalEdge);
 			if (x <= leftLimit) {
-				tempRect.left = leftLimit;
-				tempRect.right = tempRect.left;
+				selectedRegion.left = leftLimit;
+				selectedRegion.right = selectedRegion.left;
 			} else if (x >= rightLimit) {
-				tempRect.left = rightLimit;
-				tempRect.right = tempRect.left;
+				selectedRegion.left = rightLimit;
+				selectedRegion.right = selectedRegion.left;
 			}
-			originalLeft = tempRect.left;
+			originalLeft = selectedRegion.left;
 		} else if (action == MotionEvent.ACTION_MOVE) {
-			if (tempRect != null) {
+			if (selectedRegion != null) {
 				if (x <= leftLimit) {
-					tempRect.right = leftLimit;
+					selectedRegion.right = leftLimit;
 				} else if (x >= rightLimit) {
-					tempRect.right = rightLimit;
+					selectedRegion.right = rightLimit;
 				} else {
-					tempRect.right = (int) event.getX();
+					selectedRegion.right = (int) event.getX();
 				}
 				adjustRect();
 			}
@@ -849,26 +858,26 @@ public class MagnitudeGraphView extends View {
 				}
 				possibleLegendPress = false;
 			}
-			if (tempRect != null) {
+			if (selectedRegion != null) {
 				if (x <= leftLimit) {
-					tempRect.right = leftLimit;
+					selectedRegion.right = leftLimit;
 				} else if (x >= rightLimit) {
-					tempRect.right = rightLimit;
-				} else if (x == tempRect.left) {
-					tempRect = null;
+					selectedRegion.right = rightLimit;
+				} else if (x == selectedRegion.left) {
+					selectedRegion = null;
 					return true;
 				} else {
-					tempRect.right = (int) x;
+					selectedRegion.right = (int) x;
 				}
 				adjustRect();
 				// Check that the rectangle is actually big enough to mean
 				// anything. If not, ignore it because it may have been an
 				// accidental touch. Width/40 is the threshold for minimum
 				// rectangle size
-				if (Math.abs(tempRect.right - tempRect.left) > minRectSize) {
+				if (Math.abs(selectedRegion.right - selectedRegion.left) > minRectSize) {
 					showDialog();
 				} else {
-					tempRect = null;
+					selectedRegion = null;
 					invalidate();
 				}
 			}
@@ -895,9 +904,12 @@ public class MagnitudeGraphView extends View {
 		text.setHint(R.string.mag_graph_label_hint);
 
 		builder = new AlertDialog.Builder(this.getContext());
-		builder.setView(layout).setMessage(R.string.mag_graph_label_query)
-				.setCancelable(false).setPositiveButton(R.string.OK,
+		builder.setView(layout)
+				.setMessage(R.string.mag_graph_label_query)
+				.setCancelable(false)
+				.setPositiveButton(R.string.OK,
 						new DialogInterface.OnClickListener() {
+							@Override
 							public void onClick(final DialogInterface dialog,
 									final int id) {
 								// If OK is pressed, save rectangle
@@ -909,41 +921,43 @@ public class MagnitudeGraphView extends View {
 													getContext(),
 													R.string.mag_graph_incorrect_input_toast,
 													Toast.LENGTH_LONG);
-									slice.setGravity(slice.getGravity(), slice
-											.getXOffset(), height - 2
-											* verticalEdge);
+									slice.setGravity(slice.getGravity(),
+											slice.getXOffset(), height - 2
+													* verticalEdge);
 									slice.show();
 									showDialog();
 									return;
 								}
 
-								if (tempRect.left > tempRect.right) {
-									final int tempLeft = tempRect.right;
-									tempRect.right = tempRect.left;
-									tempRect.left = tempLeft;
+								if (selectedRegion.left > selectedRegion.right) {
+									final int tempLeft = selectedRegion.right;
+									selectedRegion.right = selectedRegion.left;
+									selectedRegion.left = tempLeft;
 								}
 
-								rectList.add(tempRect);
-								final long rectStart = start
-										+ (long) (((float) tempRect.left / (float) netGraphWidth) * (end - start));
-								final long rectEnd = start
-										+ (long) (((float) tempRect.right / (float) netGraphWidth) * (end - start));
-								final int indexStart = (int) ((float) (rectStart - start)
-										/ (float) (end - start) * activities.length);
-								final int indexEnd = (int) ((float) (rectEnd - start)
-										/ (float) (end - start) * activities.length);
-								labels
-										.add(new Node(label, indexStart,
-												indexEnd));
-								tempRect = null;
+								rectList.add(selectedRegion);
+								// Portion of the region that is selected
+								final float selectStart = (float) (selectedRegion.left - graphBoundary.left)
+										/ (float) (graphBoundary.width());
+								final float selectEnd = (float) (selectedRegion.right - graphBoundary.left)
+										/ (float) (graphBoundary.width());
+
+								final int indexStart = (int) (selectStart * values.length);
+								final int indexEnd = (int) (selectEnd * values.length);
+								selectedRegion = null;
+
+								labels.add(new Node(label, indexStart, indexEnd));
+
 								if (returnAfterFirstLabel) {
 									if (onGraphClosed != null) {
-										Log.d("MagnitudeGraphView", "Start: "
-												+ start + ", End: " + end
-												+ ", indexStart: " + indexStart
-												+ ", indexEnd: " + indexEnd
-												+ ", rectStart: " + rectStart
-												+ ", rectEnd: " + rectEnd);
+										Log.d("MagnitudeGraphView",
+												"SelectStart: " + selectStart
+														+ ", SelectEnd: "
+														+ selectEnd
+														+ ", indexStart: "
+														+ indexStart
+														+ ", indexEnd: "
+														+ indexEnd);
 										final float[] data = new float[indexEnd
 												- indexStart + 1];
 										for (int i = 0; i < indexEnd
@@ -951,9 +965,6 @@ public class MagnitudeGraphView extends View {
 											data[i] = values[i + indexStart];
 										}
 										onGraphClosed.setLabelData(label, data);
-										Log.d("MagnitudeGraphView", "Start: "
-												+ rectStart + ", End: "
-												+ rectEnd);
 										thisView.post(onGraphClosed);
 									}
 									((MagnitudeGraph) thisView.getContext())
@@ -961,11 +972,13 @@ public class MagnitudeGraphView extends View {
 								}
 								invalidate();
 							}
-						}).setNegativeButton(R.string.cancel,
+						})
+				.setNegativeButton(R.string.cancel,
 						new DialogInterface.OnClickListener() {
+							@Override
 							public void onClick(final DialogInterface dialog,
 									final int id) {
-								tempRect = null;
+								selectedRegion = null;
 								invalidate();
 							}
 						});

@@ -120,7 +120,7 @@ void TDEModel::DumpTree(char* outfile) {
     }
     fprintf(fout, "\n"); // fout << endl;
     if (bases == NULL) {
-    	fprintf(fout, "0 0"); // fout << "0 0";
+    	fprintf(fout, "0 0\n"); // fout << "0 0";
     }
     else {
     	fprintf(fout, "%d %d\n", bases->rows, bases->cols); // fout << bases->rows << " " << bases->cols << endl;

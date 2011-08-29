@@ -20,7 +20,7 @@
 void buildTree(const char* in_file, uint m, uint p, uint d) {
 	srand((unsigned)time(NULL));
 	TDEModel *tdeModel;
-    Settings settings = { ULONG_MAX, 0, 0xff, 1, 1, 2, 2, NULL, NULL, NULL, 0, 0, 0, 0, 1 };
+    Settings settings = { ULONG_MAX, 0, 0xff, 1, 1, 2, 2, NULL, NULL, NULL, 0 };
     char stin=0;
     uint i, j;
 
@@ -31,12 +31,8 @@ void buildTree(const char* in_file, uint m, uint p, uint d) {
     // test_outfile(settings.outfile);
 
     settings.delay = d;
-    settings.delayset = 1;
     settings.embdim = m;
-    settings.embset = 1;
     settings.pcaembdim = p;
-    settings.pcaembset = 1;
-    settings.stdo = 0;
 
     tdeModel = new TDEModel(&settings);
     tdeModel->DumpTree(settings.outfile);

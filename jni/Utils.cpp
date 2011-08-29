@@ -48,11 +48,11 @@ void get_embedding(Settings* settings, ANNcoord* &data, uint &length) {
 	if (settings->column == NULL) {
 		series = get_multi_series(settings->infile, &settings->length,
 				settings->exclude, &settings->indim, (char*) "",
-				settings->dimset, settings->verbosity);
+				1, settings->verbosity);
 	} else {
 		series = get_multi_series(settings->infile, &settings->length,
 				settings->exclude, &settings->indim, settings->column,
-				settings->dimset, settings->verbosity);
+				1, settings->verbosity);
 	}
 	__android_log_print(ANDROID_LOG_DEBUG, "HUMANSENSE",
 			"\tLength: %d\n\tEmbed Dim: %d\n", settings->length,

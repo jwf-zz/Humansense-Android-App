@@ -27,7 +27,7 @@ public:
     uint getLength() const { return length; }
     uint getEmbDim() const { return embdim; }
     uint getDelay() const { return delay; }
-    char getUsePCA() const { return use_pca; }
+    bool getUsePCA() const { return use_pca; }
     uint getPCAEmbDim() const {
     	if (use_pca) {
     		return bases->cols;
@@ -42,7 +42,7 @@ private:
     ANNkd_tree *kdTree;
     // Related to the PCA
     void computePCABases(ANNcoord *data, uint rows, uint cols, uint numbases);
-    char use_pca;
+    bool use_pca;
     CvMat* avg;
     CvMat* bases;
 };

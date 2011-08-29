@@ -69,7 +69,7 @@ ANNcoord* classifySample() {
 
 
 void classifyTrajectory(const char* in_file, const char* out_file) {
-    Settings settings = { ULONG_MAX, 0, 0xff, 1, 1, 2, NULL, NULL, NULL, 0, 0, 0, 1 };
+	Settings settings = { ULONG_MAX, 0, 0xff, 1, 1, 2, 2, NULL, NULL, NULL, 0 };
     FILE *fout;
     ANNcoord** data; // one double* for each model.
     ANNcoord *proj;
@@ -81,8 +81,6 @@ void classifyTrajectory(const char* in_file, const char* out_file) {
     check_alloc(settings.outfile=(char*)calloc(strlen(settings.infile)+5,sizeof(char)));
     strcpy(settings.outfile,settings.infile);
     strcat(settings.outfile,".dmp");
-    settings.embset = 1;
-    settings.delayset = 1;
     __android_log_print(ANDROID_LOG_DEBUG, HS_TAG, "Classifying trajectory from: %s", settings.infile);
     __android_log_print(ANDROID_LOG_DEBUG, HS_TAG, "Output file: %s", settings.outfile);
 
@@ -94,8 +92,7 @@ void classifyTrajectory(const char* in_file, const char* out_file) {
         settings.embdim = (*models)[i]->model->getEmbDim();
         settings.delay = (*models)[i]->model->getDelay();
         get_embedding(&settings, data[i], tlengths[i]);
-        settings.pcaembset = (*models)[i]->model->getUsePCA();
-        if (settings.pcaembset) {
+        if ((*models)[i]->model->getUsePCA()) {
         	settings.pcaembdim = (*models)[i]->model->getPCAEmbDim();
         	proj = (*models)[i]->model->projectData(data[i],tlengths[i],settings.embdim);
         	delete [] data[i];

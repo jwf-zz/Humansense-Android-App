@@ -32,10 +32,6 @@ typedef struct {
 	char *column;
 	char *infile;
 	char *outfile;
-	char dimset;
-	char embset;
-	char pcaembset;
-	char delayset;
 	char stdo;
 } Settings;
 

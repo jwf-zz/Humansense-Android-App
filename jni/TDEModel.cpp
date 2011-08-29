@@ -30,7 +30,7 @@ TDEModel::TDEModel(Settings* settings) {
     length = settings->length;
     embdim = settings->embdim;
     delay = settings->delay;
-    use_pca = settings->pcaembset;
+    use_pca = (settings->embdim > settings->pcaembdim);
 
     get_embedding(settings, data, length);
 

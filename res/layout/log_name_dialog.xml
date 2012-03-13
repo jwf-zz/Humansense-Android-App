@@ -7,5 +7,7 @@
 	<EditText 
 		android:id="@+id/log_name_text"
 		android:layout_height="wrap_content" 
-		android:layout_width="fill_parent"></EditText>
+		android:layout_width="fill_parent"
+		android:inputType="textUri"
+		android:hint="@string/log_name_hint"></EditText>
 </LinearLayout>

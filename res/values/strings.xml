@@ -19,7 +19,7 @@
     <string name="notification_ticker">Humansense</string>
     <string name="notification_text">Select to provide more information.</string>
     <string name="notification_title">Humansense Unknown Activity</string>
-    <string name="notification_upload_text">Uploading files to server...</string>
+    <string name="notification_upload_text">Uploading files to server&#8230;</string>
     <string name="notification_upload_title">Humansense Uploader</string>
     
     <!--  Utility Strings -->
@@ -55,7 +55,7 @@
 	<string name="started_notification_content">Service is Active.</string>
     <string name="stop_label">STOP SERVICE</string>
     <string name="upload_label">UPLOAD</string>
-    <string name="uploading_label">UPLOADING...</string>
+    <string name="uploading_label">UPLOADING&#8230;</string>
     <string name="upload_query">Upload data collected to online server?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
@@ -77,8 +77,12 @@
     <string name="uploader_no_connection">No connection could be found.</string>
     <string name="activity_magnitude_graph_label">Activity Recognition Graph</string>
     <string name="activity_file_manager_label">Humansense File Manager</string>
+    <string name="empty_list_text">Empty List!</string>
+    <string name="delete_checked_text">Delete Checked</string>
+    <string name="no_results_text">Results Currently Unavailable</string>
     
 	<!-- Preferences Strings -->
+	<string name="log_name_hint">example activity</string>
 	<string name="startup_options_cat">Startup Options</string>
 	<string name="auto_start_at_app_start_pref">Automatically start logging when application starts.</string>
 	<string name="auto_start_at_app_start_pref_title">Auto-Start at App Start</string>
@@ -244,4 +248,8 @@
     <string name="notification_vibrate_title">Notification Vibration</string>
     <string name="notification_vibrate_summary">Enables or disables vibration when notifications are pushed.</string>
     
+    <!-- Button text -->
+    <string name="delete_text">Delete</string>
+    <string name="cancel_text">Cancel</string>
+    <string name="save_text">Save</string>
 </resources>

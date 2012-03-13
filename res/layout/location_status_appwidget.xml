@@ -5,7 +5,7 @@
   android:layout_height="wrap_content"
   android:orientation="vertical"
   android:id="@+id/location_status_background" >
-	<TextView android:text="Results Currently Unavailable" 
+	<TextView android:text="@string/no_results_text" 
 			  android:id="@+id/location_status_text" 
 			  android:layout_width="fill_parent" 
 			  android:layout_height="fill_parent"

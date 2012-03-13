@@ -15,14 +15,14 @@
 	        <Button android:id="@+id/model_files_footer_save_button" 
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content" 
-	        android:text="Save"
+	        android:text="@string/save_text"
 	        android:gravity="center" 
 	        android:paddingTop="16dip">
 	    </Button>
 	        <Button android:id="@+id/model_files_footer_close_button"
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content" 
-	        android:text="Cancel"
+	        android:text="@string/cancel_text"
 	        android:gravity="center" 
 	        android:paddingTop="16dip">
 	    </Button>           

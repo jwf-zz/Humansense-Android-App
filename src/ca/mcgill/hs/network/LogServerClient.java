@@ -133,14 +133,16 @@ public class LogServerClient {
 			classSock.connect(sockAddr, 5000);
 			cdataSock = new Socket();
 			cdataSock.connect(sockAddr, 5000);
+			Log.d(TAG, "Sending HELLO");
 
 			classOut = new DataOutputStream(classSock.getOutputStream());
 			classIn = new DataInputStream(classSock.getInputStream());
 			classOut.writeUTF("HELLO");
-			if (classIn.readLine().compareTo("HELLO") != 0) {
-				Log
-						.e(TAG,
-								"Protocol Error: Did not receive HELLO from server.");
+			Log.d(TAG, "Sent HELLO");
+			final String response = classIn.readLine();
+			Log.d(TAG, "Received " + response);
+			if (response.compareTo("HELLO") != 0) {
+				Log.e(TAG, "Protocol Error: Did not receive HELLO from server.");
 			} else {
 				Log.d(TAG, "Connected to Classifying LogServer.");
 			}
@@ -149,9 +151,7 @@ public class LogServerClient {
 			cdataIn = new DataInputStream(cdataSock.getInputStream());
 			cdataOut.writeUTF("HELLO");
 			if (cdataIn.readLine().compareTo("HELLO") != 0) {
-				Log
-						.e(TAG,
-								"Protocol Error: Did not receive HELLO from server.");
+				Log.e(TAG, "Protocol Error: Did not receive HELLO from server.");
 			} else {
 				Log.d(TAG, "Connected to CDATA LogServer.");
 			}
@@ -159,8 +159,9 @@ public class LogServerClient {
 			Log.e(TAG, "Unknown host: " + sockAddr.getHostName());
 			cdataSock = null;
 		} catch (final IOException e) {
-			Log.e(TAG, "Could not get I/O for connection to "
-					+ sockAddr.getHostName());
+			Log.e(TAG,
+					"Could not get I/O for connection to "
+							+ sockAddr.getHostName());
 			cdataSock = null;
 		}
 	}

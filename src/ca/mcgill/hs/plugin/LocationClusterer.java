@@ -104,15 +104,13 @@ public class LocationClusterer extends OutputPlugin {
 						}
 						if (previouslyMoving && !currentlyMoving) {
 							// User has stopped moving, disable GPS
-							Log
-									.d(PLUGIN_NAME,
-											"User went from moving to stationary, disabling GPS");
+							Log.d(PLUGIN_NAME,
+									"User went from moving to stationary, disabling GPS");
 							gpsLogger.disableAfterNextScan();
 						} else if (!previouslyMoving && currentlyMoving) {
 							// User has started moving, enable GPS
-							Log
-									.d(PLUGIN_NAME,
-											"User went from stationary to moving, enabling GPS");
+							Log.d(PLUGIN_NAME,
+									"User went from stationary to moving, enabling GPS");
 							gpsLogger.enable();
 						}
 						previouslyMoving = currentlyMoving;
@@ -143,8 +141,8 @@ public class LocationClusterer extends OutputPlugin {
 	}
 
 	private static final String PLUGIN_NAME = "LocationClusterer";
-	private static final String LOCATION_CLUSTERER_ENABLED_PREF = "locationClustererEnabledPref";
 
+	private static final String LOCATION_CLUSTERER_ENABLED_PREF = "locationClustererEnabledPref";
 	private static final String LOCATION_CLUSTERER_USE_RESULTS_TO_MANAGE_GPS = "locationClustererManageGPS";
 
 	/**
@@ -265,8 +263,8 @@ public class LocationClusterer extends OutputPlugin {
 			return;
 		}
 		wifiClusterer = new WifiClusterer(context);
-		gpsClusterer = new GPSClusterer(context
-				.getDatabasePath("gpsclusters.db"), context);
+		gpsClusterer = new GPSClusterer(
+				context.getDatabasePath("gpsclusters.db"), context);
 		wifiObservationConsumer = new WifiObservationConsumer(
 				wifiObservationQueue);
 		new Thread(wifiObservationConsumer).start();

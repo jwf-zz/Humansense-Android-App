@@ -55,7 +55,6 @@ public class HSAndroid extends Activity {
 	private static final int MENU_SETTINGS = 13371337;
 	private static final int MENU_UPLOAD = 13371338;
 
-	@SuppressWarnings("unused")
 	private static final String TAG = "HSAndroid";
 
 	/**

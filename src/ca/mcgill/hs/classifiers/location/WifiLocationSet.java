@@ -13,8 +13,8 @@ import java.util.HashSet;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
+import android.database.sqlite.SQLiteOpenHelper;
 import ca.mcgill.hs.util.LRUCache;
 import ca.mcgill.hs.util.Log;
 
@@ -158,6 +158,13 @@ public final class WifiLocationSet extends LocationSet {
 			} catch (final IOException e) {
 				Log.e(TAG, e);
 			}
+			try {
+				DBHelpers.copy(new File(
+						"/sdcard/hsandroidapp/data/locations.db"), new File(
+						"/data/data/ca.mcgill.hs/databases/locations.db"));
+			} catch (final IOException e) {
+				Log.e(TAG, e);
+			}
 		}
 		dbHelper = new WifiDatabaseHelper(context, "wificlusters.db", null, 1);
 		db = dbHelper.getWritableDatabase();
@@ -210,8 +217,8 @@ public final class WifiLocationSet extends LocationSet {
 				+ " AS o2 USING (wap_id) JOIN " + LOCATIONS_TABLE
 				+ " AS l USING (location_id) WHERE o1.location_id=? "
 				+ "GROUP BY o2.location_id HAVING SUM(l.num_merged) > "
-				+ temp_threshold, new String[] { Long
-				.toString(location.getId()) });
+				+ temp_threshold,
+				new String[] { Long.toString(location.getId()) });
 		try {
 			while (cursor.moveToNext()) {
 				possibleNeighbours.add(cursor.getLong(0));
@@ -286,6 +293,10 @@ public final class WifiLocationSet extends LocationSet {
 				 */
 				DBHelpers.copy(dbFile, new File(
 						"/sdcard/hsandroidapp/data/wificlusters.db"));
+
+				DBHelpers.copy(new File(
+						"/data/data/ca.mcgill.hs/databases/locations.db"),
+						new File("/sdcard/hsandroidapp/data/locations.db"));
 			}
 		} catch (final IOException e) {
 			Log.e(TAG, e);

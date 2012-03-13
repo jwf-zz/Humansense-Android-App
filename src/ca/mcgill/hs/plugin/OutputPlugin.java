@@ -130,6 +130,8 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 					onDataReceived(packet);
 				} catch (final java.util.NoSuchElementException e) {
 					Log.e("OUTPUTPLUGIN Worker Thread", e);
+					packetQueue.clear();
+					break;
 				}
 			}
 		}

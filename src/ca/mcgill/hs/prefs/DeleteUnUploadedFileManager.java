@@ -27,14 +27,14 @@ import ca.mcgill.hs.util.Log;
  */
 public class DeleteUnUploadedFileManager extends FileManager {
 	/** Directory where unuploaded files live. */
-	public static final File RECENT_FILES_DIRECTORY = new File(Environment
-			.getExternalStorageDirectory(), HSAndroid
-			.getAppString(R.string.recent_file_path));
+	public static final File RECENT_FILES_DIRECTORY = new File(
+			Environment.getExternalStorageDirectory(),
+			HSAndroid.getAppString(R.string.recent_file_path));
 
 	/** Directory where uploaded files should go. */
-	public static final File UPLOADED_FILES_DIRECTORY = new File(Environment
-			.getExternalStorageDirectory()
-			+ HSAndroid.getAppString(R.string.uploaded_file_path));
+	public static final File UPLOADED_FILES_DIRECTORY = new File(
+			Environment.getExternalStorageDirectory(),
+			HSAndroid.getAppString(R.string.uploaded_file_path));
 
 	@Override
 	protected CheckListEntry[] getCheckListEntries(final File path) {
@@ -72,8 +72,8 @@ public class DeleteUnUploadedFileManager extends FileManager {
 					for (final String fname : filesToDelete) {
 						final File f = new File(fname);
 						if (f.exists()) {
-							Log.d("HSFileManager", "Deleting file "
-									+ f.getName());
+							Log.d("HSFileManager",
+									"Deleting file " + f.getName());
 							f.delete();
 						}
 					}
@@ -115,8 +115,10 @@ public class DeleteUnUploadedFileManager extends FileManager {
 			public void onClick(final View v) {
 				final String[] filesToDelete = checkList.getCheckedFiles();
 				if (filesToDelete.length == 0) {
-					makeToast(getResources().getString(
-							R.string.no_files_to_delete), Toast.LENGTH_SHORT);
+					makeToast(
+							getResources().getString(
+									R.string.no_files_to_delete),
+							Toast.LENGTH_SHORT);
 					return;
 				}
 				deletePrompt.show();

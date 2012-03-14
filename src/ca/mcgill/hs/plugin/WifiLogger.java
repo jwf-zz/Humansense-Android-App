@@ -160,7 +160,7 @@ public final class WifiLogger extends InputPlugin {
 				WIFI_LOGGER_ENABLE_PREF, R.string.wifilogger_enable_pref_label,
 				R.string.wifilogger_enable_pref_summary,
 				R.string.wifilogger_enable_pref_on,
-				R.string.wifilogger_enable_pref_off, false);
+				R.string.wifilogger_enable_pref_off, true);
 
 		prefs[1] = PreferenceFactory.getListPreference(activity,
 				R.array.wifilogger_pref_interval_strings,
@@ -264,9 +264,8 @@ public final class WifiLogger extends InputPlugin {
 						 * necessary.
 						 */
 						if (!wifiManager.pingSupplicant()) {
-							Log
-									.d(PLUGIN_NAME,
-											"Uh-Oh, Supplicant isn't responding to requests.");
+							Log.d(PLUGIN_NAME,
+									"Uh-Oh, Supplicant isn't responding to requests.");
 						}
 						wifiManager.startScan();
 						// if (!scanning) {
@@ -285,9 +284,8 @@ public final class WifiLogger extends InputPlugin {
 					Log.d(PLUGIN_NAME,
 							"Scanning loop complete, thread terminating.");
 				} catch (final InterruptedException e) {
-					Log
-							.e(PLUGIN_NAME,
-									"Logging thread terminated due to InterruptedException.");
+					Log.e(PLUGIN_NAME,
+							"Logging thread terminated due to InterruptedException.");
 				}
 			}
 		}.start();

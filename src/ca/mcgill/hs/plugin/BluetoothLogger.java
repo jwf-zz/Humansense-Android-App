@@ -43,8 +43,8 @@ public class BluetoothLogger extends InputPlugin {
 		public void onReceive(final Context c, final Intent intent) {
 			c.unregisterReceiver(this);
 			if (names.size() > 0 && addresses.size() > 0) {
-				write(new BluetoothPacket(System.currentTimeMillis(), names
-						.size(), names, addresses));
+				write(new BluetoothPacket(System.currentTimeMillis(),
+						names.size(), names, addresses));
 				names.clear();
 				addresses.clear();
 			}
@@ -143,14 +143,14 @@ public class BluetoothLogger extends InputPlugin {
 				R.string.bluetoothlogger_enable_pref_label,
 				R.string.bluetoothlogger_enable_pref_summary,
 				R.string.bluetoothlogger_enable_pref_on,
-				R.string.bluetoothlogger_enable_pref_off, false);
+				R.string.bluetoothlogger_enable_pref_off, true);
 
 		prefs[1] = PreferenceFactory.getCheckBoxPreference(activity,
 				FORCE_BLUETOOTH_ON_PREF,
 				R.string.bluetoothlogger_autoenable_pref_label,
 				R.string.bluetoothlogger_autoenable_pref_summary,
 				R.string.bluetoothlogger_autoenable_pref_on,
-				R.string.bluetoothlogger_autoenable_pref_off, false);
+				R.string.bluetoothlogger_autoenable_pref_off, true);
 
 		prefs[2] = PreferenceFactory.getListPreference(activity,
 				R.array.bluetoothlogger_pref_interval_strings,

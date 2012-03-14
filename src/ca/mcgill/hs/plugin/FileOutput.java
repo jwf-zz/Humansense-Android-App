@@ -46,7 +46,7 @@ public class FileOutput extends OutputPlugin {
 			.toString(12 * 60 * 60 * 1000);
 
 	// in bytes = 4K
-	private static final String BUFFER_SIZE_DEFAULT = "4096";
+	private static final String BUFFER_SIZE_DEFAULT = "8192";
 
 	private static final String PLUGIN_NAME = "FileOutput";
 
@@ -242,7 +242,7 @@ public class FileOutput extends OutputPlugin {
 				R.string.fileoutput_enable_pref_label,
 				R.string.fileoutput_enable_pref_summary,
 				R.string.fileoutput_enable_pref_on,
-				R.string.fileoutput_enable_pref_off, false);
+				R.string.fileoutput_enable_pref_off, true);
 		prefs[1] = PreferenceFactory.getListPreference(activity,
 				R.array.fileoutput_pref_buffer_size_strings,
 				R.array.fileoutput_pref_buffer_size_values,
@@ -260,7 +260,7 @@ public class FileOutput extends OutputPlugin {
 				R.string.fileoutput_log_sensor_data_pref_label,
 				R.string.fileoutput_log_sensor_data_pref_summary,
 				R.string.fileoutput_log_sensor_data_pref_on,
-				R.string.fileoutput_log_sensor_data_pref_off, true);
+				R.string.fileoutput_log_sensor_data_pref_off, false);
 
 		return prefs;
 	}

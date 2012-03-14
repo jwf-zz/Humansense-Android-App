@@ -136,7 +136,7 @@ public final class GPSLogger extends InputPlugin {
 	private static final String GPS_LOGGER_INTERVAL_PREF = "gpsLoggerIntervalPreference";
 	private static final String GPS_LOGGER_INTERVAL_DEFAULT = "30000";
 	private static final String GPS_LOGGER_TIMEOUT_PREF = "gpsLoggerTimeoutPreference";
-	private static final String GPS_LOGGER_TIMEOUT_DEFAULT = "-1";
+	private static final String GPS_LOGGER_TIMEOUT_DEFAULT = "10000";
 
 	private static Handler gpsTimeoutHandler = new Handler();
 
@@ -157,7 +157,7 @@ public final class GPSLogger extends InputPlugin {
 
 	private static boolean listeningForLocationUpdates = false;
 
-	private static int gpsTimeoutInMillis = -1;
+	private static int gpsTimeoutInMillis = 10000;
 
 	/**
 	 * Used to check if a request has timed out and act appropriately.
@@ -181,9 +181,8 @@ public final class GPSLogger extends InputPlugin {
 				}
 				if (!remotelyDisabled) {
 					// Start up again in minUpdateFrequency milliseconds.
-					Log
-							.d(PLUGIN_NAME,
-									"GPS Has timed out, disabling and sleeping for a bit.");
+					Log.d(PLUGIN_NAME,
+							"GPS Has timed out, disabling and sleeping for a bit.");
 					gpsTimeoutHandler.postDelayed(restartGPSUpdates,
 							minUpdateFrequency);
 				}
@@ -238,7 +237,7 @@ public final class GPSLogger extends InputPlugin {
 				GPS_LOGGER_ENABLE_PREF, R.string.gpslogger_enable_pref_label,
 				R.string.gpslogger_enable_pref_summary,
 				R.string.gpslogger_enable_pref_on,
-				R.string.gpslogger_enable_pref_off, false);
+				R.string.gpslogger_enable_pref_off, true);
 
 		prefs[1] = PreferenceFactory.getListPreference(activity,
 				R.array.bluetoothlogger_pref_interval_strings,
@@ -295,9 +294,8 @@ public final class GPSLogger extends InputPlugin {
 	 * has completed.
 	 */
 	public void disableAfterNextScan() {
-		Log
-				.d(PLUGIN_NAME,
-						"We have been asked to stop scanning after the next scan completes.");
+		Log.d(PLUGIN_NAME,
+				"We have been asked to stop scanning after the next scan completes.");
 		pendingRemoteDisable = true;
 	}
 
@@ -336,9 +334,9 @@ public final class GPSLogger extends InputPlugin {
 			}
 		}
 		write(new GPSPacket(location.getTime(), location.getAccuracy(),
-				location.getBearing(), location.getSpeed(), location
-						.getAltitude(), location.getLatitude(), location
-						.getLongitude()));
+				location.getBearing(), location.getSpeed(),
+				location.getAltitude(), location.getLatitude(),
+				location.getLongitude()));
 	}
 
 	@Override

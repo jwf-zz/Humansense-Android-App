@@ -32,8 +32,7 @@ public class HSServAutoStart extends BroadcastReceiver {
 		final SharedPreferences prefs = PreferenceFactory
 				.getSharedPreferences(context);
 
-		if (prefs.getBoolean(HSAndroidPreferences.AUTO_START_AT_APP_START_PREF,
-				false)) {
+		if (prefs.getBoolean(HSAndroidPreferences.AUTO_START_AT_BOOT_PREF, true)) {
 			// check if the received intent is BOOT_COMPLETED
 			if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
 				comp = new ComponentName(context.getPackageName(),

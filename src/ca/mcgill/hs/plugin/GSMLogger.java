@@ -98,7 +98,7 @@ public final class GSMLogger extends InputPlugin {
 				GSM_LOGGER_ENABLE_PREF, R.string.gsmlogger_enable_pref_label,
 				R.string.gsmlogger_enable_pref_summary,
 				R.string.gsmlogger_enable_pref_on,
-				R.string.gsmlogger_enable_pref_off, false);
+				R.string.gsmlogger_enable_pref_off, true);
 
 		return prefs;
 	}
@@ -238,9 +238,8 @@ public final class GSMLogger extends InputPlugin {
 							| PhoneStateListener.LISTEN_CELL_LOCATION
 							| PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 		} else {
-			Log
-					.i(PLUGIN_NAME,
-							"GSM Location Logging Unavailable! Wrong phone type or SIM card not present!");
+			Log.i(PLUGIN_NAME,
+					"GSM Location Logging Unavailable! Wrong phone type or SIM card not present!");
 		}
 	}
 

@@ -242,7 +242,7 @@ public class BluetoothLogger extends InputPlugin {
 		prefs = PreferenceFactory.getSharedPreferences(context);
 
 		forceBluetoothActivation = prefs.getBoolean(FORCE_BLUETOOTH_ON_PREF,
-				false);
+				true);
 
 		timeBetweenDiscoveries = Integer.parseInt(prefs.getString(
 				BLUETOOTH_LOGGER_TIME_INTERVAL_PREF,
@@ -306,7 +306,7 @@ public class BluetoothLogger extends InputPlugin {
 
 	@Override
 	protected void onPluginStart() {
-		pluginEnabled = prefs.getBoolean(BLUETOOTH_LOGGER_ENABLE_PREF, false);
+		pluginEnabled = prefs.getBoolean(BLUETOOTH_LOGGER_ENABLE_PREF, true);
 		if (!pluginEnabled) {
 			return;
 		}
@@ -379,10 +379,10 @@ public class BluetoothLogger extends InputPlugin {
 				BLUETOOTH_DEFAULT_SCAN_INTERVAL));
 
 		forceBluetoothActivation = prefs.getBoolean(FORCE_BLUETOOTH_ON_PREF,
-				false);
+				true);
 
 		final boolean pluginEnabledNew = prefs.getBoolean(
-				BLUETOOTH_LOGGER_ENABLE_PREF, false);
+				BLUETOOTH_LOGGER_ENABLE_PREF, true);
 		super.changePluginEnabledStatus(pluginEnabledNew);
 	}
 }

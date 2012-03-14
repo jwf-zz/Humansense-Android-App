@@ -515,6 +515,9 @@ public class FileOutput extends OutputPlugin {
 		rolloverInterval = Integer.parseInt(prefs.getString(
 				ROLLOVER_INTERVAL_KEY, FILE_ROLLOVER_INTERVAL_DEFAULT));
 		logSensorData = prefs.getBoolean(FILE_OUTPUT_LOG_SENSOR_DATA, true);
+		if (pluginEnabled) {
+			Log.d(PLUGIN_NAME, "Plugin enabled.");
+		}
 	}
 
 	@Override
@@ -536,13 +539,13 @@ public class FileOutput extends OutputPlugin {
 	@Override
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(
-				FILE_OUTPUT_ENABLED_PREF, false);
+				FILE_OUTPUT_ENABLED_PREF, true);
 		rolloverInterval = Integer.parseInt(prefs.getString(
 				ROLLOVER_INTERVAL_KEY, FILE_ROLLOVER_INTERVAL_DEFAULT));
 		rolloverTimestamp = initialTimestamp + rolloverInterval;
 		bufferSize = Integer.parseInt(prefs.getString(BUFFER_SIZE_KEY,
 				BUFFER_SIZE_DEFAULT));
-		logSensorData = prefs.getBoolean(FILE_OUTPUT_LOG_SENSOR_DATA, true);
+		logSensorData = prefs.getBoolean(FILE_OUTPUT_LOG_SENSOR_DATA, false);
 		super.changePluginEnabledStatus(pluginEnabledNew);
 	}
 

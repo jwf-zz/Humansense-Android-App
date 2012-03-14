@@ -32,13 +32,16 @@ public class HSServAutoStart extends BroadcastReceiver {
 		final SharedPreferences prefs = PreferenceFactory
 				.getSharedPreferences(context);
 
-		if (prefs.getBoolean(HSAndroidPreferences.AUTO_START_AT_BOOT_PREF, true)) {
+		if (prefs
+				.getBoolean(HSAndroidPreferences.AUTO_START_AT_BOOT_PREF, true)) {
 			// check if the received intent is BOOT_COMPLETED
 			if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+				context.startActivity(new Intent(context,
+						ca.mcgill.hs.HSAndroid.class)
+						.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 				comp = new ComponentName(context.getPackageName(),
 						HSService.class.getName());
 				svc = context.startService(new Intent().setComponent(comp));
-
 				if (svc == null) {
 					Log.e("HSServAutoStart", "Could not start HSService "
 							+ comp.toString());

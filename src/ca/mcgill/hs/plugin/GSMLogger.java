@@ -134,7 +134,7 @@ public final class GSMLogger extends InputPlugin {
 
 	@Override
 	protected void onPluginStart() {
-		pluginEnabled = prefs.getBoolean(GSM_LOGGER_ENABLE_PREF, false);
+		pluginEnabled = prefs.getBoolean(GSM_LOGGER_ENABLE_PREF, true);
 		if (!pluginEnabled) {
 			return;
 		}
@@ -257,7 +257,7 @@ public final class GSMLogger extends InputPlugin {
 	@Override
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(
-				GSM_LOGGER_ENABLE_PREF, false);
+				GSM_LOGGER_ENABLE_PREF, true);
 		super.changePluginEnabledStatus(pluginEnabledNew);
 	}
 

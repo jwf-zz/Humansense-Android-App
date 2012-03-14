@@ -199,13 +199,14 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 
 		// TODO: Should check to see if the sensors actually exist.
 		Log.i(PLUGIN_NAME, "Registered Sensor Listener");
-		sensorManager.registerListener(this, sensorManager
-				.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), loggingSpeed);
-		sensorManager.registerListener(this, sensorManager
-				.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+		sensorManager.registerListener(this,
+				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+				loggingSpeed);
+		sensorManager.registerListener(this,
+				sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
 				SensorManager.SENSOR_DELAY_UI);
-		sensorManager.registerListener(this, sensorManager
-				.getDefaultSensor(Sensor.TYPE_TEMPERATURE),
+		sensorManager.registerListener(this,
+				sensorManager.getDefaultSensor(Sensor.TYPE_TEMPERATURE),
 				SensorManager.SENSOR_DELAY_UI);
 		logging = true;
 	}
@@ -216,12 +217,12 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 			return;
 		}
 		Log.i(PLUGIN_NAME, "Unregistered Sensor Listener.");
-		sensorManager.unregisterListener(this, sensorManager
-				.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
-		sensorManager.unregisterListener(this, sensorManager
-				.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
-		sensorManager.unregisterListener(this, sensorManager
-				.getDefaultSensor(Sensor.TYPE_TEMPERATURE));
+		sensorManager.unregisterListener(this,
+				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
+		sensorManager.unregisterListener(this,
+				sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
+		sensorManager.unregisterListener(this,
+				sensorManager.getDefaultSensor(Sensor.TYPE_TEMPERATURE));
 		logging = false;
 	}
 
@@ -234,7 +235,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 			changed = true;
 		}
 		final boolean newCalculateOrientation = prefs.getBoolean(
-				SENSOR_LOGGER_CALCULATE_ORIENTATION, false);
+				SENSOR_LOGGER_CALCULATE_ORIENTATION, true);
 		if (!newCalculateOrientation) {
 			orientation[0] = 0.0f;
 			orientation[1] = 0.0f;
@@ -260,6 +261,7 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 	 * @param event
 	 *            the SensorEvent detailing the change in sensor data.
 	 */
+	@Override
 	public void onSensorChanged(final SensorEvent event) {
 		if (logging) {
 			final Sensor sensor = event.sensor;
@@ -304,8 +306,8 @@ public class SensorLogger extends InputPlugin implements SensorEventListener {
 
 	private void printSensorSummary(final Sensor s) {
 		if (s != null) {
-			Log.i(PLUGIN_NAME, "    Sensor: " + s.getVendor() + " "
-					+ s.getName());
+			Log.i(PLUGIN_NAME,
+					"    Sensor: " + s.getVendor() + " " + s.getName());
 			Log.i(PLUGIN_NAME, "        Max Range  : " + s.getMaximumRange());
 			// Requires API Level 9
 			// Log.i(PLUGIN_NAME, "        Min Delay  : " + s.getMinDelay());

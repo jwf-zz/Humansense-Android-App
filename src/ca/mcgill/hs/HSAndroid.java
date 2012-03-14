@@ -165,7 +165,6 @@ public class HSAndroid extends Activity {
 
 		// Buttons
 		serviceSwitch = (Button) findViewById(R.id.button);
-		serviceSwitch.setText(R.string.start_label);
 		serviceSwitch.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(final View v) {
@@ -183,8 +182,9 @@ public class HSAndroid extends Activity {
 				updateButton();
 			}
 		});
+		updateButton();
 
-		if (autoStartAppStart) {
+		if (autoStartAppStart && !HSService.isRunning()) {
 			// Start the service on application start.
 			startService(serviceIntent);
 		}

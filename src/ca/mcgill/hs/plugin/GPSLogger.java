@@ -341,7 +341,7 @@ public final class GPSLogger extends InputPlugin {
 
 	@Override
 	protected void onPluginStart() {
-		pluginEnabled = prefs.getBoolean(GPS_LOGGER_ENABLE_PREF, false);
+		pluginEnabled = prefs.getBoolean(GPS_LOGGER_ENABLE_PREF, true);
 		minUpdateDistance = Integer.parseInt(prefs.getString(
 				GPS_LOGGER_DISTANCE_PREF, GPS_LOGGER_DISTANCE_DEFAULT));
 		minUpdateFrequency = Integer.parseInt(prefs.getString(
@@ -365,7 +365,7 @@ public final class GPSLogger extends InputPlugin {
 	@Override
 	public void onPreferenceChanged() {
 		final boolean pluginEnabledNew = prefs.getBoolean(
-				GPS_LOGGER_ENABLE_PREF, false);
+				GPS_LOGGER_ENABLE_PREF, true);
 		if (pluginEnabled && pluginEnabledNew) {
 			stopListeningForLocationUpdates();
 			minUpdateDistance = Integer.parseInt(prefs.getString(

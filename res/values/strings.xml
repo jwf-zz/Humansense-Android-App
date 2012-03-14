@@ -7,14 +7,17 @@
     <!--  Widget Strings -->
     <string name="simple_classifier_notification_widget_name">Activity Classifier</string>
     <string name="location_status_widget_name">Location Status</string>
-    <string name="location_labeler_dialog_label">Location Labeler</string>
+    <string name="location_cluster_labeler_dialog_label">Location Labeler</string>
     <string name="location_widget_moving_label">Currently Moving</string>
     <string name="location_widget_location_prefix">Currently in location:</string>
     <string name="location_widget_unknown_location">Unknown</string>
     <string name="widget_loading">Loading data</string>
     <string name="widget_error">Data currently unavailable</string>
-    
-    
+    <string name="where_are_you_text">Where are you now?</string>
+    <string name="location_labeler_prompt">Select a location</string>
+    <string name="location_labeler_edittext_hint">example location</string>
+    <string name="location_labeler_dialog_label">Where are you now?</string> 
+       
     <!--  Notification Strings -->
     <string name="notification_ticker">Humansense</string>
     <string name="notification_text">Select to provide more information.</string>
@@ -252,4 +255,5 @@
     <string name="delete_text">Delete</string>
     <string name="cancel_text">Cancel</string>
     <string name="save_text">Save</string>
+    <string name="other_location_label">Other&#8230;</string>
 </resources>

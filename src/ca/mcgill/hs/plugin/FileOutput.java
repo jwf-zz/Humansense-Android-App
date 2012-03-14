@@ -26,6 +26,7 @@ import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSPacket;
 import ca.mcgill.hs.plugin.GSMLogger.GSMPacket;
+import ca.mcgill.hs.plugin.LocationLogger.LocationPacket;
 import ca.mcgill.hs.plugin.SensorLogger.SensorPacket;
 import ca.mcgill.hs.plugin.WifiLogger.WifiPacket;
 import ca.mcgill.hs.prefs.PreferenceFactory;
@@ -40,7 +41,7 @@ import ca.mcgill.hs.util.Log;
  */
 public class FileOutput extends OutputPlugin {
 
-	// in seconds = 12 hours
+	// in milliseconds = 12 hours
 	private static final String FILE_ROLLOVER_INTERVAL_DEFAULT = Integer
 			.toString(12 * 60 * 60 * 1000);
 
@@ -55,6 +56,7 @@ public class FileOutput extends OutputPlugin {
 	private static final String SENS_EXT = "-raw.log";
 	private static final String GSM_EXT = "-gsmloc.log";
 	private static final String BT_EXT = "-bt.log";
+	private static final String LOC_EXT = "-location.log";
 	private static final String DEF_EXT = ".log";
 
 	/**
@@ -205,6 +207,8 @@ public class FileOutput extends OutputPlugin {
 			return GSM_EXT;
 		} else if (packetId == BluetoothPacket.PACKET_ID) {
 			return BT_EXT;
+		} else if (packetId == LocationPacket.PACKET_ID) {
+			return LOC_EXT;
 		} else {
 			Log.d(PLUGIN_NAME,
 					"Unknown packet id, returning default file extension.");
@@ -334,9 +338,9 @@ public class FileOutput extends OutputPlugin {
 		// files) into the recent directory.
 		try {
 			// Current live directory
-			final File directory = new File(Environment
-					.getExternalStorageDirectory(), (String) context
-					.getResources().getText(R.string.live_file_path));
+			final File directory = new File(
+					Environment.getExternalStorageDirectory(), (String) context
+							.getResources().getText(R.string.live_file_path));
 			if (!directory.isDirectory()) {
 				if (!directory.mkdirs()) {
 					throw new IOException("ERROR: Unable to create directory "
@@ -351,9 +355,10 @@ public class FileOutput extends OutputPlugin {
 			if (filesInDirectory != null) {
 
 				// Destination directory
-				final File dest = new File(Environment
-						.getExternalStorageDirectory(), (String) context
-						.getResources().getText(R.string.recent_file_path));
+				final File dest = new File(
+						Environment.getExternalStorageDirectory(),
+						(String) context.getResources().getText(
+								R.string.recent_file_path));
 				if (!dest.isDirectory()) {
 					if (!dest.mkdirs()) {
 						throw new IOException(
@@ -381,6 +386,16 @@ public class FileOutput extends OutputPlugin {
 		}
 	}
 
+	private void dataParse(final LocationPacket packet,
+			final DataOutputStream outputStream) {
+		try {
+			outputStream.writeLong(packet.time);
+			outputStream.writeUTF(packet.location);
+		} catch (final IOException e) {
+			Log.e(PLUGIN_NAME, e);
+		}
+	}
+
 	/**
 	 * Gets the output stream for the specified packet id, creating a new one if
 	 * the file hasn't already been opened.
@@ -396,9 +411,10 @@ public class FileOutput extends OutputPlugin {
 			final String extension) {
 		if (!fileHandles.containsKey(id)) {
 			try {
-				final File j = new File(Environment
-						.getExternalStorageDirectory(), (String) context
-						.getResources().getText(R.string.live_file_path));
+				final File j = new File(
+						Environment.getExternalStorageDirectory(),
+						(String) context.getResources().getText(
+								R.string.live_file_path));
 				if (!j.isDirectory()) {
 					if (!j.mkdirs()) {
 						Log.e("Output Dir",
@@ -482,6 +498,8 @@ public class FileOutput extends OutputPlugin {
 			dataParse((GPSPacket) packet, outputStream);
 		} else if (id == BluetoothPacket.PACKET_ID) {
 			dataParse((BluetoothPacket) packet, outputStream);
+		} else if (id == LocationPacket.PACKET_ID) {
+			dataParse((LocationPacket) packet, outputStream);
 		} else {
 			Log.e(PLUGIN_NAME, "Unknown packet id: " + id);
 		}

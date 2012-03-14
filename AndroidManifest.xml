@@ -65,11 +65,15 @@
 			android:launchMode="singleTop">
 		</activity>
 		<activity
-			android:name=".widget.LocationLabelerDialog"
-			android:label="@string/location_labeler_dialog_label"
-			android:launchMode="singleTop"
-		>
+			android:name=".widget.LocationClusterLabelerDialog"
+			android:label="@string/location_cluster_labeler_dialog_label"
+			android:launchMode="singleTop">
 		</activity>
+        <activity
+          android:name=".widget.LocationLabelerDialog"
+            android:label="@string/location_labeler_dialog_label"
+            android:launchMode="singleTop">
+        </activity>		
 		<activity
 			android:name=".graph.MagnitudeGraph"
 			android:label="@string/activity_magnitude_graph_label"
@@ -101,7 +105,7 @@
 		     	<action android:name="android.intent.action.BOOT_COMPLETED" />
 		   	 </intent-filter>
 		</receiver>
-
+		
 		<!-- Broadcast Receiver that will process AppWidget updates -->
 		<receiver android:name=".widget.SimpleClassifierNotificationWidget" 
 			      android:label="@string/simple_classifier_notification_widget_name">
@@ -122,8 +126,19 @@
 	    	<meta-data android:name="android.appwidget.provider" 
 	    			   android:resource="@xml/location_status_widget" />
 		</receiver>
-		<service android:name=".widget.LocationStatusWidget$UpdateService" />
-
+        <service android:name=".widget.LocationStatusWidget$UpdateService" />
+        
+		<!-- Broadcast Receiver that will process AppWidget updates -->
+        <receiver android:name=".widget.LocationLabelerWidget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" 
+                       android:resource="@xml/location_labeler_widget" />
+        </receiver>
+		
+		
+		
     </application>
     
 </manifest>

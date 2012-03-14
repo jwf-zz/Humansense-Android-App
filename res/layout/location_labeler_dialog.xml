@@ -1,42 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/location_labeler_main_layout"
-	android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
-	android:orientation="vertical" >
-  	<TextView
-		android:id="@+id/location_labeler_top_text"
-		android:gravity="center_horizontal"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content" 
-	/>
-	<EditText 
-		android:id="@+id/location_input_edittext" 
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:hint="@string/location_input_edittext_hint"
-		></EditText>
-	<TableLayout
-		android:stretchColumns="*" 
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-	>
-	<TableRow		
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:gravity="bottom"
-	>
-	<Button
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:id="@+id/location_input_ok_button"
-		android:text="@string/OK" />
-	<Button
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:id="@+id/location_input_cancel_button"
-		android:text="@string/cancel" />
-	</TableRow>
-	</TableLayout>
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/location_labeler_main_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" 
+    android:layout_weight="1">
+
+    <TextView
+        android:text="@string/location_labeler_prompt"
+        android:textSize="13pt"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" 
+    />
+    <Spinner 
+        android:id="@+id/location_labeler_spinner"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:prompt="@string/location_labeler_prompt"
+    />
+    <EditText 
+        android:id="@+id/location_labeler_edittext"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/location_labeler_edittext_hint"
+        android:inputType="text|textCapWords"
+        ></EditText>
+    <LinearLayout       
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:layout_weight="2"
+    >
+    <Button
+        android:gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/location_labeler_input_ok_button"
+        android:text="@string/OK" 
+        android:layout_weight="1" />
+    <Button
+        android:gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/location_labeler_input_cancel_button"
+        android:text="@string/cancel" 
+        android:layout_weight="1" />
+    </LinearLayout>
 </LinearLayout>

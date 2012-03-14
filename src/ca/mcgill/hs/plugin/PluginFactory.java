@@ -30,7 +30,7 @@ public final class PluginFactory {
 	private static final Map<Class<? extends InputPlugin>, InputPlugin> inputPlugins = new HashMap<Class<? extends InputPlugin>, InputPlugin>();
 	private final static Class<?>[] inputPluginClasses = {
 			BluetoothLogger.class, GPSLogger.class, GSMLogger.class,
-			SensorLogger.class, WifiLogger.class };
+			SensorLogger.class, WifiLogger.class, LocationLogger.class };
 
 	public static Context getContext() {
 		return context;

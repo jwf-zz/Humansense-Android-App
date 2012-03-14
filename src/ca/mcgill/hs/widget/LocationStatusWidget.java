@@ -138,11 +138,11 @@ public class LocationStatusWidget extends AppWidgetProvider {
 							"setBackgroundResource",
 							R.drawable.location_status_widget_bg_stationary);
 					if (mostRecentClusterId > 0) {
-						final Intent locationLabeler = new Intent(context
+						final Intent locationClusterLabeler = new Intent(context
 								.getApplicationContext(),
-								LocationLabelerDialog.class);
+								LocationClusterLabelerDialog.class);
 						final PendingIntent pendingIntent = PendingIntent
-								.getActivity(context, 0, locationLabeler, 0);
+								.getActivity(context, 0, locationClusterLabeler, 0);
 						views.setOnClickPendingIntent(
 								R.id.location_status_text, pendingIntent);
 					}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="wrap_content"
+  android:orientation="vertical"
+  android:id="@+id/location_labeler_widget_background" >
+    <TextView android:text="@string/where_are_you_text" 
+              android:id="@+id/location_labeler_widget_text" 
+              android:layout_width="fill_parent" 
+              android:layout_height="fill_parent"
+              android:layout_marginTop="12dip"
+              android:padding="10dip"
+              android:gravity="center"
+              android:background="#eeeeee"
+              style="@style/Text.Loading"
+    />
+</LinearLayout>

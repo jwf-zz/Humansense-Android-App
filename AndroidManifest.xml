@@ -129,7 +129,8 @@
         <service android:name=".widget.LocationStatusWidget$UpdateService" />
         
 		<!-- Broadcast Receiver that will process AppWidget updates -->
-        <receiver android:name=".widget.LocationLabelerWidget">
+        <receiver android:name=".widget.LocationLabelerWidget"
+                  android:label="@string/location_labeler_widget_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

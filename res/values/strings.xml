@@ -14,6 +14,7 @@
     <string name="widget_loading">Loading data</string>
     <string name="widget_error">Data currently unavailable</string>
     <string name="where_are_you_text">Where are you now?</string>
+    <string name="location_labeler_widget_name">Location Labeler</string>
     <string name="location_labeler_prompt">Select a location</string>
     <string name="location_labeler_edittext_hint">example location</string>
     <string name="location_labeler_dialog_label">Where are you now?</string> 

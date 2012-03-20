@@ -1,0 +1,133 @@
+<!DOCTYPE html> 
+<html dir="ltr" lang="en-US"> 
+<head> 
+  <meta charset="UTF-8" /> 
+  <title>jwf/Humansense-Android-App @ GitHub</title>
+	
+  <style type="text/css">
+    body {
+      margin-top: 1.0em;
+      background-color: white;
+      font-family: "Helvetica,Arial,FreeSans";
+      color: black;
+    }
+    #container {
+      margin: 0 auto;
+      width: 700px;
+    }
+    h1 { font-size: 2.8em; margin-bottom: 2px; }
+    h1 .small { font-size: 0.5em; }
+    h1 a { text-decoration: none }
+    h2 { font-size: 1.5em; }
+    h3 { text-align: center; }
+    a { }
+    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
+    .download { float: right; }
+    pre { background: #000; color: #fff; padding: 15px;}
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    .footer { text-align:center; padding-top:30px; font-style: italic; }
+  </style>
+</head>
+
+<body>
+  <a href="http://github.com/jwf/Humansense-Android-App"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+  <div id="container">
+    <div class="download">
+<!--
+      <a href="http://github.com/jwf/Humansense-Android-App/zipball/master">
+        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
+      <a href="http://github.com/jwf/Humansense-Android-App/tarball/master">
+        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+-->
+      <a href="https://github.com/downloads/jwf/Humansense-Android-App/HumanSense-Android-App.apk"><img border="0" width="200" src="https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=https://github.com/downloads/jwf/Humansense-Android-App/HumanSense-Android-App.apk" /></a>
+    </div>
+
+    <table><tr><td><img src="images/humansense-icon.png" /></td><td><h1><a href="http://github.com/jwf/Humansense-Android-App">Humansense Android App</a></h1></td></tr></table>
+
+    <h2>Experimental Features</h2>
+
+    <p>By default, the application will log your GPS, GSM, and Wifi information. It will start automatically when the phone boots up, and can be controlled via the HumanSense application. To provide location labels to assist in ongoing research into localization, please use the Location Labeler widget. This can be placed onto the home screen of the phone by long-clicking on a blank region, then selecting "Add Widget", then adding the "Location Labeler" widget. Whenever you are stationary in a location for at least one minute, you can click on "Where are you now?", and provide a label.</p>
+
+    <p>To see the app do something interesting, I suggest trying out either the activity recognition plugin or the location recognition plugin.</p>
+
+    <h3>Activity Recognition</h3>
+    <p>This plugin allows you to build models for physical activities (e.g., running, walking, hopping on one foot, etc.), and then later recognize which activity you are peforming. It can also be used to build models for various people's gaits (i.e., style of walking), and then it can detect who is carrying the phone.</p>
+    <p>To try out this plugin, you need to enable the sensor input plugin and the classifier output plugin. To enable the sensor input plugin, go to the <i>Settings</i>, then to <i>Input Plugins</i>, then click the check box next to <i>Sensor Logging Plugin</i>. In the <i>Sensor Speed</i> setting, choose <i>Fastest</i>. Then go back into the <i>Settings</i>, choose <i>Output Plugins</i>, and enable the <i>Simple Classifier Plugin</i>. The classifier is only active when the phone is in motion, and the Lingering parameters adjust how sensitive the classifier is. I've found that setting the <i>Lingering Power Threshold</i> to 100, and the <i>Lingering Power Window</i> to 25 work well. The <i>Manage Model Files</i> setting allows you to choose which models the classifier uses, and we'll get to that in a moment.</p>
+    <p>Now, return to the main <i>Humansense</i> application screen, and click <i>Start Service</i>. Two new buttons should appear at the bottom of the screen. <i>Build</i> is used to build new models (i.e., create new activities or people to be recognized). Clicking <i>Build</i> will cause the device to begin collecting samples from the accelerometers. To create a new activity model, click <i>Build</i>, put the phone in your pocket (locking the screen first so that no buttons are pressed accidentally while in your pocket), perform the activity for a short period of time (10 seconds or so), remove the phone from your pocket (unlock it), and click <i>Stop Building</i>. A new dialog will appear, showing you the collected accelerometer data. The purpose of this dialog is to trim off the initial and final few seconds, which contain noisy data from when you put the phone in your pocket and removed it. Select a nice section of the data by clicking and dragging on the data. A new dialog will appear allowing you to assign a name to this data. If you accidentally clicked on a bad portion of the data, click <i>Cancel</i> to return to the previous screen to re-select a segment. Once you have selected a good segment and assigned it a name that you will remember, click <i>OK</i>. This will return you to the main application screen. Repeat the process to create a few activities, or pass the phone to your friends and collect data from them walking around with the phone in their pocket.</p>
+    <div align="center"><img src="images/humansense-accel-trace.png" width="500" /></div>
+    <p>Once you have collected a few activities, the next step is to perform one of the activities again, and have the phone guess which one you are performing. The first step is to select a set of candidate activities from which the classifier will choose. To do this, go into the <i>Settings</i>, into <i>Output Plugins</i>, and then select <i>Manage Model Files</i>. Here you will see a list of all of the models that you have created. Check off the models that you want to use for this session. At the moment, the application starts to stop performing well when more than 10 or so models are active. Once you have selected the models you would like to consider, click <i>Save</i> to save your model selection. Now go back to your phone's home screen (not the application home screen), and add the widget in which the results will be displayed. To do this, long-click on an empty portion of the home screen, select <i>Widget</i> and add the <i>Lingering Notification Widget</i>. The widget should appear on the home screen.</p>
+    <div align="center"><img src="images/humansense-model-selection.png" height="500" /></div>
+    <p>Now, to start classifying, go back into the Humansense application, ensure that the service has been started, and then click the button on the bottom of the screen that says <i>Classify</i>. Now, if you go back to your home scren and look at the widget, you should notice that some text has appeared. The first two lines simply count the number of samples that are considered to be lingering (the phone is not moving), or otherwise. Below these two lines another set of lines should appear. There will be one line per activity, labeled according to the name that you chose when the model was built. Next to these activities will be the probability that the classifier has assigned to each activity. If you lock the phone and put it in your pocket, then perform one of the activities for a few seconds, when you unlock the phone the value next to the activity that you performed should be larger than the value for the other activities. As this is a work in progress, and part of an active research program, please let <a href="mailto:jordan.frank@cs.mcgill.ca">me</a> know how it works.</p>
+    <div align="center"><img src="images/humansense-classifier-screenshot.png" height="500" /></div>
+
+    <h3>Location Recognition</h3>
+    <p>This plugin will learn to recognize places
+    that you spend time, based on building fingerprints from
+    observable wifi base stations. To try it out, first install the
+    application, then start the app and go into the <i>Settings</i>
+    menu. Choose <i>Input Plugins</i>, and enable the <i>Wifi Logging Plugin</i>, 
+    and in the <i>Wifi Logging Interval</i> setting, select 1 minute.
+      Next, go back into the <i>Settings</i>
+    menu and choose the <i>Output Plugins</i> settings. Enable the <i>Location
+    Clustering Plugin</i>. Now, go back to your home screen and press and
+    hold on an empty part the screen. This should bring up a menu that
+    allows you to add a Widget to your home screen. Add the <i>Location
+    Status</i> widget. Now, go back into the Humansense application and
+    start the service.
+    </p>
+
+    <p>The service collects data in the background, so you can go back
+    to your home screen (press the Home button) and use other
+    apps. The widget on your home screen should be updated with your
+    status (green means you're moving, read means you're stationary)
+    and a location ID, which is <i>UNKNOWN</i> if you have not been
+    stationary in a location for long enough for it to be considered a
+    significant location, or a positive integer denoting the ID
+    associated with the current location. If a positive integer
+    appears, you can assign a textual label to this location by
+    clicking on the widget. This should bring up a new dialog window
+    that allows you to provide a name for the location. From then on,
+    if you are in that location, the name should appear instead of the
+    ID number.
+    </p>
+
+    <div align="center"><img height="500" src="images/humansense-location-widget.png" /></div>
+
+    <p>This is a work in progress, so please let 
+      <a href="mailto:jordan.frank@cs.mcgill.ca">me</a> know how it works.</p>
+
+    <h2>Download</h2>
+    <p>
+      You can download a compiled version, ready to
+      install, <a href="https://github.com/jwf/Humansense-Android-App/HumanSense-Android-App.apk/qr_code">here</a>.
+      Included on that page is a QR code for easy installation on your
+      phone. Note that it may not be the most up-to-date version, but
+      it should be fairly current, and is most likely a version that
+      has been tested a bit.
+    </p>
+    <p>
+      You can download this code for the project in either
+      <a href="http://github.com/jwf/Humansense-Android-App/zipball/master">zip</a> or
+      <a href="http://github.com/jwf/Humansense-Android-App/tarball/master">tar</a> formats.
+    </p>
+    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
+      by running:
+      <pre>$ git clone git://github.com/jwf/Humansense-Android-App</pre>
+    </p>
+
+    <div class="footer">
+      get the source code on GitHub : <a href="http://github.com/jwf/Humansense-Android-App">jwf/Humansense-Android-App</a>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-4086904-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+</body>
+</html>

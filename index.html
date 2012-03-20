@@ -49,64 +49,53 @@
       <br /><span style="font-size: 0.9em">A framework for creating data-driven applications on the Android Platform.</span>
     </div>
 
+    <h2>Welcome message</h2>
+    <p>Thank you for participating in our data collection process. To participate, you must first sign a <a href="consent-form.pdf">Consent Form</a>, and email a copy to <a href="mailto:jordan.frank@cs.mcgill.ca">Jordan Frank</a>. I'll co-sign it and send you back a copy.</p>
+
+    <p>The following instructions should have you up and running in a few minutes:</p>
+
+    <p>First, you need to enable non-market apps. Go to Settings -> Applications, then enable "Unknown Sources".</p>
+
+  <p>The application can be installed by following the link: <a href="http://bit.ly/yahQm7">http://bit.ly/yahQm7</a>, or clicking on or scanning the bar-code in the top-right corner of this page.</p>
+
+  <p>Everything should be set up properly by default. If you want to control what is logged, you can go into the settings. In order to make the location labeling easy, I've made a widget that can be put right on the home screen. To do that, long-press on a blank region of the home screen, then choose "Add Widget", then select the "Location Labeler" widget, which should have the same icon as the HumanSense application (little green walking person). Place that on the home screen, and you should see something that says "Where are you now?" Clicking on that should open a dialog that lets you select a location that you've already entered, or if you go to "Other...", then you can add a new location name, which will be saved for easy selection in the future.</p>
+
+  <p>The rules for location labeling are simple, only label a location that you remain in for at least one minute, and remain in the location for at least 30 seconds after labeling it. That will help me associate the labels with the right sensor data. The more often you label your current location, the better. As a rule of thumb, please try to label your location once every few hours when stationary, or whenever you arrive at a new location where you will remain for at least one minute. I would like labels to be fairly fine-grained, so please state the room that you are in, but also include the building. Examples of useful labels are:</p>
+
+  <ul>
+    <li>Acme Building, My Office</li>
+    <li>Acme Building, Room 123</li>
+    <li>Acme Building, Lounge</li>
+    <li>Coffee Stop on Main St.</li>
+    <li>Home, Kitchen</li>
+    <li>Home, Den</li>
+    <li>etc.</li>
+  </ul>
+
+  <p>The application is set to run when the phone boots up. It is also set to only upload data over a Wifi connection, so it will not use your cellular data plan. The following data is being collected by default: Wifi signals, GSM signals, GPS information, and any location labels that you provide. All other information (call data, sms messaging data, web browsing or email usage) are not collected. The data is transmitted to a database that resides on an encrypted partition on my workstation at McGill University, and only I have the password. No personal information other than what can be deduced from the Wifi, GSM, and GPS data will be collected (i.e., your name, phone number, etc., are not collected). I have a simple web application for browsing the GPS data that you have submitted, and I can provide you access to that upon request.</p>
+
+  <p>The default setting is that data is automatically uploaded every 12 hours. By default, data will only be uploaded when you have a Wifi connection (i.e., it will not be uploaded over your cellular data connection). You have the option of turning off the logging service whenever you please, but try to remember to turn it back on again (the service is controlled by the Start/Stop button in the main Application window). If you inadvertently log something that you do not wish to have logged, you can email me at <a href="mailto:jordan.frank@cs.mcgill.ca">jordan.frank@cs.mcgill.ca</a>, specifying the time period that you would like removed and the Wi-Fi MAC address of the phone (*), and I will remove it immediately. There will always be a 5-day grace period between the time that data is collected and when I will use it in any experiments, and so as long as you email me within the 5-day window after the event happens, I promise that it will never be accessed. If you choose to turn off the automatic uploading of data (Settings -> Upload Automatically), then you also have the ability to delete any logs prior to uploading (they are time-stamped for easy identification). I ask that if you turn off automatic uploading, that you manually upload the data fairly regularly (at least once every 3 days). To manually upload data, make sure you have Wifi network access and then click the Menu button on the phone, then touch the Upload button that should appear.</p>
+
+  <p>The application has some additional features, such as a prototype of an activity recognition system and a prototype indoor location detection system. Information on how to try out these features can be found <a href="more-info.html">here</a>.</p>
+
+  <p>If you have any questions or concerns, please email me at <a href="mailto:jordan.frank@cs.mcgill.ca">jordan.frank@cs.mcgill.ca</a>.</p>
+
+  <p>Thank you for participating,<br />
+     Jordan Frank</p>
+
+  <p>* - The Wifi MAC address may be found by going into the Phone Settings -> About Phone -> Status, then scrolling down to the bottom. However, different phone models have this information in different places, so you should also check in the Wifi Network Settings, or consult the documentation for your particular phone.</p>
+
     <h2>Author</h2>
-	<p><a href="http://www.cs.mcgill.ca/~jfrank8/">Jordan Frank</a> (<a href="mailto:jordan.frank@cs.mcgill.ca">jordan.frank@cs.mcgill.ca</a>)</p>
+  	<p><a href="http://www.cs.mcgill.ca/~jfrank8/">Jordan Frank</a> (<a href="mailto:jordan.frank@cs.mcgill.ca">jordan.frank@cs.mcgill.ca</a>)</p>
+
     <h2>License</h2>
-	<p><a href="http://opensource.org/licenses/mit-license.php">MIT</a></p>
+	  <p><a href="http://opensource.org/licenses/mit-license.php">MIT</a></p>
+    
     <h2>Acknowledgments</h2>
     This work is supported by the <a href="http://www.pascal-network.org/?q=node/19">PASCAL 2 Harvest Programme</a> and <a href="http://www.nserc-crsng.gc.ca">NSERC</a>. We are grateful for their generous support.
+    
     <h2>Documentation</h2>
     <p>JavaDocs are available <a href="doc/index.html">here</a>. Other documentation to come.</p>
-
-    <h2>Quick Start</h2>
-
-    <p>To see the app do something interesting, I suggest trying out either the activity recognition plugin or the location recognition plugin.</p>
-
-    <h3>Activity Recognition</h3>
-    <p>This plugin allows you to build models for physical activities (e.g., running, walking, hopping on one foot, etc.), and then later recognize which activity you are peforming. It can also be used to build models for various people's gaits (i.e., style of walking), and then it can detect who is carrying the phone.</p>
-    <p>To try out this plugin, you need to enable the sensor input plugin and the classifier output plugin. To enable the sensor input plugin, go to the <i>Settings</i>, then to <i>Input Plugins</i>, then click the check box next to <i>Sensor Logging Plugin</i>. In the <i>Sensor Speed</i> setting, choose <i>Fastest</i>. Then go back into the <i>Settings</i>, choose <i>Output Plugins</i>, and enable the <i>Simple Classifier Plugin</i>. The classifier is only active when the phone is in motion, and the Lingering parameters adjust how sensitive the classifier is. I've found that setting the <i>Lingering Power Threshold</i> to 100, and the <i>Lingering Power Window</i> to 25 work well. The <i>Manage Model Files</i> setting allows you to choose which models the classifier uses, and we'll get to that in a moment.</p>
-    <p>Now, return to the main <i>Humansense</i> application screen, and click <i>Start Service</i>. Two new buttons should appear at the bottom of the screen. <i>Build</i> is used to build new models (i.e., create new activities or people to be recognized). Clicking <i>Build</i> will cause the device to begin collecting samples from the accelerometers. To create a new activity model, click <i>Build</i>, put the phone in your pocket (locking the screen first so that no buttons are pressed accidentally while in your pocket), perform the activity for a short period of time (10 seconds or so), remove the phone from your pocket (unlock it), and click <i>Stop Building</i>. A new dialog will appear, showing you the collected accelerometer data. The purpose of this dialog is to trim off the initial and final few seconds, which contain noisy data from when you put the phone in your pocket and removed it. Select a nice section of the data by clicking and dragging on the data. A new dialog will appear allowing you to assign a name to this data. If you accidentally clicked on a bad portion of the data, click <i>Cancel</i> to return to the previous screen to re-select a segment. Once you have selected a good segment and assigned it a name that you will remember, click <i>OK</i>. This will return you to the main application screen. Repeat the process to create a few activities, or pass the phone to your friends and collect data from them walking around with the phone in their pocket.</p>
-    <div align="center"><img src="images/humansense-accel-trace.png" width="500" /></div>
-    <p>Once you have collected a few activities, the next step is to perform one of the activities again, and have the phone guess which one you are performing. The first step is to select a set of candidate activities from which the classifier will choose. To do this, go into the <i>Settings</i>, into <i>Output Plugins</i>, and then select <i>Manage Model Files</i>. Here you will see a list of all of the models that you have created. Check off the models that you want to use for this session. At the moment, the application starts to stop performing well when more than 10 or so models are active. Once you have selected the models you would like to consider, click <i>Save</i> to save your model selection. Now go back to your phone's home screen (not the application home screen), and add the widget in which the results will be displayed. To do this, long-click on an empty portion of the home screen, select <i>Widget</i> and add the <i>Lingering Notification Widget</i>. The widget should appear on the home screen.</p>
-    <div align="center"><img src="images/humansense-model-selection.png" height="500" /></div>
-    <p>Now, to start classifying, go back into the Humansense application, ensure that the service has been started, and then click the button on the bottom of the screen that says <i>Classify</i>. Now, if you go back to your home scren and look at the widget, you should notice that some text has appeared. The first two lines simply count the number of samples that are considered to be lingering (the phone is not moving), or otherwise. Below these two lines another set of lines should appear. There will be one line per activity, labeled according to the name that you chose when the model was built. Next to these activities will be the probability that the classifier has assigned to each activity. If you lock the phone and put it in your pocket, then perform one of the activities for a few seconds, when you unlock the phone the value next to the activity that you performed should be larger than the value for the other activities. As this is a work in progress, and part of an active research program, please let <a href="mailto:jordan.frank@cs.mcgill.ca">me</a> know how it works.</p>
-    <div align="center"><img src="images/humansense-classifier-screenshot.png" height="500" /></div>
-
-    <h3>Location Recognition</h3>
-    <p>This plugin will learn to recognize places
-    that you spend time, based on building fingerprints from
-    observable wifi base stations. To try it out, first install the
-    application, then start the app and go into the <i>Settings</i>
-    menu. Choose <i>Input Plugins</i>, and enable the <i>Wifi Logging Plugin</i>, 
-    and in the <i>Wifi Logging Interval</i> setting, select 1 minute.
-      Next, go back into the <i>Settings</i>
-    menu and choose the <i>Output Plugins</i> settings. Enable the <i>Location
-    Clustering Plugin</i>. Now, go back to your home screen and press and
-    hold on an empty part the screen. This should bring up a menu that
-    allows you to add a Widget to your home screen. Add the <i>Location
-    Status</i> widget. Now, go back into the Humansense application and
-    start the service.
-    </p>
-
-    <p>The service collects data in the background, so you can go back
-    to your home screen (press the Home button) and use other
-    apps. The widget on your home screen should be updated with your
-    status (green means you're moving, read means you're stationary)
-    and a location ID, which is <i>UNKNOWN</i> if you have not been
-    stationary in a location for long enough for it to be considered a
-    significant location, or a positive integer denoting the ID
-    associated with the current location. If a positive integer
-    appears, you can assign a textual label to this location by
-    clicking on the widget. This should bring up a new dialog window
-    that allows you to provide a name for the location. From then on,
-    if you are in that location, the name should appear instead of the
-    ID number.
-    </p>
-
-    <div align="center"><img height="500" src="images/humansense-location-widget.png" /></div>
-
-    <p>This is a work in progress, so please let 
-      <a href="mailto:jordan.frank@cs.mcgill.ca">me</a> know how it works.</p>
 
     <h2>Download</h2>
     <p>

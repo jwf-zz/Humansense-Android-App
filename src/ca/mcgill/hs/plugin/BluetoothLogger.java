@@ -345,10 +345,22 @@ public class BluetoothLogger extends InputPlugin {
 		expectedInterrupt = true;
 		exec.interrupt();
 
-		context.unregisterReceiver(loggerReceiver);
-		Log.i(PLUGIN_NAME, "Unegistered receiver");
-		context.unregisterReceiver(discoveryListener);
-		Log.i(PLUGIN_NAME, "Unegistered discovery listener");
+		try {
+			context.unregisterReceiver(loggerReceiver);
+		} catch (final IllegalArgumentException e) {
+			Log.e(PLUGIN_NAME,
+					"Exception thrown unregistering loggerReceiver. Ignoring.");
+			Log.e(PLUGIN_NAME, e);
+		}
+		Log.i(PLUGIN_NAME, "Unegistered loggerReceiver");
+		try {
+			context.unregisterReceiver(discoveryListener);
+		} catch (final IllegalArgumentException e) {
+			Log.e(PLUGIN_NAME,
+					"Exception thrown unregistering discoveryListener. Ignoring.");
+			Log.e(PLUGIN_NAME, e);
+		}
+		Log.i(PLUGIN_NAME, "Unegistered discoveryListener");
 
 		adapter.cancelDiscovery();
 

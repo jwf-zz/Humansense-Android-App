@@ -142,8 +142,14 @@ public class LocationLogger extends InputPlugin {
 	@Override
 	protected void onPluginStart() {
 		Log.d(PLUGIN_NAME, "onPluginStart()");
-		context.registerReceiver(receiver, new IntentFilter(
-				LOCATION_LABELED_ACTION));
+		try {
+			context.registerReceiver(receiver, new IntentFilter(
+					LOCATION_LABELED_ACTION));
+		} catch (final IllegalArgumentException e) {
+			Log.e(PLUGIN_NAME,
+					"Exception thrown unregistering receiver. Ignoring.");
+			Log.e(PLUGIN_NAME, e);
+		}
 	}
 
 	@Override

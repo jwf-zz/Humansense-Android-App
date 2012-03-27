@@ -150,7 +150,12 @@ public abstract class OutputPlugin implements Plugin, Runnable {
 	 */
 	@Override
 	public final void stopPlugin() {
-		onPluginStop();
+		try {
+			onPluginStop();
+		} catch (final Exception e) {
+			Log.i("OutputPlugin",
+					"Exception thrown while stopping plugin. Ignoring.");
+			Log.i("OutputPlugin", e);
+		}
 	}
-
 }

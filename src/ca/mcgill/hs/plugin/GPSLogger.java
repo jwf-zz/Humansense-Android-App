@@ -412,7 +412,9 @@ public final class GPSLogger extends InputPlugin {
 	protected void stopListeningForLocationUpdates() {
 		removeAllTimers();
 		if (listeningForLocationUpdates && locationManager != null) {
-			locationManager.removeUpdates(locationListener);
+			if (locationListener != null) {
+				locationManager.removeUpdates(locationListener);
+			}
 			listeningForLocationUpdates = false;
 			Log.i(PLUGIN_NAME, "Unregistered Location Listener.");
 		}

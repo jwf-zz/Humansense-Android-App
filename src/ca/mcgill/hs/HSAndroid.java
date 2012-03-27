@@ -120,7 +120,7 @@ public class HSAndroid extends Activity {
 	@Override
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		Log.i(TAG, "onCreate()");
 		context = getApplicationContext();
 		PreferenceFactory.setContext(context);
 
@@ -222,6 +222,13 @@ public class HSAndroid extends Activity {
 			break;
 		}
 		return false;
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		Log.i(TAG, "onResume()");
+		updateButton();
 	}
 
 }

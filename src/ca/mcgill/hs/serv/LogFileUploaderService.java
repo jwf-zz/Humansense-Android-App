@@ -217,11 +217,14 @@ public class LogFileUploaderService extends Service {
 	 *            The duration of the toast.
 	 */
 	private void makeToast(final String message, final int duration) {
-		final Toast slice = Toast.makeText(getBaseContext(), getResources()
-				.getString(R.string.uploader_appname_label)
-				+ message, duration);
-		slice.setGravity(slice.getGravity(), slice.getXOffset(), slice
-				.getYOffset() + 100);
+		final Toast slice = Toast
+				.makeText(
+						getBaseContext(),
+						getResources().getString(
+								R.string.uploader_appname_label)
+								+ message, duration);
+		slice.setGravity(slice.getGravity(), slice.getXOffset(),
+				slice.getYOffset() + 100);
 		slice.show();
 	}
 
@@ -306,8 +309,8 @@ public class LogFileUploaderService extends Service {
 		final String contentText = getResources().getString(
 				R.string.notification_upload_text);
 
-		final Notification n = new Notification(icon, tickerText, System
-				.currentTimeMillis());
+		final Notification n = new Notification(icon, tickerText,
+				System.currentTimeMillis());
 
 		final Intent i = new Intent(this, HSService.class);
 		n.setLatestEventInfo(this, contentTitle, contentText, PendingIntent
@@ -331,8 +334,9 @@ public class LogFileUploaderService extends Service {
 			switch (CURRENT_ERROR_CODE) {
 			case NO_ERROR_CODE:
 				if (filesUploaded == 1) {
-					makeToast(getResources().getString(
-							R.string.uploader_no_errors_one_file),
+					makeToast(
+							getResources().getString(
+									R.string.uploader_no_errors_one_file),
 							Toast.LENGTH_SHORT);
 				} else {
 					makeToast(
@@ -345,25 +349,34 @@ public class LogFileUploaderService extends Service {
 				}
 				break;
 			case UNKNOWNHOSTEXCEPTION_ERROR_CODE:
-				makeToast(getResources().getString(
-						R.string.uploader_unable_to_connect),
+				makeToast(
+						getResources().getString(
+								R.string.uploader_unable_to_connect),
 						Toast.LENGTH_SHORT);
 				break;
 			case UPLOAD_FAILED_ERROR_CODE:
-				makeToast(getResources().getString(
-						R.string.uploader_upload_failed), Toast.LENGTH_SHORT);
+				makeToast(
+						getResources().getString(
+								R.string.uploader_upload_failed),
+						Toast.LENGTH_SHORT);
 				break;
 			case IOEXCEPTION_ERROR_CODE:
-				makeToast(getResources().getString(
-						R.string.uploader_upload_failed), Toast.LENGTH_SHORT);
+				makeToast(
+						getResources().getString(
+								R.string.uploader_upload_failed),
+						Toast.LENGTH_SHORT);
 				break;
 			case NO_CONNECTION_ERROR:
-				makeToast(getResources().getString(
-						R.string.uploader_no_connection), Toast.LENGTH_SHORT);
+				makeToast(
+						getResources().getString(
+								R.string.uploader_no_connection),
+						Toast.LENGTH_SHORT);
 				break;
 			case ILLEGALSTATEEXCEPTION_ERROR_CODE:
-				makeToast(getResources().getString(
-						R.string.uploader_upload_failed), Toast.LENGTH_SHORT);
+				makeToast(
+						getResources().getString(
+								R.string.uploader_upload_failed),
+						Toast.LENGTH_SHORT);
 				break;
 			default:
 				break;
@@ -475,7 +488,9 @@ public class LogFileUploaderService extends Service {
 					+ ". File does not exist.");
 			return UPLOAD_FAILED_FILE_NOT_FOUND_ERROR_CODE;
 		}
+		Log.d(TAG, "MAC ADDRESS: " + wifiInfo.getMacAddress());
 		httppost.addHeader("MAC", wifiInfo.getMacAddress());
+
 		final MultipartEntity mpEntity = new MultipartEntity();
 		final ContentBody cbFile = new FileBody(file, "binary/octet-stream");
 		mpEntity.addPart("uploadedfile", cbFile);
@@ -488,23 +503,20 @@ public class LogFileUploaderService extends Service {
 			String responseMsg = "";
 			if (resEntity != null) {
 				responseMsg = EntityUtils.toString(resEntity);
-				Log.i(TAG, "Server Response: " + responseMsg);
-			}
-			if (resEntity != null) {
 				resEntity.consumeContent();
 			}
-
-			if (!responseMsg.contains("SUCCESS 0x64asv65")) {
-				Log.i(TAG, "Server Response: " + responseMsg);
+			Log.i(TAG, "Server Response: " + responseMsg);
+			if (responseMsg.contains("FAILURE")) {
 				CURRENT_ERROR_CODE = UPLOAD_FAILED_ERROR_CODE;
 				return UPLOAD_FAILED_ERROR_CODE;
 			}
 			// Move files to uploaded folder if successful
 			else {
 				Log.i(TAG, "Moving file to uploaded directory.");
-				final File dest = new File(Environment
-						.getExternalStorageDirectory(), (String) getResources()
-						.getText(R.string.uploaded_file_path));
+				final File dest = new File(
+						Environment.getExternalStorageDirectory(),
+						(String) getResources().getText(
+								R.string.uploaded_file_path));
 				if (!dest.isDirectory()) {
 					if (!dest.mkdirs()) {
 						throw new IOException(

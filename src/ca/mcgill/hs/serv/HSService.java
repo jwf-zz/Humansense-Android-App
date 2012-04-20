@@ -190,13 +190,23 @@ public class HSService extends Service {
 		Log.d(TAG, "Sending stop signal to " + inputPluginList.size()
 				+ " input plugins.");
 		for (final InputPlugin plugin : inputPluginList) {
-			plugin.stopPlugin();
+			try {
+				plugin.stopPlugin();
+			} catch (final Exception e) {
+				Log.e(TAG, "Exception thrown while stopping input plugin.");
+				Log.e(TAG, e);
+			}
 		}
 		Log.d(TAG, "Sending stop signal to " + outputPluginList.size()
 				+ " output plugins.");
 
 		for (final OutputPlugin plugin : outputPluginList) {
-			plugin.stopPlugin();
+			try {
+				plugin.stopPlugin();
+			} catch (final Exception e) {
+				Log.e(TAG, "Exception thrown while stopping output plugin.");
+				Log.e(TAG, e);
+			}
 		}
 
 		// Close the threadpool.
@@ -222,12 +232,22 @@ public class HSService extends Service {
 		Log.d(TAG, "Sending start signal to " + outputPluginList.size()
 				+ " output plugins.");
 		for (final OutputPlugin plugin : outputPluginList) {
-			plugin.startPlugin();
+			try {
+				plugin.startPlugin();
+			} catch (final Exception e) {
+				Log.e(TAG, "Exception thrown while starting output plugin.");
+				Log.e(TAG, e);
+			}
 		}
 		Log.d(TAG, "Sending start signal to " + inputPluginList.size()
 				+ " input plugins.");
 		for (final InputPlugin plugin : inputPluginList) {
-			plugin.startPlugin();
+			try {
+				plugin.startPlugin();
+			} catch (final Exception e) {
+				Log.e(TAG, "Exception thrown while starting input plugin.");
+				Log.e(TAG, e);
+			}
 		}
 
 		// Register the receiver for when the preferences change.

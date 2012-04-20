@@ -150,6 +150,7 @@ public final class GSMLogger extends InputPlugin {
 				private int mnc = -1;
 
 				public void logSignals(final GsmCellLocation cell) {
+					Log.d(PLUGIN_NAME, "In logSignals()");
 					if (cell == null) {
 						return;
 					}
@@ -186,6 +187,7 @@ public final class GSMLogger extends InputPlugin {
 				@Override
 				public void onCellLocationChanged(final CellLocation cell) {
 					super.onCellLocationChanged(cell);
+					Log.d(PLUGIN_NAME, "In onCellLocationChanged()");
 					logSignals((GsmCellLocation) cell);
 				}
 
@@ -193,11 +195,15 @@ public final class GSMLogger extends InputPlugin {
 				public void onServiceStateChanged(
 						final ServiceState serviceState) {
 					super.onServiceStateChanged(serviceState);
+					Log.d(PLUGIN_NAME, "In onServiceStateChanged()");
 					final int state = serviceState.getState();
 					switch (state) {
 					case ServiceState.STATE_IN_SERVICE:
 					case ServiceState.STATE_EMERGENCY_ONLY:
 						final String op = serviceState.getOperatorNumeric();
+						if (op == null) {
+							break;
+						}
 						if (op.length() > 3) {
 							try {
 								mcc = Integer.parseInt(op.substring(0, 3));
@@ -219,6 +225,7 @@ public final class GSMLogger extends InputPlugin {
 				public void onSignalStrengthsChanged(
 						final SignalStrength strength) {
 					super.onSignalStrengthsChanged(strength);
+					Log.d(PLUGIN_NAME, "In onSignalStrengthsChanged()");
 					if (strength.isGsm()) {
 						final int asu = strength.getGsmSignalStrength();
 						if (asu == -1) {

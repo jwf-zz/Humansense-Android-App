@@ -39,9 +39,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Environment;
 import android.os.IBinder;
 import android.widget.Toast;
+import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.HSAndroidPreferences;
 import ca.mcgill.hs.prefs.PreferenceFactory;
@@ -438,7 +438,7 @@ public class LogFileUploaderService extends Service {
 	 */
 	private synchronized void updateFileList() {
 
-		final File path = new File(Environment.getExternalStorageDirectory(),
+		final File path = new File(HSAndroid.getStorageDirectory(),
 				UNUPLOADED_PATH);
 
 		if (!path.isDirectory()) {
@@ -480,8 +480,7 @@ public class LogFileUploaderService extends Service {
 				CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_0);
 
 		httppost = new HttpPost(UPLOAD_URL);
-		final File file = new File(Environment.getExternalStorageDirectory(),
-				fileName);
+		final File file = new File(HSAndroid.getStorageDirectory(), fileName);
 		if (!file.exists()) {
 			// File may be deleted while in the queue for uploading
 			Log.d(TAG, "Unable to upload " + fileName
@@ -513,10 +512,8 @@ public class LogFileUploaderService extends Service {
 			// Move files to uploaded folder if successful
 			else {
 				Log.i(TAG, "Moving file to uploaded directory.");
-				final File dest = new File(
-						Environment.getExternalStorageDirectory(),
-						(String) getResources().getText(
-								R.string.uploaded_file_path));
+				final File dest = new File(HSAndroid.getStorageDirectory(),
+						HSAndroid.getAppString(R.string.uploaded_file_path));
 				if (!dest.isDirectory()) {
 					if (!dest.mkdirs()) {
 						throw new IOException(

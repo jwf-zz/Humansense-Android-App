@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import android.os.Environment;
+import ca.mcgill.hs.HSAndroid;
 
 /**
  * Wrap the android logging methods to allow for optional logging to a file, and
@@ -88,9 +88,8 @@ public class Log {
 			logWriter = null;
 		} else if (!Log.logToFile && logToFile) {
 			// Start Logging
-			final File logDir = new File(
-					Environment.getExternalStorageDirectory(),
-					"hsandroidapp/log/");
+			final File logDir = new File(HSAndroid.getStorageDirectory(),
+					"log/");
 			if (!logDir.isDirectory()) {
 				logDir.mkdirs();
 			}

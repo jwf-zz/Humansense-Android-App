@@ -27,10 +27,10 @@
     <string name="notification_upload_title">Humansense Uploader</string>
     
     <!--  Utility Strings -->
-    <string name="live_file_path">hsandroidapp/data/live/</string>
-    <string name="recent_file_path">hsandroidapp/data/recent/</string>
-    <string name="uploaded_file_path">hsandroidapp/data/uploaded/</string>
-    <string name="activity_file_path">hsandroidapp/data/activity/</string>
+    <string name="live_file_path">data/live/</string>
+    <string name="recent_file_path">data/recent/</string>
+    <string name="uploaded_file_path">data/uploaded/</string>
+    <string name="activity_file_path">data/activity/</string>
     
     <!-- Magnitude Graph Strings -->
     <string name="mag_graph_title">Select a section of the graph to add a label:</string>
@@ -43,8 +43,8 @@
 	<string name="mag_graph_close_label">Close</string>
 
 	<!-- TDEClassifier plugin Strings -->
-	<string name="model_ini_path">hsandroidapp/models/models.ini</string>
-	<string name="models_path">hsandroidapp/models/</string>
+	<string name="model_ini_path">models/models.ini</string>
+	<string name="models_path">models/</string>
 	<string name="manage_model_files_pref_title">Manage Model Files</string>
 	<string name="manage_model_files_pref_summary">Manage Model Files and choose which models to use for classification.</string>
 	<string name="start_building_button_text">Build</string>

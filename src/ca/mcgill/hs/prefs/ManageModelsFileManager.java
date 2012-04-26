@@ -14,7 +14,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.HashSet;
 
-import android.os.Environment;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -32,14 +31,14 @@ import ca.mcgill.hs.util.Log;
 public class ManageModelsFileManager extends FileManager {
 
 	/** Directory where the models live. */
-	public static final File MODELS_DIR = new File(Environment
-			.getExternalStorageDirectory(), HSAndroid
-			.getAppString(R.string.models_path));
+	public static final File MODELS_DIR = new File(
+			HSAndroid.getStorageDirectory(),
+			HSAndroid.getAppString(R.string.models_path));
 
 	/** File containing the active models, one per line. */
-	public static final File MODELS_INI_FILE = new File(Environment
-			.getExternalStorageDirectory(), HSAndroid
-			.getAppString(R.string.model_ini_path));
+	public static final File MODELS_INI_FILE = new File(
+			HSAndroid.getStorageDirectory(),
+			HSAndroid.getAppString(R.string.model_ini_path));
 
 	private static final String TAG = "ManageModelsFileManager";
 
@@ -83,8 +82,8 @@ public class ManageModelsFileManager extends FileManager {
 		}
 		// Create the entries.
 		for (int i = 0; i < files.length; i++) {
-			entries[i] = new CheckListEntry(files[i], checkedEntries
-					.contains(files[i]));
+			entries[i] = new CheckListEntry(files[i],
+					checkedEntries.contains(files[i]));
 		}
 		return entries;
 	}

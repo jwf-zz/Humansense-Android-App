@@ -9,7 +9,6 @@ import java.io.File;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.os.Environment;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -28,12 +27,12 @@ import ca.mcgill.hs.util.Log;
 public class DeleteUnUploadedFileManager extends FileManager {
 	/** Directory where unuploaded files live. */
 	public static final File RECENT_FILES_DIRECTORY = new File(
-			Environment.getExternalStorageDirectory(),
+			HSAndroid.getStorageDirectory(),
 			HSAndroid.getAppString(R.string.recent_file_path));
 
 	/** Directory where uploaded files should go. */
 	public static final File UPLOADED_FILES_DIRECTORY = new File(
-			Environment.getExternalStorageDirectory(),
+			HSAndroid.getStorageDirectory(),
 			HSAndroid.getAppString(R.string.uploaded_file_path));
 
 	@Override

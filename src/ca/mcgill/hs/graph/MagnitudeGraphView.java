@@ -28,13 +28,13 @@ import android.graphics.Paint.Align;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
-import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
+import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.util.ActivityIndex;
 import ca.mcgill.hs.util.Log;
@@ -235,10 +235,8 @@ public class MagnitudeGraphView extends View {
 			this.indexOfActivities = new ActivityIndex(acts, codes);
 
 			try {
-				final File j = new File(
-						Environment.getExternalStorageDirectory(),
-						(String) context.getResources().getText(
-								R.string.activity_file_path));
+				final File j = new File(HSAndroid.getStorageDirectory(),
+						HSAndroid.getAppString(R.string.activity_file_path));
 				if (!j.isDirectory()) {
 					if (!j.mkdirs()) {
 						Log.e("Output Dir",
@@ -264,10 +262,8 @@ public class MagnitudeGraphView extends View {
 			// Code to read the activity index file, this will stay here.
 			try {
 
-				final File j = new File(
-						Environment.getExternalStorageDirectory(),
-						(String) context.getResources().getText(
-								R.string.activity_file_path));
+				final File j = new File(HSAndroid.getStorageDirectory(),
+						HSAndroid.getAppString(R.string.activity_file_path));
 				final File file = new File(j, "ActivityIndex.aif");
 				final FileInputStream fis = new FileInputStream(file);
 				final ObjectInputStream ois = new ObjectInputStream(fis);

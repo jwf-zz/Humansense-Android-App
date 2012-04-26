@@ -19,9 +19,9 @@ import java.util.zip.GZIPOutputStream;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Environment;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.plugin.BluetoothLogger.BluetoothPacket;
 import ca.mcgill.hs.plugin.GPSLogger.GPSPacket;
@@ -338,9 +338,8 @@ public class FileOutput extends OutputPlugin {
 		// files) into the recent directory.
 		try {
 			// Current live directory
-			final File directory = new File(
-					Environment.getExternalStorageDirectory(), (String) context
-							.getResources().getText(R.string.live_file_path));
+			final File directory = new File(HSAndroid.getStorageDirectory(),
+					HSAndroid.getAppString(R.string.live_file_path));
 			if (!directory.isDirectory()) {
 				if (!directory.mkdirs()) {
 					throw new IOException("ERROR: Unable to create directory "
@@ -355,10 +354,8 @@ public class FileOutput extends OutputPlugin {
 			if (filesInDirectory != null) {
 
 				// Destination directory
-				final File dest = new File(
-						Environment.getExternalStorageDirectory(),
-						(String) context.getResources().getText(
-								R.string.recent_file_path));
+				final File dest = new File(HSAndroid.getStorageDirectory(),
+						HSAndroid.getAppString(R.string.recent_file_path));
 				if (!dest.isDirectory()) {
 					if (!dest.mkdirs()) {
 						throw new IOException(
@@ -411,10 +408,8 @@ public class FileOutput extends OutputPlugin {
 			final String extension) {
 		if (!fileHandles.containsKey(id)) {
 			try {
-				final File j = new File(
-						Environment.getExternalStorageDirectory(),
-						(String) context.getResources().getText(
-								R.string.live_file_path));
+				final File j = new File(HSAndroid.getStorageDirectory(),
+						HSAndroid.getAppString(R.string.live_file_path));
 				if (!j.isDirectory()) {
 					if (!j.mkdirs()) {
 						Log.e("Output Dir",

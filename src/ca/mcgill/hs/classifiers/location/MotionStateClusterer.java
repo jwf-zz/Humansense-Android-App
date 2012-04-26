@@ -16,7 +16,6 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.os.Environment;
 import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.util.Log;
@@ -129,9 +128,8 @@ public class MotionStateClusterer {
 		final Date d = new Date(System.currentTimeMillis());
 		final SimpleDateFormat dfm = new SimpleDateFormat("yy-MM-dd-HHmmss");
 
-		final File recent_dir = new File(Environment
-				.getExternalStorageDirectory(), HSAndroid
-				.getAppString(R.string.recent_file_path));
+		final File recent_dir = new File(HSAndroid.getStorageDirectory(),
+				HSAndroid.getAppString(R.string.recent_file_path));
 		final File f = new File(recent_dir, dfm.format(d) + "-clusters.log");
 		try {
 			outputLog = new BufferedWriter(new FileWriter(f));
@@ -184,7 +182,8 @@ public class MotionStateClusterer {
 		try {
 			if (outputLog != null) {
 				Log.d(TAG, "Computing Statistics");
-				final File f = new File("/sdcard/hsandroidapp/clusters.dat");
+				final File f = new File(HSAndroid.getStorageDirectory(),
+						"clusters.dat");
 				BufferedWriter statsDmp = null;
 				try {
 					statsDmp = new BufferedWriter(new FileWriter(f, false));
@@ -313,9 +312,9 @@ public class MotionStateClusterer {
 		}
 		try {
 			if (outputLog != null) {
-				outputLog.write(dfm
-						.format(new Date(System.currentTimeMillis()))
-						+ "," + currentCluster + "\n");
+				outputLog
+						.write(dfm.format(new Date(System.currentTimeMillis()))
+								+ "," + currentCluster + "\n");
 			}
 		} catch (final IOException e) {
 			Log.e(TAG, e);

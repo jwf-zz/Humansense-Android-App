@@ -17,14 +17,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Environment;
 import android.os.FileObserver;
 import android.os.IBinder;
 import android.os.Process;
-import ca.mcgill.hs.util.Log;
+import ca.mcgill.hs.HSAndroid;
 import ca.mcgill.hs.R;
 import ca.mcgill.hs.prefs.HSAndroidPreferences;
 import ca.mcgill.hs.prefs.PreferenceFactory;
+import ca.mcgill.hs.util.Log;
 
 /**
  * Work in progress. A new, more modular file uploader. Still does not work.
@@ -92,11 +92,11 @@ public class UploadService extends Service {
 										Constants.ACTION_RETRY);
 								intent.setClassName("ca.mcgill.hs.uploader",
 										UploadReceiver.class.getName());
-								alarms.set(AlarmManager.RTC_WAKEUP, System
-										.currentTimeMillis()
-										+ wakeUp, PendingIntent.getBroadcast(
-										context, 0, intent,
-										PendingIntent.FLAG_ONE_SHOT));
+								alarms.set(AlarmManager.RTC_WAKEUP,
+										System.currentTimeMillis() + wakeUp,
+										PendingIntent.getBroadcast(context, 0,
+												intent,
+												PendingIntent.FLAG_ONE_SHOT));
 							}
 						}
 					}
@@ -235,8 +235,8 @@ public class UploadService extends Service {
 
 	@Override
 	public void onCreate() {
-		recentDir = new File(Environment.getExternalStorageDirectory(),
-				(String) getResources().getText(R.string.recent_file_path));
+		recentDir = new File(HSAndroid.getStorageDirectory(),
+				HSAndroid.getAppString(R.string.recent_file_path));
 		dirObserver = new DirectoryObserver(recentDir.getAbsolutePath(),
 				FileObserver.MOVED_TO);
 		prefs = PreferenceFactory.getSharedPreferences(this);

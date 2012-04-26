@@ -5,12 +5,15 @@
  */
 package ca.mcgill.hs;
 
+import java.io.File;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Debug;
+import android.os.Environment;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -77,6 +80,25 @@ public class HSAndroid extends Activity {
 	 */
 	public static TableLayout getFreeSpace() {
 		return freeSpace;
+	}
+
+	public static File getStorageDirectory() {
+		final String state = Environment.getExternalStorageState();
+		boolean externalStorageAvailable = false;
+		boolean externalStorageWriteable = false;
+		if (Environment.MEDIA_MOUNTED.equals(state)) {
+			externalStorageAvailable = externalStorageWriteable = true;
+		} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+			externalStorageAvailable = true;
+			externalStorageWriteable = false;
+		} else {
+			externalStorageAvailable = externalStorageWriteable = false;
+		}
+		if (externalStorageAvailable && externalStorageWriteable) {
+			return context.getExternalFilesDir(null);
+		} else {
+			return context.getFilesDir();
+		}
 	}
 
 	/**
